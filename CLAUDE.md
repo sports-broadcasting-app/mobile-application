@@ -41,7 +41,9 @@ A React Native (Expo) mobile application that helps users find which TV channels
 │   ├── services/               # API calls (matchService)
 │   ├── hooks/                  # Custom React hooks (useTodayMatches)
 │   ├── types/                  # TypeScript type definitions (match.ts)
-│   ├── constants/              # App-wide constants (api.ts)
+│   ├── contexts/               # React contexts
+│   │   └── ThemeContext.tsx    # Theme provider, useTheme() hook, toggleTheme
+│   ├── constants/              # App-wide constants (api.ts, theme.ts)
 │   ├── utils/                  # Pure utility functions
 │   │   ├── championshipLabel.ts # Slug to display label mapping
 │   │   ├── teamColor.ts       # Deterministic color from team slug
@@ -117,7 +119,8 @@ yarn type-check       # Run TypeScript type checking
 - **Hook files**: camelCase with `use` prefix (e.g., `useTodayMatches.ts`)
 - **Utility files**: camelCase (e.g., `championshipLabel.ts`)
 - **Test files**: Co-locate tests in `src/__tests__/` directory
-- **No inline styles**: Use `StyleSheet.create()` for all styles
+- **Styles**: Use `StyleSheet.create()` for layout/spacing; override colors via style arrays `[styles.card, { backgroundColor: colors.surface }]`
+- **Theming**: Always use `useTheme()` for colors — never hardcode color values
 - **Functional components only**: No class components
 - **Named exports** for components; default export for route/screen components
 - **Expo Router hooks**: `useRouter()` for navigation, `useLocalSearchParams()` for route params, `<Stack.Screen options={...}/>` for dynamic headers
@@ -132,17 +135,48 @@ yarn type-check       # Run TypeScript type checking
 - Test behavior, not implementation details
 - Run `yarn test` before committing (husky pre-commit runs lint-staged)
 
-## Design Tokens
+## Theming (Dark Mode / Light Mode)
 
-| Token           | Value                             | Usage                                 |
-| --------------- | --------------------------------- | ------------------------------------- |
-| Primary blue    | `#2563eb`                         | Active tab, links, icons, header tint |
-| Text primary    | `#111`                            | Titles, team names                    |
-| Text secondary  | `#666`                            | Dates, labels                         |
-| Background      | `#f5f5f5`                         | Screen backgrounds                    |
-| Card background | `#fff`                            | All cards                             |
-| Live red        | `#dc2626`                         | "AO VIVO" badge, error text           |
-| Border radius   | `12` (cards), `20` (badges/pills) |                                       |
+The app supports automatic dark/light mode via `ThemeContext`. System preference is detected via `useColorScheme()` from React Native, with manual toggle override.
+
+### Architecture
+
+- **`src/constants/theme.ts`**: Defines `ThemeColors` interface, `lightTheme` and `darkTheme` palettes
+- **`src/contexts/ThemeContext.tsx`**: `ThemeProvider` (wraps app in `_layout.tsx`), `useTheme()` hook
+- **`app.json`**: `userInterfaceStyle: "automatic"` (enables system dark mode detection)
+
+### Usage
+
+```tsx
+const { colors, toggleTheme, isDark } = useTheme();
+// Use colors.primary, colors.surface, etc. in style arrays
+<View style={[styles.card, { backgroundColor: colors.surface }]}>
+```
+
+### Color Tokens
+
+| Token              | Light     | Dark      | Usage                                 |
+| ------------------ | --------- | --------- | ------------------------------------- |
+| `background`       | `#f5f5f5` | `#111827` | Screen backgrounds                    |
+| `surface`          | `#fff`    | `#1f2937` | Cards, headers, tab bar               |
+| `surfaceAlt`       | `#f8fafc` | `#374151` | Sport chips, search bar               |
+| `primary`          | `#2563eb` | `#3b82f6` | Active tab, links, icons, header tint |
+| `textPrimary`      | `#111`    | `#f5f5f5` | Titles, team names                    |
+| `textSecondary`    | `#666`    | `#9ca3af` | Dates, labels                         |
+| `textTertiary`     | `#999`    | `#6b7280` | Placeholders, inactive tabs           |
+| `border`           | `#e5e5e5` | `#374151` | Tab bar border, dividers              |
+| `borderLight`      | `#f0f0f0` | `#1f2937` | List separators                       |
+| `error`            | `#dc2626` | `#ef4444` | Error text (AO VIVO badge always red) |
+| `broadcastBadgeBg` | `#f0f4ff` | `#1e3a5f` | Broadcast badge background            |
+| `chipBorder`       | `#e5e7eb` | `#374151` | Sport chip border                     |
+| `shadow`           | `#000`    | `#000`    | Card shadows                          |
+| `statusBar`        | `dark`    | `light`   | StatusBar style                       |
+
+### Layout Constants (not theme-dependent)
+
+| Token         | Value                             |
+| ------------- | --------------------------------- |
+| Border radius | `12` (cards), `20` (badges/pills) |
 
 ## Git Workflow
 

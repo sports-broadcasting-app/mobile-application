@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -12,10 +11,12 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTodayMatches } from '../../src/hooks/useTodayMatches';
 import { getChampionshipLabel } from '../../src/utils/championshipLabel';
 import { Sport } from '../../src/types/match';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function ChampionshipScreen() {
   const { sport } = useLocalSearchParams<{ sport: Sport }>();
   const router = useRouter();
+  const { colors, toggleTheme } = useTheme();
   const { championships, loading, error, refetch } = useTodayMatches(
     sport as Sport,
   );
@@ -23,30 +24,36 @@ export default function ChampionshipScreen() {
   const title = sport === 'football' ? 'Futebol' : 'Volei';
 
   const headerRight = () => (
-    <TouchableOpacity
-      onPress={() => Alert.alert('Configuracoes', 'Em breve')}
-      testID="championship-settings"
-    >
-      <MaterialCommunityIcons name="cog" size={24} color="#2563eb" />
+    <TouchableOpacity onPress={toggleTheme} testID="championship-settings">
+      <MaterialCommunityIcons
+        name="theme-light-dark"
+        size={24}
+        color={colors.primary}
+      />
     </TouchableOpacity>
   );
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { backgroundColor: colors.surface }]}>
         <Stack.Screen options={{ title, headerRight }} />
-        <ActivityIndicator size="large" color="#2563eb" />
-        <Text style={styles.loadingText}>Carregando campeonatos...</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          Carregando campeonatos...
+        </Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { backgroundColor: colors.surface }]}>
         <Stack.Screen options={{ title, headerRight }} />
-        <Text style={styles.errorText}>{error}</Text>
-        <Text style={styles.retryText} onPress={refetch}>
+        <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
+        <Text
+          style={[styles.retryText, { color: colors.primary }]}
+          onPress={refetch}
+        >
           Tentar novamente
         </Text>
       </View>
@@ -59,7 +66,7 @@ export default function ChampionshipScreen() {
   }));
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <Stack.Screen options={{ title, headerRight }} />
       <FlatList
         data={items}
@@ -80,15 +87,21 @@ export default function ChampionshipScreen() {
               })
             }
           >
-            <Text style={styles.rowText}>{item.label}</Text>
+            <Text style={[styles.rowText, { color: colors.textPrimary }]}>
+              {item.label}
+            </Text>
             <MaterialCommunityIcons
               name="chevron-right"
               size={22}
-              color="#ccc"
+              color={colors.textTertiary}
             />
           </TouchableOpacity>
         )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={() => (
+          <View
+            style={[styles.separator, { backgroundColor: colors.borderLight }]}
+          />
+        )}
       />
     </View>
   );
@@ -97,7 +110,6 @@ export default function ChampionshipScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   list: {
     paddingVertical: 8,
@@ -112,34 +124,28 @@ const styles = StyleSheet.create({
   rowText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#111',
   },
   separator: {
     height: 1,
-    backgroundColor: '#f0f0f0',
     marginHorizontal: 20,
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
   },
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#666',
   },
   errorText: {
     fontSize: 16,
-    color: '#dc2626',
     textAlign: 'center',
     marginHorizontal: 32,
   },
   retryText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#2563eb',
     fontWeight: '600',
   },
 });

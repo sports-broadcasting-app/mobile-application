@@ -1,13 +1,16 @@
 import { Stack } from 'expo-router';
+import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
 
-export default function RootLayout() {
+function RootStack() {
+  const { colors } = useTheme();
+
   return (
     <Stack
       screenOptions={{
-        headerTintColor: '#2563eb',
-        headerTitleStyle: { color: '#111', fontWeight: '700' },
+        headerTintColor: colors.primary,
+        headerTitleStyle: { color: colors.textPrimary, fontWeight: '700' },
         headerShadowVisible: false,
-        headerStyle: { backgroundColor: '#fff' },
+        headerStyle: { backgroundColor: colors.surface },
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -15,5 +18,13 @@ export default function RootLayout() {
       <Stack.Screen name="matches/[sport]" />
       <Stack.Screen name="match/[id]" />
     </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootStack />
+    </ThemeProvider>
   );
 }

@@ -16,9 +16,11 @@ import { BroadcastCard } from '../../src/components/BroadcastCard';
 import { MatchCard } from '../../src/components/MatchCard';
 import { formatMatchDateTime } from '../../src/utils/dateFormat';
 import { Sport } from '../../src/types/match';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function MatchDetailScreen() {
   const { id, sport } = useLocalSearchParams<{ id: string; sport: Sport }>();
+  const { colors } = useTheme();
   const { matches, loading, error } = useTodayMatches(sport as Sport);
 
   const match = useMemo(() => matches.find((m) => m.id === id), [matches, id]);
@@ -35,11 +37,11 @@ export default function MatchDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Stack.Screen options={{ title: 'Jogos' }} />
         <ActivityIndicator
           size="large"
-          color="#2563eb"
+          color={colors.primary}
           testID="activity-indicator"
         />
       </View>
@@ -48,9 +50,11 @@ export default function MatchDetailScreen() {
 
   if (error || !match) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Stack.Screen options={{ title: 'Jogos' }} />
-        <Text style={styles.errorText}>{error ?? 'Jogo nao encontrado'}</Text>
+        <Text style={[styles.errorText, { color: colors.error }]}>
+          {error ?? 'Jogo nao encontrado'}
+        </Text>
       </View>
     );
   }
@@ -58,7 +62,9 @@ export default function MatchDetailScreen() {
   const dateTime = formatMatchDateTime(match.date, match.hour);
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <Stack.Screen
         options={{
           title: 'Jogos',
@@ -66,14 +72,18 @@ export default function MatchDetailScreen() {
             <TouchableOpacity
               onPress={() => Alert.alert('Notificacoes', 'Em breve')}
             >
-              <Text style={styles.headerAction}>Notificar-me</Text>
+              <Text style={[styles.headerAction, { color: colors.primary }]}>
+                Notificar-me
+              </Text>
             </TouchableOpacity>
           ),
         }}
       />
 
-      <View style={styles.matchInfo}>
-        <Text style={styles.dateTime}>{dateTime}</Text>
+      <View style={[styles.matchInfo, { backgroundColor: colors.surface }]}>
+        <Text style={[styles.dateTime, { color: colors.textSecondary }]}>
+          {dateTime}
+        </Text>
 
         {match.status === 'match-live' && (
           <View style={styles.liveBadge}>
@@ -82,41 +92,59 @@ export default function MatchDetailScreen() {
         )}
       </View>
 
-      <View style={styles.teamsSection}>
+      <View style={[styles.teamsSection, { backgroundColor: colors.surface }]}>
         <View style={styles.teamColumn}>
           <TeamCircle team={match.homeTeam} size={80} />
-          <Text style={styles.teamFullName} numberOfLines={2}>
+          <Text
+            style={[styles.teamFullName, { color: colors.textPrimary }]}
+            numberOfLines={2}
+          >
             {match.homeTeam.name}
           </Text>
         </View>
 
         <View style={styles.scoreColumn}>
           {hasScore ? (
-            <Text style={styles.detailScore}>
+            <Text style={[styles.detailScore, { color: colors.textPrimary }]}>
               {match.score.type === 'football'
                 ? `${match.score.goals.home ?? '-'} x ${match.score.goals.away ?? '-'}`
                 : `${match.score.sets.home ?? '-'} x ${match.score.sets.away ?? '-'}`}
             </Text>
           ) : (
-            <Text style={styles.vsText}>x</Text>
+            <Text style={[styles.vsText, { color: colors.textTertiary }]}>
+              x
+            </Text>
           )}
         </View>
 
         <View style={styles.teamColumn}>
           <TeamCircle team={match.awayTeam} size={80} />
-          <Text style={styles.teamFullName} numberOfLines={2}>
+          <Text
+            style={[styles.teamFullName, { color: colors.textPrimary }]}
+            numberOfLines={2}
+          >
             {match.awayTeam.name}
           </Text>
         </View>
       </View>
 
       {match.stadium !== '' && (
-        <Text style={styles.stadium}>
+        <Text
+          style={[
+            styles.stadium,
+            {
+              color: colors.textSecondary,
+              backgroundColor: colors.surface,
+            },
+          ]}
+        >
           {match.stadium} - {match.location.city}
         </Text>
       )}
 
-      <Text style={styles.sectionTitle}>Onde Assistir</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        Onde Assistir
+      </Text>
 
       {match.broadcast.length > 0 ? (
         <FlatList
@@ -129,12 +157,16 @@ export default function MatchDetailScreen() {
           scrollEnabled={false}
         />
       ) : (
-        <Text style={styles.noBroadcast}>Transmissao nao definida</Text>
+        <Text style={[styles.noBroadcast, { color: colors.textTertiary }]}>
+          Transmissao nao definida
+        </Text>
       )}
 
       {relatedMatches.length > 0 && (
         <>
-          <Text style={styles.sectionTitle}>Proximos Jogos</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Proximos Jogos
+          </Text>
           {relatedMatches.map((m) => (
             <MatchCard key={m.id} match={m} />
           ))}
@@ -149,34 +181,28 @@ export default function MatchDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f5f5f5',
   },
   errorText: {
     fontSize: 16,
-    color: '#dc2626',
     textAlign: 'center',
     marginHorizontal: 32,
   },
   headerAction: {
     fontSize: 14,
-    color: '#2563eb',
     fontWeight: '600',
   },
   matchInfo: {
     alignItems: 'center',
     paddingTop: 20,
     paddingBottom: 8,
-    backgroundColor: '#fff',
   },
   dateTime: {
     fontSize: 15,
-    color: '#666',
     fontWeight: '500',
   },
   liveBadge: {
@@ -197,7 +223,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 24,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
   },
   teamColumn: {
     flex: 1,
@@ -206,7 +231,6 @@ const styles = StyleSheet.create({
   teamFullName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111',
     textAlign: 'center',
     marginTop: 10,
   },
@@ -216,24 +240,19 @@ const styles = StyleSheet.create({
   detailScore: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#111',
   },
   vsText: {
     fontSize: 22,
-    color: '#999',
     fontWeight: '600',
   },
   stadium: {
     fontSize: 13,
-    color: '#666',
     textAlign: 'center',
     paddingBottom: 16,
-    backgroundColor: '#fff',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111',
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 12,
@@ -244,7 +263,6 @@ const styles = StyleSheet.create({
   },
   noBroadcast: {
     fontSize: 14,
-    color: '#aaa',
     fontStyle: 'italic',
     paddingHorizontal: 20,
   },

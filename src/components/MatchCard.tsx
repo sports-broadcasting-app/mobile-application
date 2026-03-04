@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Match, VolleyballScore } from '../types/match';
 import { formatHour } from '../utils/dateFormat';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface MatchCardProps {
   match: Match;
@@ -9,19 +10,25 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match, onPress }: MatchCardProps) {
+  const { colors } = useTheme();
   const hasScore = match.status !== 'match-not-started';
   const isLive = match.status === 'match-live';
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, shadowColor: colors.shadow },
+      ]}
       activeOpacity={0.7}
       onPress={onPress}
       disabled={!onPress}
       testID={`match-card-${match.id}`}
     >
       <View style={styles.topRow}>
-        <Text style={styles.time}>{formatHour(match.hour)}</Text>
+        <Text style={[styles.time, { color: colors.textPrimary }]}>
+          {formatHour(match.hour)}
+        </Text>
         {isLive && (
           <View style={styles.liveBadge}>
             <Text style={styles.liveText}>AO VIVO</Text>
@@ -30,23 +37,35 @@ export function MatchCard({ match, onPress }: MatchCardProps) {
       </View>
 
       <View style={styles.teamsRow}>
-        <Text style={styles.teamName} numberOfLines={1}>
+        <Text
+          style={[styles.teamName, { color: colors.textPrimary }]}
+          numberOfLines={1}
+        >
           {match.homeTeam.name}
         </Text>
-        {hasScore ? renderScore(match.score) : <Text style={styles.vs}>x</Text>}
-        <Text style={styles.teamName} numberOfLines={1}>
+        {hasScore ? (
+          renderScore(match.score, colors.textPrimary)
+        ) : (
+          <Text style={[styles.vs, { color: colors.textTertiary }]}>x</Text>
+        )}
+        <Text
+          style={[styles.teamName, { color: colors.textPrimary }]}
+          numberOfLines={1}
+        >
           {match.awayTeam.name}
         </Text>
       </View>
 
       {hasScore && match.score.type === 'volleyball' && (
-        <Text style={styles.setDetail}>{renderSetScores(match.score)}</Text>
+        <Text style={[styles.setDetail, { color: colors.textSecondary }]}>
+          {renderSetScores(match.score)}
+        </Text>
       )}
 
       {hasScore &&
         match.score.type === 'football' &&
         match.score.penalties.home !== null && (
-          <Text style={styles.setDetail}>
+          <Text style={[styles.setDetail, { color: colors.textSecondary }]}>
             Penaltis: {match.score.penalties.home} x{' '}
             {match.score.penalties.away}
           </Text>
@@ -56,29 +75,39 @@ export function MatchCard({ match, onPress }: MatchCardProps) {
         {match.broadcast.length > 0 ? (
           <View style={styles.broadcastRow}>
             {match.broadcast.map((b) => (
-              <View key={b.name} style={styles.broadcastBadge}>
-                <Text style={styles.broadcastText}>{b.name}</Text>
+              <View
+                key={b.name}
+                style={[
+                  styles.broadcastBadge,
+                  { backgroundColor: colors.broadcastBadgeBg },
+                ]}
+              >
+                <Text style={[styles.broadcastText, { color: colors.primary }]}>
+                  {b.name}
+                </Text>
               </View>
             ))}
           </View>
         ) : (
-          <Text style={styles.noBroadcast}>Transmissao nao definida</Text>
+          <Text style={[styles.noBroadcast, { color: colors.textTertiary }]}>
+            Transmissao nao definida
+          </Text>
         )}
       </View>
     </TouchableOpacity>
   );
 }
 
-function renderScore(score: Match['score']): React.ReactNode {
+function renderScore(score: Match['score'], color: string): React.ReactNode {
   if (score.type === 'football') {
     return (
-      <Text style={styles.score}>
+      <Text style={[styles.score, { color }]}>
         {score.goals.home ?? '-'} x {score.goals.away ?? '-'}
       </Text>
     );
   }
   return (
-    <Text style={styles.score}>
+    <Text style={[styles.score, { color }]}>
       {score.sets.home ?? '-'} x {score.sets.away ?? '-'}
     </Text>
   );
@@ -90,12 +119,10 @@ function renderSetScores(score: VolleyballScore): string {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginHorizontal: 16,
     marginVertical: 6,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
@@ -110,7 +137,6 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#333',
   },
   liveBadge: {
     backgroundColor: '#dc2626',
@@ -132,23 +158,19 @@ const styles = StyleSheet.create({
   teamName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111',
     flex: 1,
   },
   vs: {
     fontSize: 14,
-    color: '#999',
   },
   score: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#111',
     minWidth: 50,
     textAlign: 'center',
   },
   setDetail: {
     fontSize: 12,
-    color: '#666',
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -162,7 +184,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   broadcastBadge: {
-    backgroundColor: '#f0f4ff',
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -170,11 +191,9 @@ const styles = StyleSheet.create({
   broadcastText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#2563eb',
   },
   noBroadcast: {
     fontSize: 12,
-    color: '#aaa',
     fontStyle: 'italic',
   },
 });

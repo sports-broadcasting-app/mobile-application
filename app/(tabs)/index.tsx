@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -16,6 +15,7 @@ import { useTodayMatches } from '../../src/hooks/useTodayMatches';
 import { getChampionshipLabel } from '../../src/utils/championshipLabel';
 import { MatchCard } from '../../src/components/MatchCard';
 import { SearchBar } from '../../src/components/SearchBar';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 const SPORTS: {
   sport: Sport;
@@ -28,6 +28,7 @@ const SPORTS: {
 
 export default function HomeTabScreen() {
   const router = useRouter();
+  const { colors, toggleTheme } = useTheme();
   const { highlightedMatches, loading, error, refetch } = useTodayMatches();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -51,24 +52,37 @@ export default function HomeTabScreen() {
 
   const renderHeader = () => (
     <View>
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface }]}>
         <View>
-          <Text style={styles.title}>Onde Assistir</Text>
-          <Text style={styles.date}>{formattedDate}</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            Onde Assistir
+          </Text>
+          <Text style={[styles.date, { color: colors.textSecondary }]}>
+            {formattedDate}
+          </Text>
         </View>
-        <TouchableOpacity
-          onPress={() => Alert.alert('Configuracoes', 'Em breve')}
-          testID="settings-button"
-        >
-          <MaterialCommunityIcons name="cog" size={28} color="#2563eb" />
+        <TouchableOpacity onPress={toggleTheme} testID="settings-button">
+          <MaterialCommunityIcons
+            name="theme-light-dark"
+            size={28}
+            color={colors.primary}
+          />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.chipsContainer}>
+      <View
+        style={[styles.chipsContainer, { backgroundColor: colors.surface }]}
+      >
         {SPORTS.map(({ sport, label, icon }) => (
           <TouchableOpacity
             key={sport}
-            style={styles.chip}
+            style={[
+              styles.chip,
+              {
+                backgroundColor: colors.surfaceAlt,
+                borderColor: colors.chipBorder,
+              },
+            ]}
             activeOpacity={0.7}
             onPress={() =>
               router.push({
@@ -78,13 +92,21 @@ export default function HomeTabScreen() {
             }
             testID={`sport-card-${sport}`}
           >
-            <MaterialCommunityIcons name={icon} size={40} color="#2563eb" />
-            <Text style={styles.chipLabel}>{label}</Text>
+            <MaterialCommunityIcons
+              name={icon}
+              size={40}
+              color={colors.primary}
+            />
+            <Text style={[styles.chipLabel, { color: colors.textPrimary }]}>
+              {label}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>Em Destaque Hoje</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        Em Destaque Hoje
+      </Text>
 
       <View style={styles.searchContainer}>
         <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
@@ -94,12 +116,14 @@ export default function HomeTabScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <StatusBar style="dark" />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <StatusBar style={colors.statusBar} />
         {renderHeader()}
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#2563eb" />
-          <Text style={styles.loadingText}>Carregando jogos...</Text>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+            Carregando jogos...
+          </Text>
         </View>
       </View>
     );
@@ -107,12 +131,17 @@ export default function HomeTabScreen() {
 
   if (error) {
     return (
-      <View style={styles.container}>
-        <StatusBar style="dark" />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <StatusBar style={colors.statusBar} />
         {renderHeader()}
         <View style={styles.centered}>
-          <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.retryText} onPress={refetch}>
+          <Text style={[styles.errorText, { color: colors.error }]}>
+            {error}
+          </Text>
+          <Text
+            style={[styles.retryText, { color: colors.primary }]}
+            onPress={refetch}
+          >
             Tentar novamente
           </Text>
         </View>
@@ -121,8 +150,8 @@ export default function HomeTabScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={colors.statusBar} />
       <FlatList
         data={filteredMatches}
         keyExtractor={(item: Match) => item.id}
@@ -143,7 +172,9 @@ export default function HomeTabScreen() {
         refreshing={loading}
         ListEmptyComponent={
           <View style={styles.centered}>
-            <Text style={styles.emptyText}>Nenhum jogo encontrado</Text>
+            <Text style={[styles.emptyText, { color: colors.textTertiary }]}>
+              Nenhum jogo encontrado
+            </Text>
           </View>
         }
       />
@@ -154,7 +185,6 @@ export default function HomeTabScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   header: {
     flexDirection: 'row',
@@ -163,16 +193,13 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#111',
   },
   date: {
     fontSize: 14,
-    color: '#666',
     marginTop: 4,
   },
   chipsContainer: {
@@ -180,28 +207,23 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#fff',
   },
   chip: {
     flex: 1,
-    backgroundColor: '#f8fafc',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   chipLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111',
     marginTop: 6,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111',
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 8,
@@ -222,22 +244,18 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#666',
   },
   errorText: {
     fontSize: 16,
-    color: '#dc2626',
     textAlign: 'center',
     marginHorizontal: 32,
   },
   retryText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#2563eb',
     fontWeight: '600',
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
   },
 });

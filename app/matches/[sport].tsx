@@ -14,6 +14,7 @@ import { MatchCard } from '../../src/components/MatchCard';
 import { getChampionshipLabel } from '../../src/utils/championshipLabel';
 import { formatShortDate } from '../../src/utils/dateFormat';
 import { Match, Sport } from '../../src/types/match';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function MatchesScreen() {
   const { sport, championship } = useLocalSearchParams<{
@@ -21,6 +22,7 @@ export default function MatchesScreen() {
     championship?: string;
   }>();
   const router = useRouter();
+  const { colors } = useTheme();
   const { matches, date, loading, error, refetch } = useTodayMatches(
     sport as Sport,
   );
@@ -37,26 +39,33 @@ export default function MatchesScreen() {
       onPress={() => Alert.alert('Tabela', 'Em breve')}
       testID="tabela-button"
     >
-      <Text style={styles.headerAction}>Tabela</Text>
+      <Text style={[styles.headerAction, { color: colors.primary }]}>
+        Tabela
+      </Text>
     </TouchableOpacity>
   );
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Stack.Screen options={{ title, headerRight }} />
-        <ActivityIndicator size="large" color="#2563eb" />
-        <Text style={styles.loadingText}>Carregando jogos...</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          Carregando jogos...
+        </Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Stack.Screen options={{ title, headerRight }} />
-        <Text style={styles.errorText}>{error}</Text>
-        <Text style={styles.retryText} onPress={refetch}>
+        <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
+        <Text
+          style={[styles.retryText, { color: colors.primary }]}
+          onPress={refetch}
+        >
           Tentar novamente
         </Text>
       </View>
@@ -65,9 +74,11 @@ export default function MatchesScreen() {
 
   if (filteredMatches.length === 0) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Stack.Screen options={{ title, headerRight }} />
-        <Text style={styles.emptyText}>Nenhum jogo encontrado</Text>
+        <Text style={[styles.emptyText, { color: colors.textTertiary }]}>
+          Nenhum jogo encontrado
+        </Text>
       </View>
     );
   }
@@ -75,7 +86,7 @@ export default function MatchesScreen() {
   const shortDate = date ? formatShortDate(date) : '';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Stack.Screen options={{ title, headerRight }} />
       <FlatList
         data={filteredMatches}
@@ -92,7 +103,11 @@ export default function MatchesScreen() {
           />
         )}
         ListHeaderComponent={
-          shortDate ? <Text style={styles.dateLabel}>{shortDate}</Text> : null
+          shortDate ? (
+            <Text style={[styles.dateLabel, { color: colors.textSecondary }]}>
+              {shortDate}
+            </Text>
+          ) : null
         }
         contentContainerStyle={styles.list}
         onRefresh={refetch}
@@ -105,14 +120,12 @@ export default function MatchesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   list: {
     paddingBottom: 16,
   },
   dateLabel: {
     fontSize: 13,
-    color: '#666',
     fontWeight: '600',
     paddingHorizontal: 20,
     paddingTop: 12,
@@ -120,34 +133,28 @@ const styles = StyleSheet.create({
   },
   headerAction: {
     fontSize: 14,
-    color: '#2563eb',
     fontWeight: '600',
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f5f5f5',
   },
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#666',
   },
   errorText: {
     fontSize: 16,
-    color: '#dc2626',
     textAlign: 'center',
     marginHorizontal: 32,
   },
   retryText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#2563eb',
     fontWeight: '600',
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
   },
 });
