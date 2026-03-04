@@ -10,9 +10,10 @@ export default function RootLayout() {
         headerStyle: { backgroundColor: '#fff' },
       }}
     >
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="championship/[sport]" />
       <Stack.Screen name="matches/[sport]" />
+      <Stack.Screen name="match/[id]" />
     </Stack>
   );
 }

@@ -8,7 +8,7 @@ A React Native (Expo) mobile application that helps users find which TV channels
 
 - **Framework**: React Native with Expo SDK 55
 - **Language**: TypeScript (strict mode enabled)
-- **Navigation**: Expo Router (file-based routing in `app/` directory)
+- **Navigation**: Expo Router (file-based routing with tabs + stack-over-tabs)
 - **Package Manager**: Yarn (do NOT use npm)
 - **Testing**: Jest + React Native Testing Library
 - **Linting**: ESLint 9 (flat config) with TypeScript, React, React Native, and Prettier plugins
@@ -20,41 +20,60 @@ A React Native (Expo) mobile application that helps users find which TV channels
 
 ```
 .
-├── app/                   # Expo Router file-based routes
-│   ├── _layout.tsx        # Root Stack navigator
-│   ├── index.tsx          # HomeScreen (sport selection with icons)
+├── app/                        # Expo Router file-based routes
+│   ├── _layout.tsx             # Root Stack (wraps tabs + stack screens)
+│   ├── (tabs)/                 # Bottom Tab Navigator group
+│   │   ├── _layout.tsx         # Tab layout (Home + Campeonatos)
+│   │   ├── index.tsx           # Home tab (highlights, search, sport chips)
+│   │   └── campeonatos.tsx     # Campeonatos tab (sport picker)
 │   ├── championship/
-│   │   └── [sport].tsx    # ChampionshipScreen (list of championships)
-│   └── matches/
-│       └── [sport].tsx    # MatchesScreen (match list with scores)
+│   │   └── [sport].tsx         # Championship list (stack over tabs)
+│   ├── matches/
+│   │   └── [sport].tsx         # Match list (stack over tabs)
+│   └── match/
+│       └── [id].tsx            # Match detail (stack over tabs)
 ├── src/
-│   ├── components/        # Reusable UI components (MatchCard)
-│   ├── services/          # API calls (matchService)
-│   ├── hooks/             # Custom React hooks (useTodayMatches)
-│   ├── types/             # TypeScript type definitions (match.ts)
-│   ├── constants/         # App-wide constants (api.ts)
-│   ├── utils/             # Pure utility functions (championshipLabel)
-│   └── __tests__/         # Test files
-├── assets/                # Images, fonts, static files
-├── app.json               # Expo configuration (scheme: where-to-watch)
-├── tsconfig.json           # TypeScript config (strict: true)
-├── jest.config.js          # Jest configuration
-├── eslint.config.mjs       # ESLint flat config
-├── .prettierrc             # Prettier config
-└── .husky/                 # Git hooks (pre-commit: lint-staged)
+│   ├── components/             # Reusable UI components
+│   │   ├── MatchCard.tsx       # Match card (time, teams, live badge, broadcast badges)
+│   │   ├── SearchBar.tsx       # Search input with magnify icon
+│   │   ├── TeamCircle.tsx      # Colored circle with team acronym
+│   │   └── BroadcastCard.tsx   # Broadcast card ("Abrir no App" / "Assistir na TV")
+│   ├── services/               # API calls (matchService)
+│   ├── hooks/                  # Custom React hooks (useTodayMatches)
+│   ├── types/                  # TypeScript type definitions (match.ts)
+│   ├── constants/              # App-wide constants (api.ts)
+│   ├── utils/                  # Pure utility functions
+│   │   ├── championshipLabel.ts # Slug to display label mapping
+│   │   ├── teamColor.ts       # Deterministic color from team slug
+│   │   └── dateFormat.ts      # Date/time formatting helpers
+│   └── __tests__/              # Test files (6 suites, 43 tests)
+├── assets/                     # Images, fonts, static files
+├── app.json                    # Expo config (scheme: where-to-watch)
+├── tsconfig.json               # TypeScript config (strict: true)
+├── jest.config.js              # Jest configuration
+├── eslint.config.mjs           # ESLint flat config
+├── .prettierrc                 # Prettier config
+└── .husky/                     # Git hooks (pre-commit: lint-staged)
 ```
 
 ## Navigation Flow
 
 ```
-HomeScreen (/)
-  → ChampionshipScreen (/championship/[sport])
+Bottom Tabs:
+  Home tab (/) → highlights, search, sport chips
+  Campeonatos tab (/campeonatos) → sport picker
+
+Stack over tabs:
+  ChampionshipScreen (/championship/[sport])
     → MatchesScreen (/matches/[sport]?championship=slug)
+      → MatchDetailScreen (/match/[id]?sport=...)
 ```
 
-- **HomeScreen**: Two large cards with sport icons (soccer/volleyball)
-- **ChampionshipScreen**: Fetches matches for sport, derives championship list, includes "Todos os campeonatos"
-- **MatchesScreen**: FlatList of MatchCard with pull-to-refresh, optional client-side championship filter
+- **Home tab**: Sport chips (Futebol/Volei), "Em Destaque Hoje" with search bar, highlighted matches (live first)
+- **Campeonatos tab**: Sport picker cards, navigates to championship list
+- **ChampionshipScreen**: Text list of championships for selected sport
+- **MatchesScreen**: FlatList of MatchCard with pull-to-refresh, date label, "Tabela" header button
+- **MatchDetailScreen**: Team circles with acronyms, match info, broadcast cards with "Abrir no App"/"Assistir na TV", related matches
 
 ## API Integration
 
@@ -93,8 +112,7 @@ yarn type-check       # Run TypeScript type checking
 ## Code Conventions
 
 - **Always use TypeScript strict mode** — no `any` types unless absolutely necessary
-- **Path aliases**: Use `@/` to import from `src/` (e.g., `import { MatchCard } from '@/components/MatchCard'`)
-- **Route files** in `app/` import from `../../src/` (relative paths, not aliases)
+- **Route files** in `app/` import from `../../src/` (relative paths)
 - **Component files**: PascalCase (e.g., `MatchCard.tsx`)
 - **Hook files**: camelCase with `use` prefix (e.g., `useTodayMatches.ts`)
 - **Utility files**: camelCase (e.g., `championshipLabel.ts`)
@@ -110,8 +128,21 @@ yarn type-check       # Run TypeScript type checking
 - Use `@testing-library/react-native` for component tests
 - Mock `expo-router` in tests: `jest.mock('expo-router', () => ({ useRouter, useLocalSearchParams, Stack: { Screen: () => null } }))`
 - Mock `matchService` for screen tests: `jest.mock('../services/matchService')`
+- Mock `expo-linking` in tests that use Linking: `jest.mock('expo-linking', () => ({ openURL: jest.fn() }))`
 - Test behavior, not implementation details
 - Run `yarn test` before committing (husky pre-commit runs lint-staged)
+
+## Design Tokens
+
+| Token           | Value                             | Usage                                 |
+| --------------- | --------------------------------- | ------------------------------------- |
+| Primary blue    | `#2563eb`                         | Active tab, links, icons, header tint |
+| Text primary    | `#111`                            | Titles, team names                    |
+| Text secondary  | `#666`                            | Dates, labels                         |
+| Background      | `#f5f5f5`                         | Screen backgrounds                    |
+| Card background | `#fff`                            | All cards                             |
+| Live red        | `#dc2626`                         | "AO VIVO" badge, error text           |
+| Border radius   | `12` (cards), `20` (badges/pills) |                                       |
 
 ## Git Workflow
 

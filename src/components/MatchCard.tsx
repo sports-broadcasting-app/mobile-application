@@ -1,26 +1,42 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Match, VolleyballScore } from '../types/match';
+import { formatHour } from '../utils/dateFormat';
 
 interface MatchCardProps {
   match: Match;
+  onPress?: () => void;
 }
 
-export function MatchCard({ match }: MatchCardProps) {
-  const channels = match.broadcast.map((b) => b.name).join(', ');
+export function MatchCard({ match, onPress }: MatchCardProps) {
   const hasScore = match.status !== 'match-not-started';
+  const isLive = match.status === 'match-live';
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Text style={styles.time}>{match.hour}</Text>
-        <Text style={styles.championship}>{match.championship.slug}</Text>
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.7}
+      onPress={onPress}
+      disabled={!onPress}
+      testID={`match-card-${match.id}`}
+    >
+      <View style={styles.topRow}>
+        <Text style={styles.time}>{formatHour(match.hour)}</Text>
+        {isLive && (
+          <View style={styles.liveBadge}>
+            <Text style={styles.liveText}>AO VIVO</Text>
+          </View>
+        )}
       </View>
 
-      <View style={styles.teams}>
-        <Text style={styles.teamName}>{match.homeTeam.name}</Text>
+      <View style={styles.teamsRow}>
+        <Text style={styles.teamName} numberOfLines={1}>
+          {match.homeTeam.name}
+        </Text>
         {hasScore ? renderScore(match.score) : <Text style={styles.vs}>x</Text>}
-        <Text style={styles.teamName}>{match.awayTeam.name}</Text>
+        <Text style={styles.teamName} numberOfLines={1}>
+          {match.awayTeam.name}
+        </Text>
       </View>
 
       {hasScore && match.score.type === 'volleyball' && (
@@ -36,15 +52,20 @@ export function MatchCard({ match }: MatchCardProps) {
           </Text>
         )}
 
-      {channels ? (
-        <View style={styles.broadcastRow}>
-          <Text style={styles.broadcastLabel}>Onde assistir:</Text>
-          <Text style={styles.broadcastChannels}>{channels}</Text>
-        </View>
-      ) : (
-        <Text style={styles.noBroadcast}>Transmissao nao definida</Text>
-      )}
-    </View>
+      <View style={styles.bottomRow}>
+        {match.broadcast.length > 0 ? (
+          <View style={styles.broadcastRow}>
+            {match.broadcast.map((b) => (
+              <View key={b.name} style={styles.broadcastBadge}>
+                <Text style={styles.broadcastText}>{b.name}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.noBroadcast}>Transmissao nao definida</Text>
+        )}
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -76,48 +97,53 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
     elevation: 2,
   },
-  header: {
+  topRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 8,
   },
   time: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#333',
   },
-  championship: {
-    fontSize: 12,
-    color: '#888',
-    textTransform: 'capitalize',
+  liveBadge: {
+    backgroundColor: '#dc2626',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
-  teams: {
+  liveText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  teamsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: 8,
   },
   teamName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#111',
     flex: 1,
-    textAlign: 'center',
   },
   vs: {
     fontSize: 14,
     color: '#999',
   },
   score: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
     color: '#111',
-    minWidth: 60,
+    minWidth: 50,
     textAlign: 'center',
   },
   setDetail: {
@@ -126,17 +152,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
   },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
   broadcastRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 6,
   },
-  broadcastLabel: {
-    fontSize: 12,
-    color: '#666',
+  broadcastBadge: {
+    backgroundColor: '#f0f4ff',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
-  broadcastChannels: {
-    fontSize: 13,
+  broadcastText: {
+    fontSize: 12,
     fontWeight: '600',
     color: '#2563eb',
   },

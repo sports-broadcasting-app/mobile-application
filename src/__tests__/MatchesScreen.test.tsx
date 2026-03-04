@@ -1,13 +1,19 @@
-import { render, screen, waitFor } from '@testing-library/react-native';
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+} from '@testing-library/react-native';
 import MatchesScreen from '../../app/matches/[sport]';
 import * as matchService from '../services/matchService';
 import { DailySchedule } from '../types/match';
 
+const mockPush = jest.fn();
 let mockParams: Record<string, string | undefined> = {};
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockParams,
-  useRouter: () => ({ push: jest.fn() }),
+  useRouter: () => ({ push: mockPush }),
   Stack: { Screen: () => null },
 }));
 
@@ -91,7 +97,7 @@ const mockSchedule: DailySchedule = {
 describe('MatchesScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockParams = { sport: 'football' };
+    mockParams = { sport: 'football', championship: 'ingles' };
   });
 
   it('shows loading indicator initially', () => {
@@ -101,26 +107,40 @@ describe('MatchesScreen', () => {
     expect(screen.getByText('Carregando jogos...')).toBeTruthy();
   });
 
-  it('renders all matches when no championship filter', async () => {
+  it('renders filtered matches by championship', async () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<MatchesScreen />);
 
     await waitFor(() => {
       expect(screen.getByText('Liverpool')).toBeTruthy();
-      expect(screen.getByText('Flamengo')).toBeTruthy();
     });
+
+    expect(screen.queryByText('Flamengo')).toBeNull();
   });
 
-  it('filters matches by championship', async () => {
-    mockParams = { sport: 'football', championship: 'brasileiro' };
+  it('renders date label', async () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<MatchesScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText('Flamengo')).toBeTruthy();
+      expect(screen.getByText('04/03')).toBeTruthy();
+    });
+  });
+
+  it('navigates to match detail when match card is pressed', async () => {
+    mockFetch.mockResolvedValue(mockSchedule);
+    render(<MatchesScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('match-card-100')).toBeTruthy();
     });
 
-    expect(screen.queryByText('Liverpool')).toBeNull();
+    fireEvent.press(screen.getByTestId('match-card-100'));
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/match/[id]',
+      params: { id: '100', sport: 'football' },
+    });
   });
 
   it('shows empty state when no matches', async () => {

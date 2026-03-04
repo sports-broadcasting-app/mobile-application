@@ -114,26 +114,20 @@ describe('ChampionshipScreen', () => {
     render(<ChampionshipScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText('Todos os campeonatos')).toBeTruthy();
       expect(screen.getByText('Brasileiro')).toBeTruthy();
       expect(screen.getByText('Ingles')).toBeTruthy();
     });
   });
 
-  it('navigates to matches with sport when "Todos" is pressed', async () => {
+  it('does not render "Todos os campeonatos"', async () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<ChampionshipScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText('Todos os campeonatos')).toBeTruthy();
+      expect(screen.getByText('Brasileiro')).toBeTruthy();
     });
 
-    fireEvent.press(screen.getByTestId('championship-card-all'));
-
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/matches/[sport]',
-      params: { sport: 'football' },
-    });
+    expect(screen.queryByText('Todos os campeonatos')).toBeNull();
   });
 
   it('navigates to matches with championship when selected', async () => {

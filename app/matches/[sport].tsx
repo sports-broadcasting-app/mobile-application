@@ -1,15 +1,18 @@
 import { useMemo } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useTodayMatches } from '../../src/hooks/useTodayMatches';
 import { MatchCard } from '../../src/components/MatchCard';
 import { getChampionshipLabel } from '../../src/utils/championshipLabel';
+import { formatShortDate } from '../../src/utils/dateFormat';
 import { Match, Sport } from '../../src/types/match';
 
 export default function MatchesScreen() {
@@ -17,7 +20,10 @@ export default function MatchesScreen() {
     sport: Sport;
     championship?: string;
   }>();
-  const { matches, loading, error, refetch } = useTodayMatches(sport as Sport);
+  const router = useRouter();
+  const { matches, date, loading, error, refetch } = useTodayMatches(
+    sport as Sport,
+  );
 
   const title = championship ? getChampionshipLabel(championship) : 'Todos';
 
@@ -26,10 +32,19 @@ export default function MatchesScreen() {
     return matches.filter((m) => m.championship.slug === championship);
   }, [matches, championship]);
 
+  const headerRight = () => (
+    <TouchableOpacity
+      onPress={() => Alert.alert('Tabela', 'Em breve')}
+      testID="tabela-button"
+    >
+      <Text style={styles.headerAction}>Tabela</Text>
+    </TouchableOpacity>
+  );
+
   if (loading) {
     return (
       <View style={styles.centered}>
-        <Stack.Screen options={{ title }} />
+        <Stack.Screen options={{ title, headerRight }} />
         <ActivityIndicator size="large" color="#2563eb" />
         <Text style={styles.loadingText}>Carregando jogos...</Text>
       </View>
@@ -39,7 +54,7 @@ export default function MatchesScreen() {
   if (error) {
     return (
       <View style={styles.centered}>
-        <Stack.Screen options={{ title }} />
+        <Stack.Screen options={{ title, headerRight }} />
         <Text style={styles.errorText}>{error}</Text>
         <Text style={styles.retryText} onPress={refetch}>
           Tentar novamente
@@ -51,19 +66,34 @@ export default function MatchesScreen() {
   if (filteredMatches.length === 0) {
     return (
       <View style={styles.centered}>
-        <Stack.Screen options={{ title }} />
+        <Stack.Screen options={{ title, headerRight }} />
         <Text style={styles.emptyText}>Nenhum jogo encontrado</Text>
       </View>
     );
   }
 
+  const shortDate = date ? formatShortDate(date) : '';
+
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title }} />
+      <Stack.Screen options={{ title, headerRight }} />
       <FlatList
         data={filteredMatches}
         keyExtractor={(item: Match) => item.id}
-        renderItem={({ item }) => <MatchCard match={item} />}
+        renderItem={({ item }) => (
+          <MatchCard
+            match={item}
+            onPress={() =>
+              router.push({
+                pathname: '/match/[id]',
+                params: { id: item.id, sport: item.sport },
+              })
+            }
+          />
+        )}
+        ListHeaderComponent={
+          shortDate ? <Text style={styles.dateLabel}>{shortDate}</Text> : null
+        }
         contentContainerStyle={styles.list}
         onRefresh={refetch}
         refreshing={loading}
@@ -78,7 +108,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   list: {
-    paddingVertical: 8,
+    paddingBottom: 16,
+  },
+  dateLabel: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '600',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  headerAction: {
+    fontSize: 14,
+    color: '#2563eb',
+    fontWeight: '600',
   },
   centered: {
     flex: 1,

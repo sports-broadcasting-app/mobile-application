@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, fireEvent } from '@testing-library/react-native';
 import { MatchCard } from '../components/MatchCard';
 import { Match } from '../types/match';
 
@@ -43,22 +43,17 @@ describe('MatchCard', () => {
     expect(screen.getByText('Wolverhampton')).toBeTruthy();
   });
 
-  it('renders match time', () => {
+  it('renders formatted match time', () => {
     render(<MatchCard match={makeMatch()} />);
 
-    expect(screen.getByText('17h15')).toBeTruthy();
+    expect(screen.getByText('17:15')).toBeTruthy();
   });
 
-  it('renders championship slug', () => {
+  it('renders broadcast badges', () => {
     render(<MatchCard match={makeMatch()} />);
 
-    expect(screen.getByText('ingles')).toBeTruthy();
-  });
-
-  it('renders broadcast channels', () => {
-    render(<MatchCard match={makeMatch()} />);
-
-    expect(screen.getByText('ESPN, Disney+')).toBeTruthy();
+    expect(screen.getByText('ESPN')).toBeTruthy();
+    expect(screen.getByText('Disney+')).toBeTruthy();
   });
 
   it('renders fallback when no broadcast', () => {
@@ -73,7 +68,7 @@ describe('MatchCard', () => {
     expect(screen.getByText('x')).toBeTruthy();
   });
 
-  it('renders football score when match has started', () => {
+  it('shows AO VIVO badge for live matches', () => {
     render(
       <MatchCard
         match={makeMatch({
@@ -87,7 +82,14 @@ describe('MatchCard', () => {
       />,
     );
 
+    expect(screen.getByText('AO VIVO')).toBeTruthy();
     expect(screen.getByText('2 x 1')).toBeTruthy();
+  });
+
+  it('does not show AO VIVO badge when match not started', () => {
+    render(<MatchCard match={makeMatch()} />);
+
+    expect(screen.queryByText('AO VIVO')).toBeNull();
   });
 
   it('renders football penalties when present', () => {
@@ -129,5 +131,14 @@ describe('MatchCard', () => {
 
     expect(screen.getByText('3 x 1')).toBeTruthy();
     expect(screen.getByText('25-20 / 22-25 / 25-18 / 25-21')).toBeTruthy();
+  });
+
+  it('calls onPress when pressed', () => {
+    const onPress = jest.fn();
+    render(<MatchCard match={makeMatch()} onPress={onPress} />);
+
+    fireEvent.press(screen.getByTestId('match-card-1'));
+
+    expect(onPress).toHaveBeenCalledTimes(1);
   });
 });

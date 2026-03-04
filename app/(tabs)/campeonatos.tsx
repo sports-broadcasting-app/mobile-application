@@ -1,8 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Sport } from '../src/types/match';
+import { Sport } from '../../src/types/match';
 
 const SPORTS: {
   sport: Sport;
@@ -13,39 +12,32 @@ const SPORTS: {
   { sport: 'volleyball', label: 'Volei', icon: 'volleyball' },
 ];
 
-export default function HomeScreen() {
+export default function CampeonatosTabScreen() {
   const router = useRouter();
-  const today = new Date();
-  const formattedDate = today.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
 
   return (
     <View style={styles.container}>
-      <StatusBar style="dark" />
-
       <View style={styles.header}>
-        <Text style={styles.title}>Onde Assistir</Text>
-        <Text style={styles.date}>{formattedDate}</Text>
+        <Text style={styles.title}>Campeonatos</Text>
       </View>
+
+      <Text style={styles.subtitle}>Escolha o esporte</Text>
 
       <View style={styles.cardsContainer}>
         {SPORTS.map(({ sport, label, icon }) => (
           <TouchableOpacity
             key={sport}
             style={styles.card}
+            activeOpacity={0.7}
             onPress={() =>
               router.push({
                 pathname: '/championship/[sport]',
                 params: { sport },
               })
             }
-            activeOpacity={0.7}
-            testID={`sport-card-${sport}`}
+            testID={`campeonatos-sport-${sport}`}
           >
-            <MaterialCommunityIcons name={icon} size={64} color="#2563eb" />
+            <MaterialCommunityIcons name={icon} size={48} color="#2563eb" />
             <Text style={styles.cardLabel}>{label}</Text>
           </TouchableOpacity>
         ))}
@@ -60,9 +52,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
-    paddingTop: 72,
-    paddingBottom: 24,
-    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e5e5',
@@ -72,27 +64,25 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#111',
   },
-  date: {
-    fontSize: 14,
+  subtitle: {
+    fontSize: 16,
     color: '#666',
-    marginTop: 4,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 16,
   },
   cardsContainer: {
-    flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 24,
-    paddingHorizontal: 24,
+    gap: 16,
+    paddingHorizontal: 20,
   },
   card: {
+    flex: 1,
     backgroundColor: '#fff',
     borderRadius: 16,
     paddingVertical: 32,
-    paddingHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -100,7 +90,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cardLabel: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: '#111',
     marginTop: 12,

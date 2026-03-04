@@ -9,6 +9,7 @@ interface UseTodayMatchesResult {
   error: string | null;
   refetch: () => void;
   championships: string[];
+  highlightedMatches: Match[];
 }
 
 export function useTodayMatches(sport?: Sport): UseTodayMatchesResult {
@@ -40,6 +41,15 @@ export function useTodayMatches(sport?: Sport): UseTodayMatchesResult {
     return Array.from(slugs).sort();
   }, [schedule?.matches]);
 
+  const highlightedMatches = useMemo(() => {
+    if (!schedule?.matches) return [];
+    return [...schedule.matches].sort((a, b) => {
+      if (a.status === 'match-live' && b.status !== 'match-live') return -1;
+      if (a.status !== 'match-live' && b.status === 'match-live') return 1;
+      return a.hour.localeCompare(b.hour);
+    });
+  }, [schedule?.matches]);
+
   return {
     matches: schedule?.matches ?? [],
     date: schedule?.date ?? null,
@@ -47,5 +57,6 @@ export function useTodayMatches(sport?: Sport): UseTodayMatchesResult {
     error,
     refetch: load,
     championships,
+    highlightedMatches,
   };
 }
