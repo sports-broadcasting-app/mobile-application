@@ -1,9 +1,4 @@
-import {
-  render,
-  screen,
-  waitFor,
-  fireEvent,
-} from '@testing-library/react-native';
+import { render, screen, waitFor, fireEvent } from '../test-utils';
 import MatchesScreen from '../../app/matches/[sport]';
 import * as matchService from '../services/matchService';
 import { DailySchedule } from '../types/match';

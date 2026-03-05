@@ -1,5 +1,17 @@
 import { Stack } from 'expo-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
+import { FilterProvider } from '../src/contexts/FilterContext';
+import { ErrorBoundary } from '../src/components/ErrorBoundary';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 2,
+    },
+  },
+});
 
 function RootStack() {
   const { colors } = useTheme();
@@ -16,7 +28,7 @@ function RootStack() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="championship/[sport]" />
       <Stack.Screen name="matches/[sport]" />
-      <Stack.Screen name="match/[id]" />
+      <Stack.Screen name="match/[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }
@@ -24,7 +36,13 @@ function RootStack() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <RootStack />
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <FilterProvider>
+            <RootStack />
+          </FilterProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

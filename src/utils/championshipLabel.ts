@@ -11,6 +11,10 @@ const CHAMPIONSHIP_LABELS: Record<string, string> = {
   sulamericana: 'Sul-Americana',
   superliga: 'Superliga Masculina',
   'superliga-feminina': 'Superliga Feminina',
+  formula1: 'Formula 1',
+  nba: 'NBA',
+  nbb: 'NBB',
+  ufc: 'UFC',
 };
 
 export function getChampionshipLabel(slug: string): string {

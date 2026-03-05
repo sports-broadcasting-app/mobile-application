@@ -7,10 +7,11 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 const SPORTS: {
   sport: Sport;
   label: string;
-  icon: 'soccer' | 'volleyball';
+  icon: 'soccer' | 'volleyball' | 'flag-checkered';
 }[] = [
   { sport: 'football', label: 'Futebol', icon: 'soccer' },
   { sport: 'volleyball', label: 'Volei', icon: 'volleyball' },
+  { sport: 'formula1', label: 'Formula 1', icon: 'flag-checkered' },
 ];
 
 export default function CampeonatosTabScreen() {

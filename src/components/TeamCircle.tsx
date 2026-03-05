@@ -35,11 +35,11 @@ export function TeamCircle({ team, size = 72 }: TeamCircleProps) {
           onError={() => setImageError(true)}
           testID={`team-logo-${team.slug}`}
         />
-      ) : (
+      ) : size >= 32 ? (
         <Text style={[styles.acronym, { fontSize: size * 0.3 }]}>
           {team.acronym}
         </Text>
-      )}
+      ) : null}
     </View>
   );
 }

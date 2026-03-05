@@ -1,8 +1,8 @@
-import { render, screen, fireEvent } from '@testing-library/react-native';
+import { render, screen, fireEvent } from '../test-utils';
 import { MatchCard } from '../components/MatchCard';
-import { Match } from '../types/match';
+import { TeamMatch, FormulaOneMatch } from '../types/match';
 
-const makeMatch = (overrides: Partial<Match> = {}): Match => ({
+const makeMatch = (overrides: Partial<TeamMatch> = {}): TeamMatch => ({
   id: '1',
   sport: 'football',
   championship: { id: 12, slug: 'ingles', phase: 'Primeira Fase' },
@@ -35,6 +35,31 @@ const makeMatch = (overrides: Partial<Match> = {}): Match => ({
   ...overrides,
 });
 
+const makeF1Match = (
+  overrides: Partial<FormulaOneMatch> = {},
+): FormulaOneMatch => ({
+  id: 'f1-1',
+  sport: 'formula1',
+  championship: { id: 50, slug: 'formula1', phase: '' },
+  eventName: 'Australian Grand Prix',
+  sessionType: 'race',
+  sessionLabel: 'Corrida',
+  isoDate: '2026-03-08T01:00:00.000Z',
+  date: '2026-03-08',
+  hour: '01h00',
+  stadium: 'Melbourne',
+  location: { city: 'Melbourne', state: '', country: 'Australia' },
+  status: 'match-not-started',
+  result: null,
+  round: null,
+  broadcast: [
+    { name: 'Band', url: '' },
+    { name: 'F1 TV Pro', url: '' },
+  ],
+  scoreUrl: '',
+  ...overrides,
+});
+
 describe('MatchCard', () => {
   it('renders team names', () => {
     render(<MatchCard match={makeMatch()} />);
@@ -49,7 +74,7 @@ describe('MatchCard', () => {
     expect(screen.getByText('17:15')).toBeTruthy();
   });
 
-  it('renders broadcast badges', () => {
+  it('renders broadcast pills', () => {
     render(<MatchCard match={makeMatch()} />);
 
     expect(screen.getByText('ESPN')).toBeTruthy();
@@ -62,10 +87,11 @@ describe('MatchCard', () => {
     expect(screen.getByText('Transmissao nao definida')).toBeTruthy();
   });
 
-  it('renders "x" separator when match not started', () => {
+  it('renders VS badge when match not started', () => {
     render(<MatchCard match={makeMatch()} />);
 
-    expect(screen.getByText('x')).toBeTruthy();
+    expect(screen.getByTestId('vs-badge')).toBeTruthy();
+    expect(screen.getByText('VS')).toBeTruthy();
   });
 
   it('shows AO VIVO badge for live matches', () => {
@@ -140,5 +166,32 @@ describe('MatchCard', () => {
     fireEvent.press(screen.getByTestId('match-card-1'));
 
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders F1 event name and session label', () => {
+    render(<MatchCard match={makeF1Match()} />);
+
+    expect(screen.getByText('Australian Grand Prix')).toBeTruthy();
+    expect(screen.getByText('Corrida')).toBeTruthy();
+  });
+
+  it('does not render team names for F1', () => {
+    render(<MatchCard match={makeF1Match()} />);
+
+    expect(screen.queryByText('Liverpool')).toBeNull();
+    expect(screen.queryByText('Wolverhampton')).toBeNull();
+  });
+
+  it('renders F1 broadcast pills', () => {
+    render(<MatchCard match={makeF1Match()} />);
+
+    expect(screen.getByText('Band')).toBeTruthy();
+    expect(screen.getByText('F1 TV Pro')).toBeTruthy();
+  });
+
+  it('renders F1 formatted match time', () => {
+    render(<MatchCard match={makeF1Match()} />);
+
+    expect(screen.getByText('01:00')).toBeTruthy();
   });
 });

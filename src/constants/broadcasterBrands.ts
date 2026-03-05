@@ -71,6 +71,11 @@ const BROADCASTER_BRANDS: Record<string, BroadcasterBrand> = {
     backgroundColor: '#1a3c6e',
     textColor: '#fff',
   },
+  'F1 TV Pro': {
+    initials: 'F1',
+    backgroundColor: '#e10600',
+    textColor: '#fff',
+  },
 };
 
 export function getBroadcasterBrand(name: string): BroadcasterBrand | null {

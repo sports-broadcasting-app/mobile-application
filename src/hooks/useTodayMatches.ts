@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import { DailySchedule, Match, Sport } from '../types/match';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Match, Sport } from '../types/match';
 import { fetchTodayMatches } from '../services/matchService';
 
 interface UseTodayMatchesResult {
@@ -13,27 +14,15 @@ interface UseTodayMatchesResult {
 }
 
 export function useTodayMatches(sport?: Sport): UseTodayMatchesResult {
-  const [schedule, setSchedule] = useState<DailySchedule | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const data = await fetchTodayMatches(sport);
-      setSchedule(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load matches');
-    } finally {
-      setLoading(false);
-    }
-  }, [sport]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const {
+    data: schedule,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['todayMatches', sport],
+    queryFn: () => fetchTodayMatches(sport),
+  });
 
   const championships = useMemo(() => {
     if (!schedule?.matches) return [];
@@ -53,9 +42,9 @@ export function useTodayMatches(sport?: Sport): UseTodayMatchesResult {
   return {
     matches: schedule?.matches ?? [],
     date: schedule?.date ?? null,
-    loading,
-    error,
-    refetch: load,
+    loading: isLoading,
+    error: error?.message ?? null,
+    refetch,
     championships,
     highlightedMatches,
   };

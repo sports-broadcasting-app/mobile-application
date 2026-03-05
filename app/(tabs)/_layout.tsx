@@ -22,17 +22,36 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="television-classic"
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="filtros"
+        options={{
+          title: 'Filtros',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="tune" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="configuracoes"
+        options={{
+          title: 'Config',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="campeonatos"
         options={{
-          title: 'Campeonatos',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="trophy" size={size} color={color} />
-          ),
+          href: null,
         }}
       />
     </Tabs>

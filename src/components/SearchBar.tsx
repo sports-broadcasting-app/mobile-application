@@ -6,12 +6,16 @@ interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 export function SearchBar({
   value,
   onChangeText,
   placeholder = 'Buscar time ou liga...',
+  onFocus,
+  onBlur,
 }: SearchBarProps) {
   const { colors } = useTheme();
 
@@ -30,6 +34,8 @@ export function SearchBar({
         placeholderTextColor={colors.textTertiary}
         autoCapitalize="none"
         autoCorrect={false}
+        onFocus={onFocus}
+        onBlur={onBlur}
         testID="search-input"
       />
     </View>

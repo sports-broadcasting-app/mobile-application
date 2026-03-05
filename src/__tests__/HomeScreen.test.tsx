@@ -1,9 +1,4 @@
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-} from '@testing-library/react-native';
+import { render, screen, fireEvent, waitFor } from '../test-utils';
 import HomeTabScreen from '../../app/(tabs)/index';
 import * as matchService from '../services/matchService';
 import { DailySchedule } from '../types/match';
@@ -65,11 +60,11 @@ describe('HomeTabScreen', () => {
     jest.clearAllMocks();
   });
 
-  it('renders title', async () => {
+  it('renders OndeVer branding', async () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<HomeTabScreen />);
 
-    expect(screen.getByText('Onde Assistir')).toBeTruthy();
+    expect(screen.getByText('OndeVer')).toBeTruthy();
   });
 
   it('renders sport chips', async () => {
@@ -80,11 +75,11 @@ describe('HomeTabScreen', () => {
     expect(screen.getByText('Volei')).toBeTruthy();
   });
 
-  it('renders "Em Destaque Hoje" section', async () => {
+  it('renders "Jogos do Dia" section', async () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<HomeTabScreen />);
 
-    expect(screen.getByText('Em Destaque Hoje')).toBeTruthy();
+    expect(screen.getByText('Jogos do Dia')).toBeTruthy();
   });
 
   it('renders search bar', async () => {
@@ -94,16 +89,61 @@ describe('HomeTabScreen', () => {
     expect(screen.getByTestId('search-input')).toBeTruthy();
   });
 
-  it('navigates to championship when sport chip is pressed', async () => {
-    mockFetch.mockResolvedValue(mockSchedule);
+  it('filters matches when sport chip is pressed', async () => {
+    const scheduleWithVolleyball: DailySchedule = {
+      ...mockSchedule,
+      matches: [
+        ...mockSchedule.matches,
+        {
+          id: '200',
+          sport: 'volleyball',
+          championship: {
+            id: 20,
+            slug: 'superliga',
+            phase: 'Primeira Fase',
+          },
+          homeTeam: {
+            id: 10,
+            name: 'Sada Cruzeiro',
+            acronym: 'CRU',
+            slug: 'cruzeiro-volei',
+          },
+          awayTeam: {
+            id: 11,
+            name: 'Taubate',
+            acronym: 'TAU',
+            slug: 'taubate',
+          },
+          isoDate: '2026-03-04T19:00:00.000Z',
+          date: '2026-03-04',
+          hour: '19h00',
+          stadium: 'Ginasio',
+          location: { city: 'BH', state: 'MG', country: 'Brasil' },
+          status: 'match-not-started',
+          result: null,
+          round: 10,
+          score: {
+            type: 'volleyball',
+            sets: { home: null, away: null },
+            setScores: [],
+          },
+          broadcast: [{ name: 'SporTV', url: '' }],
+          scoreUrl: '',
+        },
+      ],
+    };
+    mockFetch.mockResolvedValue(scheduleWithVolleyball);
     render(<HomeTabScreen />);
 
-    fireEvent.press(screen.getByTestId('sport-card-football'));
-
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/championship/[sport]',
-      params: { sport: 'football' },
+    await waitFor(() => {
+      expect(screen.getByTestId('match-card-100')).toBeTruthy();
+      expect(screen.getByTestId('match-card-200')).toBeTruthy();
     });
+
+    fireEvent.press(screen.getByTestId('sport-chip-football'));
+
+    expect(screen.getByTestId('match-card-100')).toBeTruthy();
+    expect(screen.queryByTestId('match-card-200')).toBeNull();
   });
 
   it('renders highlighted matches after loading', async () => {
@@ -148,5 +188,59 @@ describe('HomeTabScreen', () => {
     });
 
     expect(screen.getByText('Tentar novamente')).toBeTruthy();
+  });
+
+  it('renders Formula 1 chip', () => {
+    mockFetch.mockResolvedValue(mockSchedule);
+    render(<HomeTabScreen />);
+
+    expect(screen.getByText('Formula 1')).toBeTruthy();
+  });
+
+  it('renders disabled sport chips for Basquete and MMA', () => {
+    mockFetch.mockResolvedValue(mockSchedule);
+    render(<HomeTabScreen />);
+
+    expect(screen.getByText('Basquete (Em breve)')).toBeTruthy();
+    expect(screen.getByText('MMA (Em breve)')).toBeTruthy();
+  });
+
+  it('filters F1 events by event name in search', async () => {
+    const scheduleWithF1: DailySchedule = {
+      date: '2026-03-08',
+      crawledAt: '2026-03-08T06:00:00.000Z',
+      matches: [
+        ...mockSchedule.matches,
+        {
+          id: 'f1-race',
+          sport: 'formula1',
+          championship: { id: 50, slug: 'formula1', phase: '' },
+          eventName: 'Australian Grand Prix',
+          sessionType: 'race',
+          sessionLabel: 'Corrida',
+          isoDate: '2026-03-08T01:00:00.000Z',
+          date: '2026-03-08',
+          hour: '01h00',
+          stadium: 'Albert Park',
+          location: { city: 'Melbourne', state: '', country: 'Australia' },
+          status: 'match-not-started',
+          result: null,
+          round: null,
+          broadcast: [{ name: 'Band', url: '' }],
+          scoreUrl: '',
+        },
+      ],
+    };
+    mockFetch.mockResolvedValue(scheduleWithF1);
+    render(<HomeTabScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('match-card-f1-race')).toBeTruthy();
+    });
+
+    fireEvent.changeText(screen.getByTestId('search-input'), 'Australian');
+
+    expect(screen.getByTestId('match-card-f1-race')).toBeTruthy();
+    expect(screen.queryByTestId('match-card-100')).toBeNull();
   });
 });

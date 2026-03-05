@@ -17,7 +17,12 @@ export interface Championship {
   phase: string;
 }
 
-export type Sport = 'football' | 'volleyball';
+export type Sport =
+  | 'football'
+  | 'volleyball'
+  | 'formula1'
+  | 'basketball'
+  | 'mma';
 
 export interface FootballScore {
   type: 'football';
@@ -49,12 +54,9 @@ export type MatchScore = FootballScore | VolleyballScore;
 
 export type MatchStatus = 'match-not-started' | 'match-ended' | 'match-live';
 
-export interface Match {
+interface MatchBase {
   id: string;
-  sport: Sport;
   championship: Championship;
-  homeTeam: Team;
-  awayTeam: Team;
   isoDate: string;
   date: string;
   hour: string;
@@ -67,10 +69,25 @@ export interface Match {
   status: MatchStatus;
   result: string | null;
   round: number | null;
-  score: MatchScore;
   broadcast: Broadcast[];
   scoreUrl: string;
 }
+
+export interface TeamMatch extends MatchBase {
+  sport: 'football' | 'volleyball' | 'basketball' | 'mma';
+  homeTeam: Team;
+  awayTeam: Team;
+  score: MatchScore;
+}
+
+export interface FormulaOneMatch extends MatchBase {
+  sport: 'formula1';
+  eventName: string;
+  sessionType: string;
+  sessionLabel: string;
+}
+
+export type Match = TeamMatch | FormulaOneMatch;
 
 export interface DailySchedule {
   date: string;

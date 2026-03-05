@@ -1,10 +1,14 @@
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { render, screen, waitFor } from '../test-utils';
 import MatchDetailScreen from '../../app/match/[id]';
 import * as matchService from '../services/matchService';
 import { DailySchedule } from '../types/match';
 
+let mockParams = { id: '100', sport: 'football' };
+const mockBack = jest.fn();
+
 jest.mock('expo-router', () => ({
-  useLocalSearchParams: () => ({ id: '100', sport: 'football' }),
+  useLocalSearchParams: () => mockParams,
+  useRouter: () => ({ back: mockBack }),
   Stack: { Screen: () => null },
 }));
 
@@ -92,9 +96,38 @@ const mockSchedule: DailySchedule = {
   ],
 };
 
+const mockF1Schedule: DailySchedule = {
+  date: '2026-03-08',
+  crawledAt: '2026-03-08T06:00:00.000Z',
+  matches: [
+    {
+      id: 'f1-race',
+      sport: 'formula1',
+      championship: { id: 50, slug: 'formula1', phase: '' },
+      eventName: 'Australian Grand Prix',
+      sessionType: 'race',
+      sessionLabel: 'Corrida',
+      isoDate: '2026-03-08T01:00:00.000Z',
+      date: '2026-03-08',
+      hour: '01h00',
+      stadium: 'Albert Park',
+      location: { city: 'Melbourne', state: '', country: 'Australia' },
+      status: 'match-not-started',
+      result: null,
+      round: null,
+      broadcast: [
+        { name: 'Band', url: '' },
+        { name: 'F1 TV Pro', url: '' },
+      ],
+      scoreUrl: '',
+    },
+  ],
+};
+
 describe('MatchDetailScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockParams = { id: '100', sport: 'football' };
   });
 
   it('shows loading state', () => {
@@ -109,8 +142,7 @@ describe('MatchDetailScreen', () => {
     render(<MatchDetailScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText('Liverpool')).toBeTruthy();
-      expect(screen.getByText('Chelsea')).toBeTruthy();
+      expect(screen.getByText('Liverpool vs Chelsea')).toBeTruthy();
       expect(screen.getByTestId('team-circle-liverpool')).toBeTruthy();
       expect(screen.getByTestId('team-circle-chelsea')).toBeTruthy();
     });
@@ -126,32 +158,41 @@ describe('MatchDetailScreen', () => {
     });
   });
 
-  it('renders broadcast cards', async () => {
+  it('renders VS badge for not-started match', async () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<MatchDetailScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText('Onde Assistir')).toBeTruthy();
-      expect(screen.getByTestId('broadcast-card-ESPN')).toBeTruthy();
-      expect(screen.getByTestId('broadcast-card-Disney+')).toBeTruthy();
+      expect(screen.getAllByTestId('vs-badge').length).toBeGreaterThanOrEqual(
+        1,
+      );
     });
   });
 
-  it('shows "Assistir na TV" for broadcasts without URL', async () => {
+  it('renders countdown timer', async () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<MatchDetailScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText('Assistir na TV')).toBeTruthy();
+      expect(screen.getByTestId('countdown-timer')).toBeTruthy();
     });
   });
 
-  it('shows "Abrir no App" for broadcasts with URL', async () => {
+  it('renders ASSISTIR AGORA button', async () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<MatchDetailScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText('Abrir no App')).toBeTruthy();
+      expect(screen.getByText('ASSISTIR AGORA')).toBeTruthy();
+    });
+  });
+
+  it('renders championship label', async () => {
+    mockFetch.mockResolvedValue(mockSchedule);
+    render(<MatchDetailScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Ingles')).toBeTruthy();
     });
   });
 
@@ -186,5 +227,32 @@ describe('MatchDetailScreen', () => {
     await waitFor(() => {
       expect(screen.getByText('Jogo nao encontrado')).toBeTruthy();
     });
+  });
+
+  it('renders F1 event name, session label, and circuit', async () => {
+    mockParams = { id: 'f1-race', sport: 'formula1' };
+    mockFetch.mockResolvedValue(mockF1Schedule);
+    render(<MatchDetailScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Australian Grand Prix')).toBeTruthy();
+      expect(screen.getByText('Corrida')).toBeTruthy();
+      expect(
+        screen.getByText('Albert Park - Melbourne, Australia'),
+      ).toBeTruthy();
+    });
+  });
+
+  it('does not render team circles for F1', async () => {
+    mockParams = { id: 'f1-race', sport: 'formula1' };
+    mockFetch.mockResolvedValue(mockF1Schedule);
+    render(<MatchDetailScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Australian Grand Prix')).toBeTruthy();
+    });
+
+    expect(screen.queryByTestId('team-circle-liverpool')).toBeNull();
+    expect(screen.queryByTestId('team-circle-chelsea')).toBeNull();
   });
 });
