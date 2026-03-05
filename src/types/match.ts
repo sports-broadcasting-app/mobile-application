@@ -8,6 +8,7 @@ export interface Team {
   name: string;
   acronym: string;
   slug: string;
+  logoUrl?: string;
 }
 
 export interface Championship {

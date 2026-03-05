@@ -3,6 +3,8 @@ import * as Linking from 'expo-linking';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Broadcast } from '../types/match';
 import { useTheme } from '../contexts/ThemeContext';
+import { getBroadcasterBrand } from '../constants/broadcasterBrands';
+import { BroadcasterCircle } from './BroadcasterCircle';
 
 interface BroadcastCardProps {
   broadcast: Broadcast;
@@ -13,6 +15,7 @@ export function BroadcastCard({ broadcast }: BroadcastCardProps) {
   const hasUrl = broadcast.url !== '';
   const label = hasUrl ? 'Abrir no App' : 'Assistir na TV';
   const icon = hasUrl ? 'cellphone' : 'television';
+  const hasBrand = getBroadcasterBrand(broadcast.name) !== null;
 
   const handlePress = () => {
     if (hasUrl) {
@@ -32,7 +35,11 @@ export function BroadcastCard({ broadcast }: BroadcastCardProps) {
       onPress={handlePress}
       testID={`broadcast-card-${broadcast.name}`}
     >
-      <MaterialCommunityIcons name={icon} size={28} color={colors.primary} />
+      {hasBrand ? (
+        <BroadcasterCircle name={broadcast.name} size={40} />
+      ) : (
+        <MaterialCommunityIcons name={icon} size={28} color={colors.primary} />
+      )}
       <Text
         style={[styles.name, { color: colors.textPrimary }]}
         numberOfLines={1}
