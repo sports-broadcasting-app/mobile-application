@@ -35,80 +35,66 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
     setSelectedSport((prev) => (prev === sport ? null : sport));
   };
 
-  const renderHeader = () => (
-    <View>
-      <GradientHeader>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipsContainer}
-        >
-          {SPORTS.map(({ sport, label, icon }) => {
-            const isActive = selectedSport === sport;
-            return (
-              <TouchableOpacity
-                key={sport}
-                style={[
-                  styles.chip,
-                  isActive
-                    ? { backgroundColor: colors.chipActiveBg }
-                    : {
-                        backgroundColor: 'rgba(255,255,255,0.15)',
-                        borderColor: 'rgba(255,255,255,0.3)',
-                        borderWidth: 1,
-                      },
-                ]}
-                activeOpacity={0.7}
-                onPress={() => handleSportPress(sport)}
-                testID={`sport-chip-${sport}`}
-              >
-                <MaterialCommunityIcons
-                  name={icon}
-                  size={18}
-                  color={isActive ? colors.chipActiveText : '#fff'}
-                />
-                <Text
-                  style={[
-                    styles.chipLabel,
-                    {
-                      color: isActive ? colors.chipActiveText : '#fff',
-                    },
-                  ]}
-                >
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </GradientHeader>
-
-      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-        Jogos do Dia
-      </Text>
-    </View>
+  const renderChips = () => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.chipsContainer}
+    >
+      {SPORTS.map(({ sport, label, icon }) => {
+        const isActive = selectedSport === sport;
+        return (
+          <TouchableOpacity
+            key={sport}
+            style={[
+              styles.chip,
+              isActive
+                ? { backgroundColor: colors.chipActiveBg }
+                : {
+                    backgroundColor: 'rgba(255,255,255,0.15)',
+                    borderColor: 'rgba(255,255,255,0.3)',
+                    borderWidth: 1,
+                  },
+            ]}
+            activeOpacity={0.7}
+            onPress={() => handleSportPress(sport)}
+            testID={`sport-chip-${sport}`}
+          >
+            <MaterialCommunityIcons
+              name={icon}
+              size={18}
+              color={isActive ? colors.chipActiveText : '#fff'}
+            />
+            <Text
+              style={[
+                styles.chipLabel,
+                {
+                  color: isActive ? colors.chipActiveText : '#fff',
+                },
+              ]}
+            >
+              {label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
   );
 
-  if (loading) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <StatusBar style="light" />
-        {renderHeader()}
+  const renderContent = () => {
+    if (loading) {
+      return (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
             Carregando jogos...
           </Text>
         </View>
-      </View>
-    );
-  }
+      );
+    }
 
-  if (error) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <StatusBar style="light" />
-        {renderHeader()}
+    if (error) {
+      return (
         <View style={styles.centered}>
           <Text style={[styles.errorText, { color: colors.error }]}>
             {error}
@@ -120,17 +106,18 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
             Tentar novamente
           </Text>
         </View>
-      </View>
-    );
-  }
+      );
+    }
 
-  return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar style="light" />
+    return (
       <FlatList
         data={filteredMatches}
         keyExtractor={(item: Match) => item.id}
-        ListHeaderComponent={renderHeader}
+        ListHeaderComponent={
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Jogos do Dia
+          </Text>
+        }
         renderItem={({ item }) => (
           <MatchCard match={item} onPress={() => onPressMatch(item)} />
         )}
@@ -145,6 +132,14 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
           </View>
         }
       />
+    );
+  };
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style="light" />
+      <GradientHeader>{renderChips()}</GradientHeader>
+      {renderContent()}
     </View>
   );
 }

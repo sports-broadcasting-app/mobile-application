@@ -79,7 +79,9 @@ describe('HomeTabScreen', () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<HomeTabScreen />);
 
-    expect(screen.getByText('Jogos do Dia')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('Jogos do Dia')).toBeTruthy();
+    });
   });
 
   it('filters matches when sport chip is pressed', async () => {
