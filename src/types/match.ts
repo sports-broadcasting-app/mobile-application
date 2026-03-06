@@ -17,12 +17,7 @@ export interface Championship {
   phase: string;
 }
 
-export type Sport =
-  | 'football'
-  | 'volleyball'
-  | 'formula1'
-  | 'basketball'
-  | 'mma';
+export type Sport = 'football' | 'volleyball' | 'formula1';
 
 export interface FootballScore {
   type: 'football';
@@ -74,7 +69,7 @@ interface MatchBase {
 }
 
 export interface TeamMatch extends MatchBase {
-  sport: 'football' | 'volleyball' | 'basketball' | 'mma';
+  sport: 'football' | 'volleyball';
   homeTeam: Team;
   awayTeam: Team;
   score: MatchScore;

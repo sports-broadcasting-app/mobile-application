@@ -9,9 +9,18 @@ function buildQuery(params: Record<string, string | undefined>): string {
   return '?' + new URLSearchParams(entries).toString();
 }
 
+function getLocalDate(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 export async function fetchTodayMatches(sport?: Sport): Promise<DailySchedule> {
+  const date = getLocalDate();
   const query = buildQuery({ sport });
-  const response = await fetch(`${API_BASE_URL}/api/matches/today${query}`);
+  const response = await fetch(`${API_BASE_URL}/api/matches/${date}${query}`);
 
   if (!response.ok) {
     throw new Error(`API error: ${response.status}`);

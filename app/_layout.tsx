@@ -1,7 +1,6 @@
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
-import { FilterProvider } from '../src/contexts/FilterContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 
 const queryClient = new QueryClient({
@@ -38,9 +37,7 @@ export default function RootLayout() {
     <ThemeProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <FilterProvider>
-            <RootStack />
-          </FilterProvider>
+          <RootStack />
         </QueryClientProvider>
       </ErrorBoundary>
     </ThemeProvider>

@@ -29,8 +29,6 @@ export function ChampionshipScreen({
     football: 'Futebol',
     volleyball: 'Volei',
     formula1: 'Formula 1',
-    basketball: 'Basquete',
-    mma: 'MMA',
   };
   const title = SPORT_TITLES[sport];
 

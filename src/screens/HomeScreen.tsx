@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,13 +12,8 @@ import { StatusBar } from 'expo-status-bar';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Sport, Match } from '../types/match';
 import { useTodayMatches } from '../hooks/useTodayMatches';
-import { useRecentMatches } from '../hooks/useRecentMatches';
-import { useFilters } from '../contexts/FilterContext';
-import { getChampionshipLabel } from '../utils/championshipLabel';
 import { SPORTS } from '../constants/sports';
 import { MatchCard } from '../components/MatchCard';
-import { SearchBar } from '../components/SearchBar';
-import { SearchPanel } from '../components/SearchPanel';
 import { GradientHeader } from '../components/GradientHeader';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -29,88 +24,16 @@ interface HomeScreenProps {
 export function HomeScreen({ onPressMatch }: HomeScreenProps) {
   const { colors } = useTheme();
   const { highlightedMatches, loading, error, refetch } = useTodayMatches();
-  const { recentIds, addRecent, clearRecents } = useRecentMatches();
-  const { filters } = useFilters();
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const filteredMatches = useMemo(() => {
-    let matches = highlightedMatches;
-
-    if (selectedSport) {
-      matches = matches.filter((m) => m.sport === selectedSport);
-    }
-
-    if (filters.sports.length > 0) {
-      matches = matches.filter((m) => filters.sports.includes(m.sport));
-    }
-    if (filters.championships.length > 0) {
-      matches = matches.filter((m) =>
-        filters.championships.includes(m.championship.slug),
-      );
-    }
-    if (filters.broadcasters.length > 0) {
-      matches = matches.filter((m) =>
-        m.broadcast.some((b) => filters.broadcasters.includes(b.name)),
-      );
-    }
-
-    if (!searchQuery.trim()) return matches;
-    const q = searchQuery.toLowerCase();
-    return matches.filter((m) => {
-      if (m.sport === 'formula1') {
-        return (
-          m.eventName.toLowerCase().includes(q) ||
-          m.sessionLabel.toLowerCase().includes(q) ||
-          getChampionshipLabel(m.championship.slug).toLowerCase().includes(q)
-        );
-      }
-      return (
-        m.homeTeam.name.toLowerCase().includes(q) ||
-        m.awayTeam.name.toLowerCase().includes(q) ||
-        getChampionshipLabel(m.championship.slug).toLowerCase().includes(q)
-      );
-    });
-  }, [highlightedMatches, searchQuery, selectedSport, filters]);
-
-  const recentMatches = useMemo(() => {
-    const ids = recentIds.map((r) => r.id);
-    return ids
-      .map((id) => highlightedMatches.find((m) => m.id === id))
-      .filter((m): m is Match => m !== undefined);
-  }, [recentIds, highlightedMatches]);
-
-  const suggestedMatches = useMemo(() => {
-    const liveMatches = highlightedMatches.filter(
-      (m) => m.status === 'match-live',
-    );
-    const upcomingMatches = highlightedMatches
-      .filter((m) => m.status === 'match-not-started')
-      .slice(0, 5);
-    return [...liveMatches, ...upcomingMatches].slice(0, 8);
-  }, [highlightedMatches]);
-
-  const handlePressMatch = useCallback(
-    (match: Match) => {
-      addRecent(match);
-      onPressMatch(match);
-    },
-    [addRecent, onPressMatch],
-  );
+    if (!selectedSport) return highlightedMatches;
+    return highlightedMatches.filter((m) => m.sport === selectedSport);
+  }, [highlightedMatches, selectedSport]);
 
   const handleSportPress = (sport: Sport) => {
     setSelectedSport((prev) => (prev === sport ? null : sport));
   };
-
-  const handleSearchPanelMatch = useCallback(
-    (match: Match) => {
-      setIsSearchFocused(false);
-      setSearchQuery('');
-      handlePressMatch(match);
-    },
-    [handlePressMatch],
-  );
 
   const renderHeader = () => (
     <View>
@@ -120,7 +43,7 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.chipsContainer}
         >
-          {SPORTS.map(({ sport, label, icon, enabled }) => {
+          {SPORTS.map(({ sport, label, icon }) => {
             const isActive = selectedSport === sport;
             return (
               <TouchableOpacity
@@ -134,11 +57,9 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
                         borderColor: 'rgba(255,255,255,0.3)',
                         borderWidth: 1,
                       },
-                  !enabled && { opacity: 0.4 },
                 ]}
                 activeOpacity={0.7}
-                onPress={() => enabled && handleSportPress(sport)}
-                disabled={!enabled}
+                onPress={() => handleSportPress(sport)}
                 testID={`sport-chip-${sport}`}
               >
                 <MaterialCommunityIcons
@@ -154,7 +75,7 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
                     },
                   ]}
                 >
-                  {enabled ? label : `${label} (Em breve)`}
+                  {label}
                 </Text>
               </TouchableOpacity>
             );
@@ -162,27 +83,9 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
         </ScrollView>
       </GradientHeader>
 
-      <View style={styles.searchContainer}>
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Buscar time, evento ou liga..."
-          onFocus={() => setIsSearchFocused(true)}
-        />
-      </View>
-
-      {isSearchFocused ? (
-        <SearchPanel
-          recentMatches={recentMatches}
-          suggestedMatches={suggestedMatches}
-          onPressMatch={handleSearchPanelMatch}
-          onClearRecents={clearRecents}
-        />
-      ) : (
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-          Jogos do Dia
-        </Text>
-      )}
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        Jogos do Dia
+      </Text>
     </View>
   );
 
@@ -225,24 +128,21 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style="light" />
       <FlatList
-        data={isSearchFocused ? [] : filteredMatches}
+        data={filteredMatches}
         keyExtractor={(item: Match) => item.id}
         ListHeaderComponent={renderHeader}
         renderItem={({ item }) => (
-          <MatchCard match={item} onPress={() => handlePressMatch(item)} />
+          <MatchCard match={item} onPress={() => onPressMatch(item)} />
         )}
         contentContainerStyle={styles.list}
         onRefresh={refetch}
         refreshing={loading}
-        keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
-          isSearchFocused ? null : (
-            <View style={styles.centered}>
-              <Text style={[styles.emptyText, { color: colors.textTertiary }]}>
-                Nenhum jogo encontrado
-              </Text>
-            </View>
-          )
+          <View style={styles.centered}>
+            <Text style={[styles.emptyText, { color: colors.textTertiary }]}>
+              Nenhum jogo encontrado
+            </Text>
+          </View>
         }
       />
     </View>
@@ -269,11 +169,6 @@ const styles = StyleSheet.create({
   chipLabel: {
     fontSize: 13,
     fontWeight: '600',
-  },
-  searchContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
   },
   sectionTitle: {
     fontSize: 18,

@@ -82,13 +82,6 @@ describe('HomeTabScreen', () => {
     expect(screen.getByText('Jogos do Dia')).toBeTruthy();
   });
 
-  it('renders search bar', async () => {
-    mockFetch.mockResolvedValue(mockSchedule);
-    render(<HomeTabScreen />);
-
-    expect(screen.getByTestId('search-input')).toBeTruthy();
-  });
-
   it('filters matches when sport chip is pressed', async () => {
     const scheduleWithVolleyball: DailySchedule = {
       ...mockSchedule,
@@ -195,52 +188,5 @@ describe('HomeTabScreen', () => {
     render(<HomeTabScreen />);
 
     expect(screen.getByText('Formula 1')).toBeTruthy();
-  });
-
-  it('renders disabled sport chips for Basquete and MMA', () => {
-    mockFetch.mockResolvedValue(mockSchedule);
-    render(<HomeTabScreen />);
-
-    expect(screen.getByText('Basquete (Em breve)')).toBeTruthy();
-    expect(screen.getByText('MMA (Em breve)')).toBeTruthy();
-  });
-
-  it('filters F1 events by event name in search', async () => {
-    const scheduleWithF1: DailySchedule = {
-      date: '2026-03-08',
-      crawledAt: '2026-03-08T06:00:00.000Z',
-      matches: [
-        ...mockSchedule.matches,
-        {
-          id: 'f1-race',
-          sport: 'formula1',
-          championship: { id: 50, slug: 'formula1', phase: '' },
-          eventName: 'Australian Grand Prix',
-          sessionType: 'race',
-          sessionLabel: 'Corrida',
-          isoDate: '2026-03-08T01:00:00.000Z',
-          date: '2026-03-08',
-          hour: '01h00',
-          stadium: 'Albert Park',
-          location: { city: 'Melbourne', state: '', country: 'Australia' },
-          status: 'match-not-started',
-          result: null,
-          round: null,
-          broadcast: [{ name: 'Band', url: '' }],
-          scoreUrl: '',
-        },
-      ],
-    };
-    mockFetch.mockResolvedValue(scheduleWithF1);
-    render(<HomeTabScreen />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('match-card-f1-race')).toBeTruthy();
-    });
-
-    fireEvent.changeText(screen.getByTestId('search-input'), 'Australian');
-
-    expect(screen.getByTestId('match-card-f1-race')).toBeTruthy();
-    expect(screen.queryByTestId('match-card-100')).toBeNull();
   });
 });
