@@ -40,6 +40,12 @@
         }
       ]
     ],
+    "updates": {
+      "url": "https://u.expo.dev/d6b5c58b-a580-4329-8332-30a9f2767eaf"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "web": {
       "favicon": "./assets/favicon.png"
     },

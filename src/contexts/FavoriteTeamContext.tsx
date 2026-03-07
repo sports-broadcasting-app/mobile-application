@@ -16,6 +16,7 @@ import {
 } from '../services/subscriberService';
 
 const STORAGE_KEY = '@favorite_team';
+const SUBSCRIBER_REGISTERED_KEY = '@subscriber_registered';
 
 interface FavoriteTeamData {
   team: Team;
@@ -42,46 +43,71 @@ interface FavoriteTeamProviderProps {
   children: ReactNode;
 }
 
+async function ensureSubscriberRegistered(
+  favoriteTeam: FavoriteTeamData,
+): Promise<string | null> {
+  const token = await registerForPushNotifications();
+  if (!token) return null;
+
+  await registerSubscriber(token, favoriteTeam.team.slug, favoriteTeam.sport);
+  await AsyncStorage.setItem(SUBSCRIBER_REGISTERED_KEY, token);
+  return token;
+}
+
 export function FavoriteTeamProvider({ children }: FavoriteTeamProviderProps) {
   const [favoriteTeam, setFavoriteTeamState] =
     useState<FavoriteTeamData | null>(null);
   const [loading, setLoading] = useState(true);
   const [pushToken, setPushToken] = useState<string | null>(null);
 
+  // On startup: load favorite team + check if subscriber needs to be registered
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((json) => {
-        if (json) {
-          setFavoriteTeamState(JSON.parse(json) as FavoriteTeamData);
-        }
-      })
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        const [teamJson, registeredToken] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEY),
+          AsyncStorage.getItem(SUBSCRIBER_REGISTERED_KEY),
+        ]);
 
-    registerForPushNotifications()
-      .then((token) => {
-        if (token) setPushToken(token);
-      })
-      .catch(() => {});
+        if (!teamJson) return;
+
+        const team = JSON.parse(teamJson) as FavoriteTeamData;
+        setFavoriteTeamState(team);
+
+        if (registeredToken) {
+          // Already registered, just save the token
+          setPushToken(registeredToken);
+        } else {
+          // Has favorite team but never registered — register now
+          const token = await ensureSubscriberRegistered(team);
+          if (token) setPushToken(token);
+        }
+      } catch (err) {
+        console.warn('Failed to initialize favorite team:', err);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  const setFavoriteTeam = useCallback(
-    async (team: Team, sport: Sport) => {
-      const data: FavoriteTeamData = { team, sport };
-      setFavoriteTeamState(data);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  const setFavoriteTeam = useCallback(async (team: Team, sport: Sport) => {
+    const data: FavoriteTeamData = { team, sport };
+    setFavoriteTeamState(data);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
-      if (pushToken) {
-        registerSubscriber(pushToken, team.slug, sport).catch((err) =>
-          console.warn('Failed to register subscriber:', err),
-        );
-      }
-    },
-    [pushToken],
-  );
+    // Always register on team change (new team = new subscriber)
+    try {
+      const token = await ensureSubscriberRegistered(data);
+      if (token) setPushToken(token);
+    } catch (err) {
+      console.warn('Failed to register subscriber:', err);
+    }
+  }, []);
 
   const clearFavoriteTeam = useCallback(async () => {
     setFavoriteTeamState(null);
     await AsyncStorage.removeItem(STORAGE_KEY);
+    await AsyncStorage.removeItem(SUBSCRIBER_REGISTERED_KEY);
 
     if (pushToken) {
       unregisterSubscriber(pushToken).catch((err) =>

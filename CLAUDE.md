@@ -111,6 +111,24 @@ yarn format:check     # Check formatting without writing
 yarn type-check       # Run TypeScript type checking
 ```
 
+### EAS Build & Update
+
+```bash
+# Full native build (required for native changes: new packages, app.json plugins, etc.)
+eas build --platform android --profile development    # Dev build (Android)
+eas build --platform android --profile production     # Production build (Android)
+
+# OTA JavaScript update (no rebuild needed — for JS-only changes)
+eas update --channel development --message "description"   # Update dev builds
+eas update --channel preview --message "description"       # Update preview builds
+eas update --channel production --message "description"    # Update production builds
+```
+
+**When to use each:**
+
+- **`eas build`**: Native changes (new packages, `app.json` plugin changes, `google-services.json`, etc.)
+- **`eas update`**: JS-only changes (bug fixes, UI changes, logic changes) — much faster, no reinstall needed
+
 ## Code Conventions
 
 - **Always use TypeScript strict mode** — no `any` types unless absolutely necessary
@@ -177,6 +195,31 @@ const { colors, toggleTheme, isDark } = useTheme();
 | Token         | Value                             |
 | ------------- | --------------------------------- |
 | Border radius | `12` (cards), `20` (badges/pills) |
+
+## Push Notifications
+
+The app uses Expo Push Notifications to send match reminders 30 minutes before kickoff for the user's favorite team.
+
+### Architecture
+
+- **`src/services/notificationService.ts`**: Registers for push permissions, gets Expo push token, schedules local reminders
+- **`src/services/subscriberService.ts`**: Registers/unregisters push token + favorite team on the backend (`POST /api/subscribers`)
+- **`src/contexts/FavoriteTeamContext.tsx`**: Manages favorite team state, auto-registers subscriber on startup if not yet registered
+- **`src/components/NotificationScheduler.tsx`**: Schedules local notifications for favorite team matches
+- **`google-services.json`**: Firebase config (required for Android push token generation via FCM)
+
+### Flow
+
+1. User selects favorite team → app gets Expo push token → `POST /api/subscribers { pushToken, teamSlug, sport }`
+2. Backend (Fly.io) crawls matches at 6am/18am → schedules push notifications 30min before matches via `expo-server-sdk`
+3. Expo Push Service → FCM → Android device receives notification
+
+### Manual crawl trigger
+
+```bash
+curl -X POST https://backend-application.fly.dev/api/crawl \
+  -H "X-API-Key: <CRAWL_API_KEY>"
+```
 
 ## Git Workflow
 
