@@ -2,6 +2,7 @@ import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { FavoriteTeamProvider } from './contexts/FavoriteTeamContext';
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -18,7 +19,9 @@ function AllProviders({ children }: { children: React.ReactNode }) {
   const queryClient = createTestQueryClient();
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <FavoriteTeamProvider>{children}</FavoriteTeamProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

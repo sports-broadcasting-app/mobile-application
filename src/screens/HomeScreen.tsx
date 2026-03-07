@@ -10,10 +10,12 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Sport, Match } from '../types/match';
+import { Sport, Match, TeamMatch } from '../types/match';
 import { useTodayMatches } from '../hooks/useTodayMatches';
+import { useFavoriteTeam } from '../contexts/FavoriteTeamContext';
 import { SPORTS } from '../constants/sports';
 import { MatchCard } from '../components/MatchCard';
+import { FavoriteTeamBanner } from '../components/FavoriteTeamBanner';
 import { GradientHeader } from '../components/GradientHeader';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -24,12 +26,25 @@ interface HomeScreenProps {
 export function HomeScreen({ onPressMatch }: HomeScreenProps) {
   const { colors } = useTheme();
   const { highlightedMatches, loading, error, refetch } = useTodayMatches();
+  const { favoriteTeam } = useFavoriteTeam();
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
 
   const filteredMatches = useMemo(() => {
     if (!selectedSport) return highlightedMatches;
     return highlightedMatches.filter((m) => m.sport === selectedSport);
   }, [highlightedMatches, selectedSport]);
+
+  const favoriteMatch = useMemo(() => {
+    if (!favoriteTeam) return null;
+    const slug = favoriteTeam.team.slug;
+    return (
+      filteredMatches.find(
+        (m): m is TeamMatch =>
+          m.sport !== 'formula1' &&
+          (m.homeTeam.slug === slug || m.awayTeam.slug === slug),
+      ) ?? null
+    );
+  }, [filteredMatches, favoriteTeam]);
 
   const handleSportPress = (sport: Sport) => {
     setSelectedSport((prev) => (prev === sport ? null : sport));
@@ -114,9 +129,23 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
         data={filteredMatches}
         keyExtractor={(item: Match) => item.id}
         ListHeaderComponent={
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Jogos do Dia
-          </Text>
+          <>
+            {favoriteMatch && (
+              <FavoriteTeamBanner
+                team={favoriteTeam!.team}
+                matchHour={favoriteMatch.hour}
+                opponentName={
+                  favoriteMatch.homeTeam.slug === favoriteTeam!.team.slug
+                    ? favoriteMatch.awayTeam.name
+                    : favoriteMatch.homeTeam.name
+                }
+                onPress={() => onPressMatch(favoriteMatch)}
+              />
+            )}
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              Jogos do Dia
+            </Text>
+          </>
         }
         renderItem={({ item }) => (
           <MatchCard match={item} onPress={() => onPressMatch(item)} />

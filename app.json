@@ -27,8 +27,19 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.diego_serrat.wheretowatch"
+      "useNextNotificationsApi": true,
+      "package": "com.diego_serrat.wheretowatch",
+      "googleServicesFile": "./google-services.json"
     },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#14532d"
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     },

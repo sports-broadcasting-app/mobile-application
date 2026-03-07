@@ -1,4 +1,4 @@
-import { DailySchedule, Sport } from '../types/match';
+import { DailySchedule, Sport, Team } from '../types/match';
 import { API_BASE_URL } from '../constants/api';
 
 function buildQuery(params: Record<string, string | undefined>): string {
@@ -41,4 +41,25 @@ export async function fetchMatchesByDate(
   }
 
   return response.json() as Promise<DailySchedule>;
+}
+
+export interface League {
+  sport: Sport;
+  championship: string;
+  teams: Team[];
+}
+
+export interface TeamsResponse {
+  leagues: League[];
+}
+
+export async function fetchTeams(sport?: Sport): Promise<TeamsResponse> {
+  const query = buildQuery({ sport });
+  const response = await fetch(`${API_BASE_URL}/api/teams${query}`);
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json() as Promise<TeamsResponse>;
 }

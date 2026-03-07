@@ -27,3 +27,29 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(() => Promise.resolve()),
   removeItem: jest.fn(() => Promise.resolve()),
 }));
+
+jest.mock('expo-notifications', () => ({
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+  requestPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'granted' }),
+  ),
+  getExpoPushTokenAsync: jest.fn(() =>
+    Promise.resolve({ data: 'ExponentPushToken[test]' }),
+  ),
+  scheduleNotificationAsync: jest.fn(() => Promise.resolve('notification-id')),
+  cancelAllScheduledNotificationsAsync: jest.fn(() => Promise.resolve()),
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn(() => Promise.resolve()),
+  AndroidImportance: { HIGH: 4 },
+  SchedulableTriggerInputTypes: { DATE: 'date' },
+}));
+
+jest.mock('expo-device', () => ({
+  isDevice: true,
+}));
+
+jest.mock('expo-constants', () => ({
+  expoConfig: {
+    extra: { eas: { projectId: 'test-project-id' } },
+  },
+}));

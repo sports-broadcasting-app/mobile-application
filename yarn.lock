@@ -2593,6 +2593,11 @@ babel-preset-jest@^29.6.3:
     babel-plugin-jest-hoist "^29.6.3"
     babel-preset-current-node-syntax "^1.0.0"
 
+badgin@^1.1.5:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/badgin/-/badgin-1.2.3.tgz#994b5f519827d7d5422224825b2c8faea2bc43ad"
+  integrity sha512-NQGA7LcfCpSzIbGRbkgjgdWkjy7HI+Th5VLxTJfW5EeaAf3fnS+xWQaQOCYiny+q6QSvxqoSO04vCx+4u++EJw==
+
 balanced-match@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
@@ -3635,6 +3640,11 @@ expect@^29.0.0, expect@^29.7.0:
     jest-message-util "^29.7.0"
     jest-util "^29.7.0"
 
+expo-application@~55.0.8:
+  version "55.0.8"
+  resolved "https://registry.yarnpkg.com/expo-application/-/expo-application-55.0.8.tgz#5e216efde0f414d2bb8b3989d47151ba75c461ef"
+  integrity sha512-PeZk4Zj8LlzRcRtK3J4ouSPBoi9lroYsRbbz/0HEvx+uB6HIaM1qfzgpcctvjkdJJfnidBQNyieW5BVO/qUQ6w==
+
 expo-asset@~55.0.8:
   version "55.0.8"
   resolved "https://registry.yarnpkg.com/expo-asset/-/expo-asset-55.0.8.tgz#17622c3b19a4ab51a962608492b935f8c8637bb1"
@@ -3650,6 +3660,45 @@ expo-constants@~55.0.7:
   dependencies:
     "@expo/config" "~55.0.8"
     "@expo/env" "~2.1.1"
+
+expo-dev-client@~55.0.11:
+  version "55.0.11"
+  resolved "https://registry.yarnpkg.com/expo-dev-client/-/expo-dev-client-55.0.11.tgz#8230906715aaeda2c14cc43df8aa4832fe12ce98"
+  integrity sha512-7Be3DMgm+lmfShqGvym6kva77Cr7wWqz+Bp3cYUOwDGvC43nHTCzkDCjA2dMVgge8Y26xu4sW8KDM47Jf3/Zuw==
+  dependencies:
+    expo-dev-launcher "55.0.12"
+    expo-dev-menu "55.0.11"
+    expo-dev-menu-interface "55.0.1"
+    expo-manifests "~55.0.9"
+    expo-updates-interface "~55.1.3"
+
+expo-dev-launcher@55.0.12:
+  version "55.0.12"
+  resolved "https://registry.yarnpkg.com/expo-dev-launcher/-/expo-dev-launcher-55.0.12.tgz#14e2a1032f4c3299a2087c27c2bf6eb7d3b657c3"
+  integrity sha512-ZXml3Cn/rqxpDTcEcnLTLYLkVN0hoB3nxNOkdGsYBCcg+atfxHDTCeB6GTEza949Zx4Cbr+EJYDhgurUXPhJzQ==
+  dependencies:
+    "@expo/schema-utils" "^55.0.2"
+    expo-dev-menu "55.0.11"
+    expo-manifests "~55.0.9"
+
+expo-dev-menu-interface@55.0.1:
+  version "55.0.1"
+  resolved "https://registry.yarnpkg.com/expo-dev-menu-interface/-/expo-dev-menu-interface-55.0.1.tgz#b1bb15b3031884e42d3dffcc7997931b749c1248"
+  integrity sha512-FkNtwq1q6NmYoy28pj+ZLuHmirJgc039pQbJ167MZJIaprLcMN1yy67qA7xBHK+FNJ8AN8kGCtMTPByg5UC72A==
+
+expo-dev-menu@55.0.11:
+  version "55.0.11"
+  resolved "https://registry.yarnpkg.com/expo-dev-menu/-/expo-dev-menu-55.0.11.tgz#abd1f059f4eb768e6c7234490640499bfabdc43c"
+  integrity sha512-ZT4tBErubYs7Luy4+PtW/m1zBsjVdd3jYn2/FaT5xnXjaXSVkZm3Gc9ApS+a1JE0Jr4DdHL2ZJ6qUhbcSsyp5Q==
+  dependencies:
+    expo-dev-menu-interface "55.0.1"
+
+expo-device@^55.0.9:
+  version "55.0.9"
+  resolved "https://registry.yarnpkg.com/expo-device/-/expo-device-55.0.9.tgz#e5a4e1d6b5941a746021ad08497d1e9e2ddf4d7d"
+  integrity sha512-BzeuL7lwg2jh/tU+HTJ5dxygB1tpfgThaguPPH86K0ujcj/4RBkC27i/i7nhSoWvL1pQIgUqL0L7WTtjcS9t/w==
+  dependencies:
+    ua-parser-js "^0.7.33"
 
 expo-file-system@~55.0.10:
   version "55.0.10"
@@ -3675,6 +3724,11 @@ expo-image@^55.0.5:
   dependencies:
     sf-symbols-typescript "^2.2.0"
 
+expo-json-utils@~55.0.0:
+  version "55.0.0"
+  resolved "https://registry.yarnpkg.com/expo-json-utils/-/expo-json-utils-55.0.0.tgz#9af6675e63c6c3715e4989fcec2a84d79fd6e6ae"
+  integrity sha512-aupt/o5PDAb8dXDCb0JcRdkqnTLxe/F+La7jrnyd/sXlYFfRgBJLFOa1SqVFXm1E/Xam1SE/yw6eAb+DGY7Arg==
+
 expo-keep-awake@~55.0.4:
   version "55.0.4"
   resolved "https://registry.yarnpkg.com/expo-keep-awake/-/expo-keep-awake-55.0.4.tgz#8fe3685b75bda28e15268821a384e069f0395fab"
@@ -3693,6 +3747,14 @@ expo-linking@~55.0.7:
     expo-constants "~55.0.7"
     invariant "^2.2.4"
 
+expo-manifests@~55.0.9:
+  version "55.0.9"
+  resolved "https://registry.yarnpkg.com/expo-manifests/-/expo-manifests-55.0.9.tgz#7cc479cf3af5f01369e40d068018d54a5711d44f"
+  integrity sha512-i82j3X4hbxYDe6kxUw4u8WfvbvTj2w+9BD9WKuL0mFRy+MjvdzdyaqAjEViWCKo/alquP/hTApDTQBb3UmWhkg==
+  dependencies:
+    "@expo/config" "~55.0.8"
+    expo-json-utils "~55.0.0"
+
 expo-modules-autolinking@55.0.8:
   version "55.0.8"
   resolved "https://registry.yarnpkg.com/expo-modules-autolinking/-/expo-modules-autolinking-55.0.8.tgz#3b69d3e0032f714efc5b979165989a0eab6f7bfc"
@@ -3709,6 +3771,17 @@ expo-modules-core@55.0.13:
   integrity sha512-DYLQTOJAR7jD3M9S0sH9myZaPEtShdicHrPiWcupIXMeMkQxFzErx+adUI8gZPy4AU45BgeGgtaogRfT25iLfw==
   dependencies:
     invariant "^2.2.4"
+
+expo-notifications@^55.0.11:
+  version "55.0.11"
+  resolved "https://registry.yarnpkg.com/expo-notifications/-/expo-notifications-55.0.11.tgz#659c861b5ecb81de07fa21cad483e3cf3b970362"
+  integrity sha512-nx9OIx0qJh6HWKW2Jq8uF365q56eDFcAnDMMKOpA3eEFhBy6IzTJNrq9AGdOoylWI4OeVW0Z6wxEXPZOan+9VA==
+  dependencies:
+    "@expo/image-utils" "^0.8.12"
+    abort-controller "^3.0.0"
+    badgin "^1.1.5"
+    expo-application "~55.0.8"
+    expo-constants "~55.0.7"
 
 expo-router@^55.0.3:
   version "55.0.3"
@@ -3761,6 +3834,11 @@ expo-symbols@^55.0.4:
   dependencies:
     "@expo-google-fonts/material-symbols" "^0.4.1"
     sf-symbols-typescript "^2.0.0"
+
+expo-updates-interface@~55.1.3:
+  version "55.1.3"
+  resolved "https://registry.yarnpkg.com/expo-updates-interface/-/expo-updates-interface-55.1.3.tgz#cecc1821a9f5e773739144bea7ad93c6a485baea"
+  integrity sha512-UVVIiZqymQZJL+o/jh65kXOI97xdkbqBJJM0LMabaPMNLFnc6/WvOMOzmQs7SPyKb8+0PeBaFd7tj5DzF6JeQg==
 
 expo@~55.0.4:
   version "55.0.4"
@@ -7496,6 +7574,11 @@ typescript@~5.9.2:
   version "5.9.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.9.3.tgz#5b4f59e15310ab17a216f5d6cf53ee476ede670f"
   integrity sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==
+
+ua-parser-js@^0.7.33:
+  version "0.7.41"
+  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.41.tgz#9f6dee58c389e8afababa62a4a2dc22edb69a452"
+  integrity sha512-O3oYyCMPYgNNHuO7Jjk3uacJWZF8loBgwrfd/5LE/HyZ3lUIOdniQ7DNXJcIgZbwioZxk0fLfI4EVnetdiX5jg==
 
 unbox-primitive@^1.1.0:
   version "1.1.0"

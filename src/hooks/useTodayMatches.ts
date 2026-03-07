@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Match, Sport } from '../types/match';
 import { fetchTodayMatches } from '../services/matchService';
+import { useFavoriteTeam } from '../contexts/FavoriteTeamContext';
 
 interface UseTodayMatchesResult {
   matches: Match[];
@@ -14,6 +15,7 @@ interface UseTodayMatchesResult {
 }
 
 export function useTodayMatches(sport?: Sport): UseTodayMatchesResult {
+  const { favoriteTeam } = useFavoriteTeam();
   const {
     data: schedule,
     isLoading,
@@ -32,12 +34,23 @@ export function useTodayMatches(sport?: Sport): UseTodayMatchesResult {
 
   const highlightedMatches = useMemo(() => {
     if (!schedule?.matches) return [];
+    const favSlug = favoriteTeam?.team.slug;
+
+    const isFavoriteMatch = (m: Match): boolean => {
+      if (!favSlug || m.sport === 'formula1') return false;
+      return m.homeTeam.slug === favSlug || m.awayTeam.slug === favSlug;
+    };
+
     return [...schedule.matches].sort((a, b) => {
       if (a.status === 'match-live' && b.status !== 'match-live') return -1;
       if (a.status !== 'match-live' && b.status === 'match-live') return 1;
+      const aFav = isFavoriteMatch(a);
+      const bFav = isFavoriteMatch(b);
+      if (aFav && !bFav) return -1;
+      if (!aFav && bFav) return 1;
       return a.hour.localeCompare(b.hour);
     });
-  }, [schedule?.matches]);
+  }, [schedule?.matches, favoriteTeam]);
 
   return {
     matches: schedule?.matches ?? [],
