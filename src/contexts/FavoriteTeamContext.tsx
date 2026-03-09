@@ -8,6 +8,7 @@ import {
   ReactNode,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 import { Team, Sport } from '../types/match';
 import { registerForPushNotifications } from '../services/notificationService';
 import {
@@ -47,11 +48,29 @@ async function ensureSubscriberRegistered(
   favoriteTeam: FavoriteTeamData,
 ): Promise<string | null> {
   const token = await registerForPushNotifications();
-  if (!token) return null;
+  if (!token) {
+    Alert.alert(
+      'Debug',
+      'Push token is null — permission denied or unavailable',
+    );
+    return null;
+  }
 
-  await registerSubscriber(token, favoriteTeam.team.slug, favoriteTeam.sport);
-  await AsyncStorage.setItem(SUBSCRIBER_REGISTERED_KEY, token);
-  return token;
+  try {
+    await registerSubscriber(token, favoriteTeam.team.slug, favoriteTeam.sport);
+    await AsyncStorage.setItem(SUBSCRIBER_REGISTERED_KEY, token);
+    Alert.alert(
+      'Debug',
+      `Subscriber registered!\nToken: ${token.slice(0, 40)}...\nTeam: ${favoriteTeam.team.slug}\nSport: ${favoriteTeam.sport}`,
+    );
+    return token;
+  } catch (err) {
+    Alert.alert(
+      'Debug',
+      `Register failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+    throw err;
+  }
 }
 
 export function FavoriteTeamProvider({ children }: FavoriteTeamProviderProps) {
