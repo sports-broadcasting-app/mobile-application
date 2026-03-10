@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "660342058798",
+    "project_id": "notifications-where-to-watch",
+    "storage_bucket": "notifications-where-to-watch.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:660342058798:android:74b077e766319f193354bf",
+        "android_client_info": {
+          "package_name": "com.diego_serrat.wheretowatch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8BdwQTkS0HAiPfbmVHWa4JRDqo6qX2ns"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
