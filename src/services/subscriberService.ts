@@ -1,15 +1,19 @@
 import { API_BASE_URL } from '../constants/api';
 import { Sport } from '../types/match';
 
-export async function registerSubscriber(
+export interface TeamSubscription {
+  teamSlug: string;
+  sport: Sport;
+}
+
+export async function registerSubscriberTeams(
   pushToken: string,
-  teamSlug: string,
-  sport: Sport,
+  teams: TeamSubscription[],
 ): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/subscribers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ pushToken, teamSlug, sport }),
+    body: JSON.stringify({ pushToken, teams }),
   });
   if (!response.ok) {
     throw new Error(`Subscriber registration failed: ${response.status}`);

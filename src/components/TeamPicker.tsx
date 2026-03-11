@@ -27,11 +27,11 @@ interface TeamSection {
 }
 
 interface TeamPickerProps {
-  onSelect: (team: Team, sport: Sport) => void;
-  selectedSlug: string | null;
+  onToggleTeam: (team: Team, sport: Sport) => void;
+  selectedSlugs: Set<string>;
 }
 
-export function TeamPicker({ onSelect, selectedSlug }: TeamPickerProps) {
+export function TeamPicker({ onToggleTeam, selectedSlugs }: TeamPickerProps) {
   const { colors } = useTheme();
 
   const {
@@ -93,7 +93,7 @@ export function TeamPicker({ onSelect, selectedSlug }: TeamPickerProps) {
         </Text>
       )}
       renderItem={({ item }) => {
-        const isSelected = item.team.slug === selectedSlug;
+        const isSelected = selectedSlugs.has(item.team.slug);
         return (
           <TouchableOpacity
             style={[
@@ -105,7 +105,7 @@ export function TeamPicker({ onSelect, selectedSlug }: TeamPickerProps) {
                 borderColor: isSelected ? colors.primary : colors.border,
               },
             ]}
-            onPress={() => onSelect(item.team, item.sport)}
+            onPress={() => onToggleTeam(item.team, item.sport)}
             testID={`team-option-${item.team.slug}`}
           >
             <View style={styles.rowLeft}>
@@ -117,13 +117,11 @@ export function TeamPicker({ onSelect, selectedSlug }: TeamPickerProps) {
                 {item.team.name}
               </Text>
             </View>
-            {isSelected && (
-              <MaterialCommunityIcons
-                name="check-circle"
-                size={22}
-                color={colors.primary}
-              />
-            )}
+            <MaterialCommunityIcons
+              name={isSelected ? 'check-circle' : 'circle-outline'}
+              size={22}
+              color={isSelected ? colors.primary : colors.textTertiary}
+            />
           </TouchableOpacity>
         );
       }}

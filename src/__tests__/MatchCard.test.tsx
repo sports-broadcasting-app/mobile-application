@@ -87,11 +87,10 @@ describe('MatchCard', () => {
     expect(screen.getByText('Transmissao nao definida')).toBeTruthy();
   });
 
-  it('renders VS badge when match not started', () => {
+  it('renders vs text when match not started', () => {
     render(<MatchCard match={makeMatch()} />);
 
-    expect(screen.getByTestId('vs-badge')).toBeTruthy();
-    expect(screen.getByText('VS')).toBeTruthy();
+    expect(screen.getByText('vs')).toBeTruthy();
   });
 
   it('shows AO VIVO badge for live matches', () => {
@@ -193,5 +192,55 @@ describe('MatchCard', () => {
     render(<MatchCard match={makeF1Match()} />);
 
     expect(screen.getByText('01:00')).toBeTruthy();
+  });
+
+  it('renders Lembrar and Assistir buttons for team matches not ended', () => {
+    render(<MatchCard match={makeMatch()} />);
+
+    expect(screen.getByText('Lembrar')).toBeTruthy();
+    expect(screen.getByText('Assistir')).toBeTruthy();
+  });
+
+  it('does not render action buttons for ended matches', () => {
+    render(
+      <MatchCard
+        match={makeMatch({
+          status: 'match-ended',
+          score: {
+            type: 'football',
+            goals: { home: 2, away: 0 },
+            penalties: { home: null, away: null },
+          },
+        })}
+      />,
+    );
+
+    expect(screen.queryByText('Lembrar')).toBeNull();
+    expect(screen.queryByText('Assistir')).toBeNull();
+  });
+
+  it('does not render action buttons for F1 matches', () => {
+    render(<MatchCard match={makeF1Match()} />);
+
+    expect(screen.queryByText('Lembrar')).toBeNull();
+    expect(screen.queryByText('Assistir')).toBeNull();
+  });
+
+  it('calls onPressReminder when Lembrar is pressed', () => {
+    const onPressReminder = jest.fn();
+    render(<MatchCard match={makeMatch()} onPressReminder={onPressReminder} />);
+
+    fireEvent.press(screen.getByTestId('reminder-btn-1'));
+
+    expect(onPressReminder).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onPressWatch when Assistir is pressed', () => {
+    const onPressWatch = jest.fn();
+    render(<MatchCard match={makeMatch()} onPressWatch={onPressWatch} />);
+
+    fireEvent.press(screen.getByTestId('watch-btn-1'));
+
+    expect(onPressWatch).toHaveBeenCalledTimes(1);
   });
 });

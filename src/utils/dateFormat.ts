@@ -8,6 +8,26 @@ const WEEKDAYS = [
   'Sabado',
 ];
 
+const MONTHS = [
+  'janeiro',
+  'fevereiro',
+  'marco',
+  'abril',
+  'maio',
+  'junho',
+  'julho',
+  'agosto',
+  'setembro',
+  'outubro',
+  'novembro',
+  'dezembro',
+];
+
+export function formatTodayDate(): string {
+  const now = new Date();
+  return `${now.getDate()} de ${MONTHS[now.getMonth()]}`;
+}
+
 export function formatShortDate(dateStr: string): string {
   const [, month, day] = dateStr.split('-');
   return `${day}/${month}`;

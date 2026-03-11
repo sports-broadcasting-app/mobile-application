@@ -3,17 +3,22 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Team } from '../types/match';
 import { TeamCircle } from './TeamCircle';
 import { useTheme } from '../contexts/ThemeContext';
+import {
+  spacing,
+  radius,
+  typography,
+  iconSize,
+  shadows,
+} from '../constants/designTokens';
 
 interface FavoriteTeamBannerProps {
   team: Team;
-  matchHour: string;
   opponentName: string;
   onPress: () => void;
 }
 
 export function FavoriteTeamBanner({
   team,
-  matchHour,
   opponentName,
   onPress,
 }: FavoriteTeamBannerProps) {
@@ -21,24 +26,30 @@ export function FavoriteTeamBanner({
 
   return (
     <TouchableOpacity
-      style={[styles.banner, { backgroundColor: colors.surfaceAlt }]}
+      style={[
+        styles.banner,
+        {
+          backgroundColor: colors.surfaceCard,
+          borderColor: colors.border,
+          shadowColor: colors.shadow,
+        },
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
       testID="favorite-team-banner"
     >
-      <View style={[styles.accent, { backgroundColor: colors.primary }]} />
-      <TeamCircle team={team} size={36} />
+      <TeamCircle team={team} size={40} />
       <View style={styles.textContainer}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          Seu time joga hoje!
+          Seu time joga hoje
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          vs {opponentName} - {matchHour}
+          {team.name} {'\u00B7'} {opponentName}
         </Text>
       </View>
       <MaterialCommunityIcons
         name="chevron-right"
-        size={22}
+        size={iconSize.md}
         color={colors.textTertiary}
       />
     </TouchableOpacity>
@@ -49,33 +60,24 @@ const styles = StyleSheet.create({
   banner: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 4,
-    borderRadius: 12,
-    padding: 12,
-    gap: 12,
-    overflow: 'hidden',
-  },
-  accent: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-    borderTopLeftRadius: 12,
-    borderBottomLeftRadius: 12,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    marginBottom: spacing.xs,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.md,
+    borderWidth: 1,
+    ...shadows.sm,
   },
   textContainer: {
     flex: 1,
-    marginLeft: 2,
   },
   title: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.bold,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: typography.size.sm,
     marginTop: 2,
   },
 });

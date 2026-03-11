@@ -33,7 +33,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="configuracoes"
         options={{
-          title: 'Config',
+          title: 'Preferencias',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),

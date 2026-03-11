@@ -12,43 +12,113 @@ import { StatusBar } from 'expo-status-bar';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Sport, Match, TeamMatch } from '../types/match';
 import { useTodayMatches } from '../hooks/useTodayMatches';
-import { useFavoriteTeam } from '../contexts/FavoriteTeamContext';
+import { useFavoriteTeams } from '../contexts/FavoriteTeamsContext';
 import { SPORTS } from '../constants/sports';
 import { MatchCard } from '../components/MatchCard';
 import { FavoriteTeamBanner } from '../components/FavoriteTeamBanner';
-import { GradientHeader } from '../components/GradientHeader';
+import { ReminderSheet } from '../components/ReminderSheet';
 import { useTheme } from '../contexts/ThemeContext';
+import { useReminderPreferences } from '../hooks/useReminderPreferences';
+import { formatTodayDate } from '../utils/dateFormat';
+import {
+  spacing,
+  radius,
+  typography,
+  iconSize,
+} from '../constants/designTokens';
 
 interface HomeScreenProps {
   onPressMatch: (match: Match) => void;
+  onPressSettings?: () => void;
 }
 
-export function HomeScreen({ onPressMatch }: HomeScreenProps) {
+export function HomeScreen({ onPressMatch, onPressSettings }: HomeScreenProps) {
   const { colors } = useTheme();
   const { highlightedMatches, loading, error, refetch } = useTodayMatches();
-  const { favoriteTeam } = useFavoriteTeam();
+  const { favoriteTeams } = useFavoriteTeams();
+  const { getReminder, setReminder } = useReminderPreferences();
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
+  const [reminderMatch, setReminderMatch] = useState<TeamMatch | null>(null);
 
   const filteredMatches = useMemo(() => {
     if (!selectedSport) return highlightedMatches;
     return highlightedMatches.filter((m) => m.sport === selectedSport);
   }, [highlightedMatches, selectedSport]);
 
-  const favoriteMatch = useMemo(() => {
-    if (!favoriteTeam) return null;
-    const slug = favoriteTeam.team.slug;
-    return (
-      filteredMatches.find(
-        (m): m is TeamMatch =>
-          m.sport !== 'formula1' &&
-          (m.homeTeam.slug === slug || m.awayTeam.slug === slug),
-      ) ?? null
-    );
-  }, [filteredMatches, favoriteTeam]);
+  const favoriteMatches = useMemo(() => {
+    if (favoriteTeams.length === 0) return [];
+    const slugs = new Set(favoriteTeams.map((f) => f.team.slug));
+    const seen = new Set<string>();
+
+    return filteredMatches
+      .filter((m): m is TeamMatch => {
+        if (m.sport === 'formula1') return false;
+        if (seen.has(m.id)) return false;
+        const matches =
+          slugs.has(m.homeTeam.slug) || slugs.has(m.awayTeam.slug);
+        if (matches) seen.add(m.id);
+        return matches;
+      })
+      .map((match) => {
+        const favEntry = favoriteTeams.find(
+          (f) =>
+            match.homeTeam.slug === f.team.slug ||
+            match.awayTeam.slug === f.team.slug,
+        )!;
+        const opponent =
+          match.homeTeam.slug === favEntry.team.slug
+            ? match.awayTeam
+            : match.homeTeam;
+        return { match, team: favEntry.team, opponent };
+      });
+  }, [filteredMatches, favoriteTeams]);
 
   const handleSportPress = (sport: Sport) => {
     setSelectedSport((prev) => (prev === sport ? null : sport));
   };
+
+  const renderHeader = () => (
+    <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
+      <View style={styles.headerTopRow}>
+        <View style={styles.logoRow}>
+          <MaterialCommunityIcons
+            name="television-classic"
+            size={iconSize.xl}
+            color={colors.primary}
+          />
+          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+            OndeVer
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={onPressSettings}
+          testID="header-settings"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <MaterialCommunityIcons
+            name="cog-outline"
+            size={iconSize.lg}
+            color={colors.textSecondary}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.dateRow}>
+        <Text style={[styles.dateText, { color: colors.textSecondary }]}>
+          Hoje {'\u00B7'} {formatTodayDate()}
+        </Text>
+        <TouchableOpacity testID="header-search">
+          <MaterialCommunityIcons
+            name="magnify"
+            size={iconSize.lg}
+            color={colors.textSecondary}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {renderChips()}
+    </View>
+  );
 
   const renderChips = () => (
     <ScrollView
@@ -66,8 +136,8 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
               isActive
                 ? { backgroundColor: colors.chipActiveBg }
                 : {
-                    backgroundColor: 'rgba(255,255,255,0.15)',
-                    borderColor: 'rgba(255,255,255,0.3)',
+                    backgroundColor: colors.chipInactiveBg,
+                    borderColor: colors.chipBorder,
                     borderWidth: 1,
                   },
             ]}
@@ -77,14 +147,16 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
           >
             <MaterialCommunityIcons
               name={icon}
-              size={18}
-              color={isActive ? colors.chipActiveText : '#fff'}
+              size={iconSize.sm}
+              color={isActive ? colors.chipActiveText : colors.chipInactiveText}
             />
             <Text
               style={[
                 styles.chipLabel,
                 {
-                  color: isActive ? colors.chipActiveText : '#fff',
+                  color: isActive
+                    ? colors.chipActiveText
+                    : colors.chipInactiveText,
                 },
               ]}
             >
@@ -130,25 +202,30 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
         keyExtractor={(item: Match) => item.id}
         ListHeaderComponent={
           <>
-            {favoriteMatch && (
+            {favoriteMatches.map(({ match, team, opponent }) => (
               <FavoriteTeamBanner
-                team={favoriteTeam!.team}
-                matchHour={favoriteMatch.hour}
-                opponentName={
-                  favoriteMatch.homeTeam.slug === favoriteTeam!.team.slug
-                    ? favoriteMatch.awayTeam.name
-                    : favoriteMatch.homeTeam.name
-                }
-                onPress={() => onPressMatch(favoriteMatch)}
+                key={match.id}
+                team={team}
+                opponentName={opponent.name}
+                onPress={() => onPressMatch(match)}
               />
-            )}
+            ))}
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Jogos do Dia
             </Text>
           </>
         }
         renderItem={({ item }) => (
-          <MatchCard match={item} onPress={() => onPressMatch(item)} />
+          <MatchCard
+            match={item}
+            onPress={() => onPressMatch(item)}
+            onPressReminder={(match) => {
+              if (match.sport !== 'formula1') {
+                setReminderMatch(match as TeamMatch);
+              }
+            }}
+            onPressWatch={(match) => onPressMatch(match)}
+          />
         )}
         contentContainerStyle={styles.list}
         onRefresh={refetch}
@@ -166,9 +243,22 @@ export function HomeScreen({ onPressMatch }: HomeScreenProps) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar style="light" />
-      <GradientHeader>{renderChips()}</GradientHeader>
+      <StatusBar style={colors.statusBar} />
+      {renderHeader()}
       {renderContent()}
+
+      <ReminderSheet
+        visible={reminderMatch !== null}
+        match={reminderMatch}
+        selectedTiming={reminderMatch ? getReminder(reminderMatch.id) : null}
+        onSelect={(timing) => {
+          if (reminderMatch) {
+            setReminder(reminderMatch.id, timing);
+            setReminderMatch(null);
+          }
+        }}
+        onCancel={() => setReminderMatch(null)}
+      />
     </View>
   );
 }
@@ -177,32 +267,61 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  header: {
+    paddingTop: 56,
+    paddingBottom: spacing.lg,
+    paddingHorizontal: spacing.xl,
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  headerTitle: {
+    fontSize: typography.size.xxl,
+    fontWeight: typography.weight.bold,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.lg,
+  },
+  dateText: {
+    fontSize: typography.size.lg,
+    fontWeight: typography.weight.bold,
+  },
   chipsContainer: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 16,
+    gap: spacing.sm,
+    marginTop: spacing.md,
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
   },
   chipLabel: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 8,
+    fontSize: typography.size.lg,
+    fontWeight: typography.weight.bold,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.sm,
   },
   list: {
-    paddingBottom: 16,
+    paddingBottom: spacing.lg,
   },
   centered: {
     flex: 1,
@@ -211,20 +330,20 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+    marginTop: spacing.md,
+    fontSize: typography.size.body,
   },
   errorText: {
-    fontSize: 16,
+    fontSize: typography.size.md,
     textAlign: 'center',
-    marginHorizontal: 32,
+    marginHorizontal: spacing.xxxl,
   },
   retryText: {
-    marginTop: 12,
-    fontSize: 14,
-    fontWeight: '600',
+    marginTop: spacing.md,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.semibold,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: typography.size.md,
   },
 });

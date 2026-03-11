@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Match, Sport } from '../types/match';
 import { fetchTodayMatches } from '../services/matchService';
-import { useFavoriteTeam } from '../contexts/FavoriteTeamContext';
+import { useFavoriteTeams } from '../contexts/FavoriteTeamsContext';
 
 interface UseTodayMatchesResult {
   matches: Match[];
@@ -15,7 +15,7 @@ interface UseTodayMatchesResult {
 }
 
 export function useTodayMatches(sport?: Sport): UseTodayMatchesResult {
-  const { favoriteTeam } = useFavoriteTeam();
+  const { favoriteTeams } = useFavoriteTeams();
   const {
     data: schedule,
     isLoading,
@@ -34,11 +34,11 @@ export function useTodayMatches(sport?: Sport): UseTodayMatchesResult {
 
   const highlightedMatches = useMemo(() => {
     if (!schedule?.matches) return [];
-    const favSlug = favoriteTeam?.team.slug;
+    const favSlugs = new Set(favoriteTeams.map((f) => f.team.slug));
 
     const isFavoriteMatch = (m: Match): boolean => {
-      if (!favSlug || m.sport === 'formula1') return false;
-      return m.homeTeam.slug === favSlug || m.awayTeam.slug === favSlug;
+      if (favSlugs.size === 0 || m.sport === 'formula1') return false;
+      return favSlugs.has(m.homeTeam.slug) || favSlugs.has(m.awayTeam.slug);
     };
 
     return [...schedule.matches].sort((a, b) => {
@@ -50,7 +50,7 @@ export function useTodayMatches(sport?: Sport): UseTodayMatchesResult {
       if (!aFav && bFav) return 1;
       return a.hour.localeCompare(b.hour);
     });
-  }, [schedule?.matches, favoriteTeam]);
+  }, [schedule?.matches, favoriteTeams]);
 
   return {
     matches: schedule?.matches ?? [],

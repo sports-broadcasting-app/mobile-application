@@ -3,10 +3,12 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
+const NOTIFICATION_COLOR = '#16a34a';
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
-    shouldPlaySound: false,
+    shouldPlaySound: true,
     shouldSetBadge: false,
     shouldShowBanner: true,
     shouldShowList: true,
@@ -36,7 +38,11 @@ export async function registerForPushNotifications(): Promise<string | null> {
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('match-reminders', {
         name: 'Lembretes de Jogos',
+        description: 'Notificacoes de lembrete antes dos jogos',
         importance: Notifications.AndroidImportance.HIGH,
+        vibrationPattern: [0, 250, 250, 250],
+        enableVibrate: true,
+        sound: 'default',
       });
     }
 
@@ -54,9 +60,12 @@ export async function scheduleMatchReminder(
   title: string,
   body: string,
   matchDate: Date,
+  minutesBefore: number = 30,
 ): Promise<string | null> {
   try {
-    const triggerDate = new Date(matchDate.getTime() - 30 * 60 * 1000);
+    const triggerDate = new Date(
+      matchDate.getTime() - minutesBefore * 60 * 1000,
+    );
     const now = new Date();
 
     if (triggerDate <= now) {
@@ -68,7 +77,11 @@ export async function scheduleMatchReminder(
         title,
         body,
         data: { matchId },
-        ...(Platform.OS === 'android' && { channelId: 'match-reminders' }),
+        sound: 'default',
+        ...(Platform.OS === 'android' && {
+          channelId: 'match-reminders',
+          color: NOTIFICATION_COLOR,
+        }),
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
