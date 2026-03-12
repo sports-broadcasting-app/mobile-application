@@ -8,7 +8,7 @@ const NOTIFICATION_COLOR = '#16a34a';
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
-    shouldPlaySound: true,
+    shouldPlaySound: false,
     shouldSetBadge: false,
     shouldShowBanner: true,
     shouldShowList: true,
@@ -42,7 +42,6 @@ export async function registerForPushNotifications(): Promise<string | null> {
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
         enableVibrate: true,
-        sound: 'default',
       });
     }
 
@@ -77,7 +76,6 @@ export async function scheduleMatchReminder(
         title,
         body,
         data: { matchId },
-        sound: 'default',
         ...(Platform.OS === 'android' && {
           channelId: 'match-reminders',
           color: NOTIFICATION_COLOR,
