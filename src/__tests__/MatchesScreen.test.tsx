@@ -99,7 +99,7 @@ describe('MatchesScreen', () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
     render(<MatchesScreen />);
 
-    expect(screen.getByText('Carregando jogos...')).toBeTruthy();
+    expect(screen.getByTestId('skeleton-loading')).toBeTruthy();
   });
 
   it('renders filtered matches by championship', async () => {

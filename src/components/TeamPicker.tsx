@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import {
-  ActivityIndicator,
   SectionList,
   StyleSheet,
   Text,
@@ -13,6 +12,7 @@ import { Team, Sport } from '../types/match';
 import { fetchTeams, League } from '../services/matchService';
 import { getChampionshipLabel } from '../utils/championshipLabel';
 import { TeamCircle } from './TeamCircle';
+import { SkeletonBlock } from './SkeletonBlock';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface TeamItem {
@@ -56,8 +56,26 @@ export function TeamPicker({ onToggleTeam, selectedSlugs }: TeamPickerProps) {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="small" color={colors.primary} />
+      <View>
+        <SkeletonBlock
+          width={100}
+          height={13}
+          borderRadius={4}
+          style={styles.sectionHeaderSkeleton}
+        />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <View key={i} style={styles.skeletonRow}>
+            <View style={styles.rowLeft}>
+              <SkeletonBlock width={32} height={32} borderRadius={16} />
+              <SkeletonBlock
+                width={120 - i * 10}
+                height={15}
+                borderRadius={4}
+              />
+            </View>
+            <SkeletonBlock width={22} height={22} borderRadius={11} />
+          </View>
+        ))}
       </View>
     );
   }
@@ -156,6 +174,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     flex: 1,
+  },
+  sectionHeaderSkeleton: {
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  skeletonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    marginBottom: 8,
   },
   centered: {
     paddingVertical: 20,

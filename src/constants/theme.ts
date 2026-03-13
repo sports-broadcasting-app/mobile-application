@@ -31,6 +31,8 @@ export interface ThemeColors {
   watchBtnText: string;
   overlayBg: string;
   sectionHeaderText: string;
+  skeletonBase: string;
+  skeletonHighlight: string;
 }
 
 export const lightTheme: ThemeColors = {
@@ -66,6 +68,8 @@ export const lightTheme: ThemeColors = {
   watchBtnText: '#fff',
   overlayBg: 'rgba(0, 0, 0, 0.5)',
   sectionHeaderText: '#6b7280',
+  skeletonBase: '#e5e7eb',
+  skeletonHighlight: '#f3f4f6',
 };
 
 export const darkTheme: ThemeColors = {
@@ -101,4 +105,6 @@ export const darkTheme: ThemeColors = {
   watchBtnText: '#111',
   overlayBg: 'rgba(0, 0, 0, 0.7)',
   sectionHeaderText: '#9ca3af',
+  skeletonBase: '#374151',
+  skeletonHighlight: '#4b5563',
 };

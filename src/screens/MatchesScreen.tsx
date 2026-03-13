@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,6 +11,8 @@ import {
 import { Stack } from 'expo-router';
 import { useTodayMatches } from '../hooks/useTodayMatches';
 import { MatchCard } from '../components/MatchCard';
+import { MatchCardSkeleton } from '../components/MatchCardSkeleton';
+import { SkeletonBlock } from '../components/SkeletonBlock';
 import { getChampionshipLabel } from '../utils/championshipLabel';
 import { formatShortDate } from '../utils/dateFormat';
 import { Match, Sport } from '../types/match';
@@ -50,12 +52,20 @@ export function MatchesScreen({
 
   if (loading) {
     return (
-      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Stack.Screen options={{ title, headerRight }} />
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-          Carregando jogos...
-        </Text>
+        <ScrollView
+          testID="skeleton-loading"
+          contentContainerStyle={styles.skeletonContainer}
+        >
+          <View style={styles.dateLabelSkeleton}>
+            <SkeletonBlock width={80} height={13} borderRadius={4} />
+          </View>
+          <MatchCardSkeleton showActions={false} />
+          <MatchCardSkeleton showActions={false} />
+          <MatchCardSkeleton showActions={false} />
+          <MatchCardSkeleton showActions={false} />
+        </ScrollView>
       </View>
     );
   }
@@ -135,9 +145,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+  skeletonContainer: {
+    paddingBottom: 16,
+  },
+  dateLabelSkeleton: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
   errorText: {
     fontSize: 16,

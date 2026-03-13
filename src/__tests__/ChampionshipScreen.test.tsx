@@ -101,7 +101,7 @@ describe('ChampionshipScreen', () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
     render(<ChampionshipScreen />);
 
-    expect(screen.getByText('Carregando campeonatos...')).toBeTruthy();
+    expect(screen.getByTestId('skeleton-loading')).toBeTruthy();
   });
 
   it('renders championship list after loading', async () => {

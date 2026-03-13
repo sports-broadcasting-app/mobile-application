@@ -134,7 +134,7 @@ describe('MatchDetailScreen', () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
     render(<MatchDetailScreen />);
 
-    expect(screen.getByTestId('activity-indicator')).toBeTruthy();
+    expect(screen.getByTestId('skeleton-loading')).toBeTruthy();
   });
 
   it('renders team names and circles', async () => {

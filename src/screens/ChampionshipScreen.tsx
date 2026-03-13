@@ -1,6 +1,6 @@
 import {
-  ActivityIndicator,
   FlatList,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,6 +10,7 @@ import { Stack } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTodayMatches } from '../hooks/useTodayMatches';
 import { getChampionshipLabel } from '../utils/championshipLabel';
+import { SkeletonBlock } from '../components/SkeletonBlock';
 import { Sport } from '../types/match';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -44,12 +45,33 @@ export function ChampionshipScreen({
 
   if (loading) {
     return (
-      <View style={[styles.centered, { backgroundColor: colors.surface }]}>
+      <View style={[styles.container, { backgroundColor: colors.surface }]}>
         <Stack.Screen options={{ title, headerRight }} />
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-          Carregando campeonatos...
-        </Text>
+        <ScrollView
+          testID="skeleton-loading"
+          contentContainerStyle={styles.list}
+        >
+          {Array.from({ length: 6 }).map((_, i) => (
+            <View key={i}>
+              <View style={styles.skeletonRow}>
+                <SkeletonBlock
+                  width={160 - i * 10}
+                  height={16}
+                  borderRadius={4}
+                />
+                <SkeletonBlock width={22} height={22} borderRadius={4} />
+              </View>
+              {i < 5 && (
+                <View
+                  style={[
+                    styles.separator,
+                    { backgroundColor: colors.borderLight },
+                  ]}
+                />
+              )}
+            </View>
+          ))}
+        </ScrollView>
       </View>
     );
   }
@@ -135,9 +157,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+  skeletonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
   errorText: {
     fontSize: 16,

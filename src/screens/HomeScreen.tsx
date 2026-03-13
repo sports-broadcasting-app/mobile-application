@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   ScrollView,
   StyleSheet,
@@ -15,6 +14,8 @@ import { useTodayMatches } from '../hooks/useTodayMatches';
 import { useFavoriteTeams } from '../contexts/FavoriteTeamsContext';
 import { SPORTS } from '../constants/sports';
 import { MatchCard } from '../components/MatchCard';
+import { MatchCardSkeleton } from '../components/MatchCardSkeleton';
+import { SkeletonBlock } from '../components/SkeletonBlock';
 import { FavoriteTeamBanner } from '../components/FavoriteTeamBanner';
 import { ReminderSheet } from '../components/ReminderSheet';
 import { useTheme } from '../contexts/ThemeContext';
@@ -171,12 +172,37 @@ export function HomeScreen({ onPressMatch, onPressSettings }: HomeScreenProps) {
   const renderContent = () => {
     if (loading) {
       return (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-            Carregando jogos...
-          </Text>
-        </View>
+        <ScrollView
+          testID="skeleton-loading"
+          contentContainerStyle={styles.skeletonContainer}
+        >
+          {/* Favorite banner skeleton */}
+          <View
+            style={[
+              styles.bannerSkeleton,
+              {
+                backgroundColor: colors.surfaceCard,
+                borderColor: colors.borderLight,
+              },
+            ]}
+          >
+            <SkeletonBlock width={40} height={40} borderRadius={20} />
+            <View style={styles.bannerSkeletonText}>
+              <SkeletonBlock width={120} height={14} borderRadius={4} />
+              <SkeletonBlock width={160} height={12} borderRadius={4} />
+            </View>
+          </View>
+
+          {/* Section title skeleton */}
+          <View style={styles.sectionTitleSkeleton}>
+            <SkeletonBlock width={100} height={18} borderRadius={4} />
+          </View>
+
+          {/* Match card skeletons */}
+          <MatchCardSkeleton />
+          <MatchCardSkeleton />
+          <MatchCardSkeleton />
+        </ScrollView>
       );
     }
 
@@ -329,9 +355,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 40,
   },
-  loadingText: {
-    marginTop: spacing.md,
-    fontSize: typography.size.body,
+  skeletonContainer: {
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.lg,
+  },
+  bannerSkeleton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginHorizontal: spacing.lg,
+    marginVertical: 6,
+    padding: spacing.lg,
+    borderRadius: radius.md,
+    borderWidth: 1,
+  },
+  bannerSkeletonText: {
+    flex: 1,
+    gap: spacing.sm,
+  },
+  sectionTitleSkeleton: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.sm,
   },
   errorText: {
     fontSize: typography.size.md,

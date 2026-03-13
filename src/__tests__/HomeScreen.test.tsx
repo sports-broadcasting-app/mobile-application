@@ -171,7 +171,7 @@ describe('HomeTabScreen', () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
     render(<HomeTabScreen />);
 
-    expect(screen.getByText('Carregando jogos...')).toBeTruthy();
+    expect(screen.getByTestId('skeleton-loading')).toBeTruthy();
   });
 
   it('shows error state', async () => {

@@ -1,16 +1,10 @@
 import { useMemo } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { useTodayMatches } from '../hooks/useTodayMatches';
 import { GradientHeader } from '../components/GradientHeader';
+import { SkeletonBlock } from '../components/SkeletonBlock';
 import { CountdownTimer } from '../components/CountdownTimer';
 import { CtaButton } from '../components/CtaButton';
 import { TeamCircle } from '../components/TeamCircle';
@@ -62,13 +56,53 @@ export function MatchDetailScreen({ id, sport }: MatchDetailScreenProps) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <GradientHeader showBackButton onBack={() => router.back()} />
-        <View style={styles.centered}>
-          <ActivityIndicator
-            size="large"
-            color={colors.primary}
-            testID="activity-indicator"
-          />
-        </View>
+        <ScrollView
+          testID="skeleton-loading"
+          contentContainerStyle={styles.skeletonContent}
+        >
+          {/* Countdown skeleton */}
+          <View style={styles.skeletonCenter}>
+            <SkeletonBlock width={200} height={28} borderRadius={6} />
+          </View>
+
+          {/* Teams skeleton */}
+          <View style={styles.teamsSection}>
+            <View style={styles.teamColumn}>
+              <SkeletonBlock width={80} height={80} borderRadius={40} />
+            </View>
+            <View style={styles.vsColumn}>
+              <SkeletonBlock width={48} height={48} borderRadius={24} />
+            </View>
+            <View style={styles.teamColumn}>
+              <SkeletonBlock width={80} height={80} borderRadius={40} />
+            </View>
+          </View>
+
+          {/* Title skeleton */}
+          <View style={styles.skeletonCenter}>
+            <SkeletonBlock width={180} height={18} borderRadius={4} />
+          </View>
+
+          {/* Championship + date skeleton */}
+          <View style={[styles.skeletonCenter, { marginTop: 8 }]}>
+            <SkeletonBlock width={140} height={15} borderRadius={4} />
+          </View>
+          <View style={[styles.skeletonCenter, { marginTop: 4 }]}>
+            <SkeletonBlock width={100} height={14} borderRadius={4} />
+          </View>
+
+          {/* CTA button skeleton */}
+          <View style={[styles.skeletonCenter, { marginTop: 16 }]}>
+            <SkeletonBlock width={200} height={44} borderRadius={22} />
+          </View>
+
+          {/* Broadcast circles skeleton */}
+          <View style={styles.broadcastRow}>
+            <SkeletonBlock width={36} height={36} borderRadius={18} />
+            <SkeletonBlock width={36} height={36} borderRadius={18} />
+            <SkeletonBlock width={36} height={36} borderRadius={18} />
+          </View>
+        </ScrollView>
       </View>
     );
   }
@@ -269,6 +303,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 12,
+  },
+  skeletonContent: {
+    paddingBottom: 32,
+  },
+  skeletonCenter: {
+    alignItems: 'center',
   },
   bottomSpacer: {
     height: 32,
