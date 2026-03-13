@@ -157,7 +157,11 @@ export default function ConfiguracoesTabScreen() {
         </Text>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Aparencia */}
         <Text
           style={[styles.sectionTitle, { color: colors.sectionHeaderText }]}

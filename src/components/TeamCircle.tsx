@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Team } from '../types/match';
@@ -9,7 +9,10 @@ interface TeamCircleProps {
   size?: number;
 }
 
-export function TeamCircle({ team, size = 72 }: TeamCircleProps) {
+export const TeamCircle = React.memo(function TeamCircle({
+  team,
+  size = 72,
+}: TeamCircleProps) {
   const color = getTeamColor(team.slug);
   const [imageError, setImageError] = useState(false);
   const showImage = !!team.logoUrl && !imageError;
@@ -42,7 +45,7 @@ export function TeamCircle({ team, size = 72 }: TeamCircleProps) {
       ) : null}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   circle: {

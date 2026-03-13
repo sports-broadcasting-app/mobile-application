@@ -1,4 +1,10 @@
-import { DailySchedule, Sport, Team } from '../types/match';
+import {
+  DailySchedule,
+  Sport,
+  Team,
+  StandingsResponse,
+  StandingsTable,
+} from '../types/match';
 import { API_BASE_URL } from '../constants/api';
 
 function buildQuery(params: Record<string, string | undefined>): string {
@@ -62,4 +68,19 @@ export async function fetchTeams(sport?: Sport): Promise<TeamsResponse> {
   }
 
   return response.json() as Promise<TeamsResponse>;
+}
+
+export async function fetchStandings(
+  championship?: string,
+  sport?: Sport,
+): Promise<StandingsTable[]> {
+  const query = buildQuery({ championship, sport });
+  const response = await fetch(`${API_BASE_URL}/api/standings${query}`);
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  const data = (await response.json()) as StandingsResponse;
+  return data.tables;
 }

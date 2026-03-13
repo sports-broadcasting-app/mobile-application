@@ -31,18 +31,25 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="campeonatos"
+        options={{
+          title: 'Classificacao',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="trophy-outline"
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="configuracoes"
         options={{
           title: 'Preferencias',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="campeonatos"
-        options={{
-          href: null,
         }}
       />
     </Tabs>

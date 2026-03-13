@@ -1,3 +1,4 @@
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { getBroadcasterBrand } from '../constants/broadcasterBrands';
 
@@ -6,7 +7,10 @@ interface BroadcasterCircleProps {
   size?: number;
 }
 
-export function BroadcasterCircle({ name, size = 40 }: BroadcasterCircleProps) {
+export const BroadcasterCircle = React.memo(function BroadcasterCircle({
+  name,
+  size = 40,
+}: BroadcasterCircleProps) {
   const brand = getBroadcasterBrand(name);
 
   if (!brand) return null;
@@ -34,7 +38,7 @@ export function BroadcasterCircle({ name, size = 40 }: BroadcasterCircleProps) {
       </Text>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   circle: {

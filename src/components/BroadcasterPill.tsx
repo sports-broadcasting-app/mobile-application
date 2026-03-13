@@ -1,3 +1,4 @@
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -5,7 +6,9 @@ interface BroadcasterPillProps {
   name: string;
 }
 
-export function BroadcasterPill({ name }: BroadcasterPillProps) {
+export const BroadcasterPill = React.memo(function BroadcasterPill({
+  name,
+}: BroadcasterPillProps) {
   const { colors } = useTheme();
 
   return (
@@ -18,7 +21,7 @@ export function BroadcasterPill({ name }: BroadcasterPillProps) {
       </Text>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   pill: {

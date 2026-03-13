@@ -21,7 +21,7 @@ interface MatchCardProps {
   onPressWatch?: (match: Match) => void;
 }
 
-export function MatchCard({
+export const MatchCard = React.memo(function MatchCard({
   match,
   onPress,
   onPressReminder,
@@ -207,7 +207,7 @@ export function MatchCard({
       )}
     </View>
   );
-}
+});
 
 function renderScoreText(score: MatchScore): string {
   if (score.type === 'football') {

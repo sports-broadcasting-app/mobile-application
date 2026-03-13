@@ -89,3 +89,43 @@ export interface DailySchedule {
   crawledAt: string;
   matches: Match[];
 }
+
+export interface StandingTeam {
+  name: string;
+  slug: string;
+  logoUrl: string;
+}
+
+export interface StandingRow {
+  position: number;
+  team: StandingTeam;
+  points: number;
+  played?: number;
+  won?: number;
+  drawn?: number;
+  lost?: number;
+  goalsFor?: number;
+  goalsAgainst?: number;
+  goalDifference?: number;
+  setsWon?: number;
+  setsLost?: number;
+  driver?: string;
+  nationality?: string;
+  constructorName?: string;
+  wins?: number;
+}
+
+export interface StandingsTable {
+  sport: Sport;
+  championship: string;
+  championshipName: string;
+  type: 'league' | 'group' | 'driver';
+  group?: string;
+  rows: StandingRow[];
+  crawledAt: string;
+}
+
+export interface StandingsResponse {
+  total: number;
+  tables: StandingsTable[];
+}

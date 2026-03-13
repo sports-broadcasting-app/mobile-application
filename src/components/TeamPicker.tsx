@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   SectionList,
   StyleSheet,
@@ -7,12 +7,13 @@ import {
   View,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useQuery } from '@tanstack/react-query';
 import { Team, Sport } from '../types/match';
-import { fetchTeams, League } from '../services/matchService';
+import { League } from '../services/matchService';
 import { getChampionshipLabel } from '../utils/championshipLabel';
 import { TeamCircle } from './TeamCircle';
+import { SearchBar } from './SearchBar';
 import { SkeletonBlock } from './SkeletonBlock';
+import { useTeamsWithCache } from '../hooks/useTeamsWithCache';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface TeamItem {
@@ -33,15 +34,9 @@ interface TeamPickerProps {
 
 export function TeamPicker({ onToggleTeam, selectedSlugs }: TeamPickerProps) {
   const { colors } = useTheme();
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const {
-    data: teamsResponse,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => fetchTeams(),
-  });
+  const { data: teamsResponse, isLoading, error } = useTeamsWithCache();
 
   const sections = useMemo((): TeamSection[] => {
     if (!teamsResponse?.leagues) return [];
@@ -53,6 +48,19 @@ export function TeamPicker({ onToggleTeam, selectedSlugs }: TeamPickerProps) {
         .sort((a, b) => a.team.name.localeCompare(b.team.name)),
     }));
   }, [teamsResponse]);
+
+  const filteredSections = useMemo((): TeamSection[] => {
+    if (!searchQuery.trim()) return sections;
+    const query = searchQuery.toLowerCase().trim();
+    return sections
+      .map((section) => ({
+        ...section,
+        data: section.data.filter((item) =>
+          item.team.name.toLowerCase().includes(query),
+        ),
+      }))
+      .filter((section) => section.data.length > 0);
+  }, [sections, searchQuery]);
 
   if (isLoading) {
     return (
@@ -101,49 +109,63 @@ export function TeamPicker({ onToggleTeam, selectedSlugs }: TeamPickerProps) {
   }
 
   return (
-    <SectionList
-      sections={sections}
-      keyExtractor={(item) => `${item.sport}-${item.team.slug}`}
-      scrollEnabled={false}
-      renderSectionHeader={({ section }) => (
-        <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>
-          {section.title}
-        </Text>
-      )}
-      renderItem={({ item }) => {
-        const isSelected = selectedSlugs.has(item.team.slug);
-        return (
-          <TouchableOpacity
-            style={[
-              styles.row,
-              {
-                backgroundColor: isSelected
-                  ? colors.surfaceAlt
-                  : colors.surface,
-                borderColor: isSelected ? colors.primary : colors.border,
-              },
-            ]}
-            onPress={() => onToggleTeam(item.team, item.sport)}
-            testID={`team-option-${item.team.slug}`}
-          >
-            <View style={styles.rowLeft}>
-              <TeamCircle team={item.team} size={32} />
-              <Text
-                style={[styles.teamName, { color: colors.textPrimary }]}
-                numberOfLines={1}
-              >
-                {item.team.name}
-              </Text>
-            </View>
-            <MaterialCommunityIcons
-              name={isSelected ? 'check-circle' : 'circle-outline'}
-              size={22}
-              color={isSelected ? colors.primary : colors.textTertiary}
-            />
-          </TouchableOpacity>
-        );
-      }}
-    />
+    <>
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="Buscar time..."
+      />
+      <SectionList
+        sections={filteredSections}
+        keyExtractor={(item) => `${item.sport}-${item.team.slug}`}
+        scrollEnabled={false}
+        renderSectionHeader={({ section }) => (
+          <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>
+            {section.title}
+          </Text>
+        )}
+        renderItem={({ item }) => {
+          const isSelected = selectedSlugs.has(item.team.slug);
+          return (
+            <TouchableOpacity
+              style={[
+                styles.row,
+                {
+                  backgroundColor: isSelected
+                    ? colors.surfaceAlt
+                    : colors.surface,
+                  borderColor: isSelected ? colors.primary : colors.border,
+                },
+              ]}
+              onPress={() => onToggleTeam(item.team, item.sport)}
+              testID={`team-option-${item.team.slug}`}
+            >
+              <View style={styles.rowLeft}>
+                <TeamCircle team={item.team} size={32} />
+                <Text
+                  style={[styles.teamName, { color: colors.textPrimary }]}
+                  numberOfLines={1}
+                >
+                  {item.team.name}
+                </Text>
+              </View>
+              <MaterialCommunityIcons
+                name={isSelected ? 'check-circle' : 'circle-outline'}
+                size={22}
+                color={isSelected ? colors.primary : colors.textTertiary}
+              />
+            </TouchableOpacity>
+          );
+        }}
+        ListEmptyComponent={
+          <View style={styles.centered}>
+            <Text style={[styles.emptyText, { color: colors.textTertiary }]}>
+              Nenhum time encontrado
+            </Text>
+          </View>
+        }
+      />
+    </>
   );
 }
 

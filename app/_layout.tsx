@@ -28,10 +28,11 @@ function RootStack() {
           headerStyle: { backgroundColor: colors.surface },
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="championship/[sport]" />
         <Stack.Screen name="matches/[sport]" />
         <Stack.Screen name="match/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="standings/[championship]" />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </>
   );

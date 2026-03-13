@@ -1,3 +1,4 @@
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -5,7 +6,9 @@ interface VsBadgeProps {
   size?: number;
 }
 
-export function VsBadge({ size = 28 }: VsBadgeProps) {
+export const VsBadge = React.memo(function VsBadge({
+  size = 28,
+}: VsBadgeProps) {
   const { colors } = useTheme();
 
   return (
@@ -31,7 +34,7 @@ export function VsBadge({ size = 28 }: VsBadgeProps) {
       </Text>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   badge: {

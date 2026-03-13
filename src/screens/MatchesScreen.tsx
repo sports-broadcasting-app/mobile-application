@@ -117,6 +117,10 @@ export function MatchesScreen({
         contentContainerStyle={styles.list}
         onRefresh={refetch}
         refreshing={loading}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews
       />
     </View>
   );

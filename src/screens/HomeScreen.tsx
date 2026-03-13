@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   FlatList,
   ScrollView,
@@ -74,9 +74,9 @@ export function HomeScreen({ onPressMatch, onPressSettings }: HomeScreenProps) {
       });
   }, [filteredMatches, favoriteTeams]);
 
-  const handleSportPress = (sport: Sport) => {
+  const handleSportPress = useCallback((sport: Sport) => {
     setSelectedSport((prev) => (prev === sport ? null : sport));
-  };
+  }, []);
 
   const renderHeader = () => (
     <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
@@ -263,6 +263,10 @@ export function HomeScreen({ onPressMatch, onPressSettings }: HomeScreenProps) {
             </Text>
           </View>
         }
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews
       />
     );
   };
