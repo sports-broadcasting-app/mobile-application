@@ -4,6 +4,7 @@ import {
   ScrollView,
   Share,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -168,13 +169,30 @@ export default function ConfiguracoesTabScreen() {
         >
           Aparencia
         </Text>
-        {renderSettingRow({
-          icon: isDark ? 'weather-night' : 'weather-sunny',
-          label: 'Tema',
-          value: isDark ? 'Escuro' : 'Claro',
-          onPress: toggleTheme,
-          testID: 'theme-toggle',
-        })}
+        <View
+          style={[
+            styles.settingRow,
+            { backgroundColor: colors.surfaceCard, borderColor: colors.border },
+          ]}
+        >
+          <View style={styles.settingLeft}>
+            <MaterialCommunityIcons
+              name={isDark ? 'weather-night' : 'weather-sunny'}
+              size={iconSize.lg}
+              color={colors.primary}
+            />
+            <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>
+              {isDark ? 'Modo escuro' : 'Modo claro'}
+            </Text>
+          </View>
+          <Switch
+            value={isDark}
+            onValueChange={toggleTheme}
+            trackColor={{ false: colors.border, true: colors.primary }}
+            thumbColor="#fff"
+            testID="theme-toggle"
+          />
+        </View>
 
         {/* Notificacoes */}
         <Text
