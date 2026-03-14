@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Team } from '../types/match';
 import { getTeamColor } from '../utils/teamColor';
+import { useTeamLogos } from '../contexts/TeamLogoContext';
 
 interface TeamCircleProps {
   team: Team;
@@ -13,9 +14,11 @@ export const TeamCircle = React.memo(function TeamCircle({
   team,
   size = 72,
 }: TeamCircleProps) {
+  const logos = useTeamLogos();
   const color = getTeamColor(team.slug);
   const [imageError, setImageError] = useState(false);
-  const showImage = !!team.logoUrl && !imageError;
+  const logoUrl = team.logoUrl || logos.get(team.slug);
+  const showImage = !!logoUrl && !imageError;
 
   return (
     <View
@@ -32,7 +35,7 @@ export const TeamCircle = React.memo(function TeamCircle({
     >
       {showImage ? (
         <Image
-          source={{ uri: team.logoUrl }}
+          source={{ uri: logoUrl }}
           style={{ width: size, height: size }}
           contentFit="contain"
           onError={() => setImageError(true)}

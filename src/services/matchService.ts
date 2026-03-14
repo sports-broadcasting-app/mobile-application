@@ -84,3 +84,19 @@ export async function fetchStandings(
   const data = (await response.json()) as StandingsResponse;
   return data.tables;
 }
+
+export interface TeamLogosResponse {
+  total: number;
+  logos: Record<string, string>;
+}
+
+export async function fetchTeamLogos(): Promise<Record<string, string>> {
+  const response = await fetch(`${API_BASE_URL}/api/team-logos`);
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  const data = (await response.json()) as TeamLogosResponse;
+  return data.logos;
+}

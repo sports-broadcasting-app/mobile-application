@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
 import { FavoriteTeamsProvider } from '../src/contexts/FavoriteTeamsContext';
+import { TeamLogoProvider } from '../src/contexts/TeamLogoContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { NotificationScheduler } from '../src/components/NotificationScheduler';
 
@@ -43,9 +44,11 @@ export default function RootLayout() {
     <ThemeProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <FavoriteTeamsProvider>
-            <RootStack />
-          </FavoriteTeamsProvider>
+          <TeamLogoProvider>
+            <FavoriteTeamsProvider>
+              <RootStack />
+            </FavoriteTeamsProvider>
+          </TeamLogoProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </ThemeProvider>
