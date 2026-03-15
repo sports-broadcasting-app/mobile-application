@@ -33,6 +33,7 @@ function RootStack() {
         <Stack.Screen name="matches/[sport]" />
         <Stack.Screen name="match/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="standings/[championship]" />
+        <Stack.Screen name="brackets/[championship]" />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </>

@@ -1,4 +1,6 @@
 import {
+  Bracket,
+  BracketsResponse,
   DailySchedule,
   Sport,
   Team,
@@ -88,6 +90,21 @@ export async function fetchStandings(
 export interface TeamLogosResponse {
   total: number;
   logos: Record<string, string>;
+}
+
+export async function fetchBrackets(
+  championship?: string,
+  sport?: Sport,
+): Promise<Bracket[]> {
+  const query = buildQuery({ championship, sport });
+  const response = await fetch(`${API_BASE_URL}/api/brackets${query}`);
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  const data = (await response.json()) as BracketsResponse;
+  return data.brackets;
 }
 
 export async function fetchTeamLogos(): Promise<Record<string, string>> {

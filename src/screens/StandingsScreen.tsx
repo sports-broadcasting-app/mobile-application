@@ -10,10 +10,16 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
-import { Sport, StandingsTable as StandingsTableType } from '../types/match';
+import {
+  Bracket,
+  Sport,
+  StandingsTable as StandingsTableType,
+} from '../types/match';
 import { useStandings } from '../hooks/useStandings';
+import { useBrackets } from '../hooks/useBrackets';
 import { StandingsCard } from '../components/StandingsCard';
 import { F1StandingsCard } from '../components/F1StandingsCard';
+import { BracketCard } from '../components/BracketCard';
 import { SearchBar } from '../components/SearchBar';
 import { SkeletonBlock } from '../components/SkeletonBlock';
 import { useTheme } from '../contexts/ThemeContext';
@@ -31,6 +37,10 @@ const SPORT_FILTERS: { value: Sport; label: string }[] = [
   { value: 'formula1', label: 'F1' },
 ];
 
+type ListItem =
+  | { kind: 'standings'; data: StandingsTableType }
+  | { kind: 'bracket'; data: Bracket };
+
 export default function StandingsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
@@ -40,15 +50,39 @@ export default function StandingsScreen() {
     undefined,
     sportFilter,
   );
+  const {
+    brackets,
+    loading: bracketsLoading,
+    refetch: refetchBrackets,
+  } = useBrackets(
+    undefined,
+    sportFilter === 'football' ? sportFilter : undefined,
+  );
 
-  const filteredTables = useMemo(() => {
-    if (!searchQuery.trim()) return tables;
+  const listItems = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
-    return tables.filter((table) => {
-      const label = getChampionshipLabel(table.championship).toLowerCase();
-      return label.includes(query);
-    });
-  }, [tables, searchQuery]);
+    const standingsItems: ListItem[] = tables
+      .filter((table) => {
+        if (!query) return true;
+        return getChampionshipLabel(table.championship)
+          .toLowerCase()
+          .includes(query);
+      })
+      .map((data) => ({ kind: 'standings' as const, data }));
+
+    if (sportFilter !== 'football') return standingsItems;
+
+    const bracketItems: ListItem[] = brackets
+      .filter((b) => {
+        if (!query) return true;
+        return getChampionshipLabel(b.championship)
+          .toLowerCase()
+          .includes(query);
+      })
+      .map((data) => ({ kind: 'bracket' as const, data }));
+
+    return [...standingsItems, ...bracketItems];
+  }, [tables, brackets, searchQuery, sportFilter]);
 
   const handleSportChange = useCallback((sport: Sport) => {
     setSportFilter(sport);
@@ -67,6 +101,24 @@ export default function StandingsScreen() {
     },
     [router],
   );
+
+  const handleBracketPress = useCallback(
+    (bracket: Bracket) => {
+      router.push({
+        pathname: '/brackets/[championship]',
+        params: {
+          championship: bracket.championship,
+          sport: bracket.sport,
+        },
+      });
+    },
+    [router],
+  );
+
+  const handleRefresh = useCallback(() => {
+    refetch();
+    refetchBrackets();
+  }, [refetch, refetchBrackets]);
 
   const renderHeader = () => (
     <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
@@ -192,21 +244,36 @@ export default function StandingsScreen() {
       <StatusBar style={colors.statusBar} />
       {renderHeader()}
       <FlatList
-        data={filteredTables}
-        keyExtractor={(t) => `${t.championship}-${t.group ?? ''}-${t.type}`}
-        renderItem={({ item }) =>
-          item.sport === 'formula1' ? (
+        data={listItems}
+        keyExtractor={(item) =>
+          item.kind === 'standings'
+            ? `s-${item.data.championship}-${item.data.group ?? ''}-${item.data.type}`
+            : `b-${item.data.championship}`
+        }
+        renderItem={({ item }) => {
+          if (item.kind === 'bracket') {
+            return (
+              <BracketCard
+                bracket={item.data}
+                onPress={() => handleBracketPress(item.data)}
+              />
+            );
+          }
+          return item.data.sport === 'formula1' ? (
             <F1StandingsCard
-              table={item}
-              onPress={() => handleCardPress(item)}
+              table={item.data}
+              onPress={() => handleCardPress(item.data)}
             />
           ) : (
-            <StandingsCard table={item} onPress={() => handleCardPress(item)} />
-          )
-        }
+            <StandingsCard
+              table={item.data}
+              onPress={() => handleCardPress(item.data)}
+            />
+          );
+        }}
         contentContainerStyle={styles.list}
-        onRefresh={refetch}
-        refreshing={loading}
+        onRefresh={handleRefresh}
+        refreshing={loading || bracketsLoading}
         initialNumToRender={5}
         maxToRenderPerBatch={5}
         windowSize={5}

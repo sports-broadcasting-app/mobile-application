@@ -11,6 +11,7 @@ const CHAMPIONSHIP_LABELS: Record<string, string> = {
   sulamericana: 'Sul-Americana',
   superliga: 'Superliga Masculina',
   'superliga-feminina': 'Superliga Feminina',
+  'brasileirao-b': 'Brasileiro Serie B',
   formula1: 'Formula 1',
 };
 

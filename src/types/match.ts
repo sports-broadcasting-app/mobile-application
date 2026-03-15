@@ -129,3 +129,45 @@ export interface StandingsResponse {
   total: number;
   tables: StandingsTable[];
 }
+
+export interface BracketTeam {
+  name: string;
+  slug: string;
+  logoUrl: string;
+}
+
+export interface BracketMatch {
+  date: string;
+  homeTeam: BracketTeam;
+  awayTeam: BracketTeam;
+  homeScore: number | null;
+  awayScore: number | null;
+  status: 'scheduled' | 'live' | 'finished';
+}
+
+export interface BracketSeries {
+  homeTeam: BracketTeam;
+  awayTeam: BracketTeam;
+  matches: BracketMatch[];
+  aggregateHome: number | null;
+  aggregateAway: number | null;
+  winner: string | null;
+}
+
+export interface BracketRound {
+  name: string;
+  series: BracketSeries[];
+}
+
+export interface Bracket {
+  sport: Sport;
+  championship: string;
+  championshipName: string;
+  rounds: BracketRound[];
+  crawledAt: string;
+}
+
+export interface BracketsResponse {
+  total: number;
+  brackets: Bracket[];
+}
