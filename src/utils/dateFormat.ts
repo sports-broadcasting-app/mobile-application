@@ -28,6 +28,11 @@ export function formatTodayDate(): string {
   return `${now.getDate()} de ${MONTHS[now.getMonth()]}`;
 }
 
+export function formatTodayLong(): string {
+  const now = new Date();
+  return `${WEEKDAYS[now.getDay()]}, ${now.getDate()} de ${MONTHS[now.getMonth()]}`;
+}
+
 export function formatShortDate(dateStr: string): string {
   const [, month, day] = dateStr.split('-');
   return `${day}/${month}`;

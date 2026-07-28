@@ -60,31 +60,32 @@ describe('HomeTabScreen', () => {
     jest.clearAllMocks();
   });
 
-  it('renders OndeVer branding', async () => {
+  it('renders Hoje title', async () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<HomeTabScreen />);
 
-    expect(screen.getByText('OndeVer')).toBeTruthy();
+    expect(screen.getByText('Hoje')).toBeTruthy();
   });
 
-  it('renders sport chips', async () => {
+  it('renders sport tabs', async () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<HomeTabScreen />);
 
+    expect(screen.getByText('Todos')).toBeTruthy();
     expect(screen.getByText('Futebol')).toBeTruthy();
     expect(screen.getByText('Volei')).toBeTruthy();
   });
 
-  it('renders "Jogos do Dia" section', async () => {
+  it('renders status section header', async () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<HomeTabScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText('Jogos do Dia')).toBeTruthy();
+      expect(screen.getByText('MAIS TARDE')).toBeTruthy();
     });
   });
 
-  it('filters matches when sport chip is pressed', async () => {
+  it('filters matches when sport tab is pressed', async () => {
     const scheduleWithVolleyball: DailySchedule = {
       ...mockSchedule,
       matches: [
@@ -135,7 +136,7 @@ describe('HomeTabScreen', () => {
       expect(screen.getByTestId('match-card-200')).toBeTruthy();
     });
 
-    fireEvent.press(screen.getByTestId('sport-chip-football'));
+    fireEvent.press(screen.getByTestId('sport-tab-football'));
 
     expect(screen.getByTestId('match-card-100')).toBeTruthy();
     expect(screen.queryByTestId('match-card-200')).toBeNull();
@@ -185,10 +186,10 @@ describe('HomeTabScreen', () => {
     expect(screen.getByText('Tentar novamente')).toBeTruthy();
   });
 
-  it('renders Formula 1 chip', () => {
+  it('renders F1 tab', () => {
     mockFetch.mockResolvedValue(mockSchedule);
     render(<HomeTabScreen />);
 
-    expect(screen.getByText('Formula 1')).toBeTruthy();
+    expect(screen.getByText('F1')).toBeTruthy();
   });
 });

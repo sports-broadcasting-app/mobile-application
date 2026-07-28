@@ -12,7 +12,6 @@ export default function HomeTabScreen() {
           params: { id: match.id, sport: match.sport },
         })
       }
-      onPressSettings={() => router.push('/(tabs)/configuracoes')}
     />
   );
 }

@@ -1,7 +1,7 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
-  FlatList,
   ScrollView,
+  SectionList,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,42 +9,76 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Sport, Match, TeamMatch } from '../types/match';
+import { Match, Sport, TeamMatch } from '../types/match';
 import { useTodayMatches } from '../hooks/useTodayMatches';
 import { useFavoriteTeams } from '../contexts/FavoriteTeamsContext';
-import { SPORTS } from '../constants/sports';
-import { MatchCard } from '../components/MatchCard';
+import { MatchRow } from '../components/MatchRow';
 import { MatchCardSkeleton } from '../components/MatchCardSkeleton';
 import { SkeletonBlock } from '../components/SkeletonBlock';
 import { FavoriteTeamBanner } from '../components/FavoriteTeamBanner';
 import { ReminderSheet } from '../components/ReminderSheet';
 import { useTheme } from '../contexts/ThemeContext';
 import { useReminderPreferences } from '../hooks/useReminderPreferences';
-import { formatTodayDate } from '../utils/dateFormat';
-import {
-  spacing,
-  radius,
-  typography,
-  iconSize,
-} from '../constants/designTokens';
+import { formatTodayLong } from '../utils/dateFormat';
+import { radius, spacing } from '../constants/designTokens';
 
 interface HomeScreenProps {
   onPressMatch: (match: Match) => void;
-  onPressSettings?: () => void;
 }
 
-export function HomeScreen({ onPressMatch, onPressSettings }: HomeScreenProps) {
+type TabKey = 'all' | Sport;
+
+const SPORT_TABS: Array<{ key: TabKey; label: string }> = [
+  { key: 'all', label: 'Todos' },
+  { key: 'football', label: 'Futebol' },
+  { key: 'volleyball', label: 'Volei' },
+  { key: 'formula1', label: 'F1' },
+];
+
+interface MatchSection {
+  key: 'live' | 'upcoming' | 'ended';
+  title: string;
+  data: Match[];
+  dim?: boolean;
+}
+
+export function HomeScreen({ onPressMatch }: HomeScreenProps) {
   const { colors } = useTheme();
   const { highlightedMatches, loading, error, refetch } = useTodayMatches();
   const { favoriteTeams } = useFavoriteTeams();
   const { getReminder, setReminder } = useReminderPreferences();
-  const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [reminderMatch, setReminderMatch] = useState<TeamMatch | null>(null);
 
   const filteredMatches = useMemo(() => {
-    if (!selectedSport) return highlightedMatches;
-    return highlightedMatches.filter((m) => m.sport === selectedSport);
-  }, [highlightedMatches, selectedSport]);
+    if (activeTab === 'all') return highlightedMatches;
+    return highlightedMatches.filter((m) => m.sport === activeTab);
+  }, [highlightedMatches, activeTab]);
+
+  const sections = useMemo<MatchSection[]>(() => {
+    const live = filteredMatches.filter((m) => m.status === 'match-live');
+    const upcoming = filteredMatches.filter(
+      (m) => m.status === 'match-not-started',
+    );
+    const ended = filteredMatches.filter((m) => m.status === 'match-ended');
+
+    const result: MatchSection[] = [];
+    if (live.length) {
+      result.push({ key: 'live', title: 'AO VIVO', data: live });
+    }
+    if (upcoming.length) {
+      result.push({ key: 'upcoming', title: 'MAIS TARDE', data: upcoming });
+    }
+    if (ended.length) {
+      result.push({
+        key: 'ended',
+        title: 'ENCERRADOS',
+        data: ended,
+        dim: true,
+      });
+    }
+    return result;
+  }, [filteredMatches]);
 
   const favoriteMatches = useMemo(() => {
     if (favoriteTeams.length === 0) return [];
@@ -74,99 +108,88 @@ export function HomeScreen({ onPressMatch, onPressSettings }: HomeScreenProps) {
       });
   }, [filteredMatches, favoriteTeams]);
 
-  const handleSportPress = useCallback((sport: Sport) => {
-    setSelectedSport((prev) => (prev === sport ? null : sport));
+  const handleTabPress = useCallback((key: TabKey) => {
+    setActiveTab(key);
   }, []);
 
   const renderHeader = () => (
-    <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
+    <View style={styles.header}>
       <View style={styles.headerTopRow}>
-        <View style={styles.logoRow}>
-          <MaterialCommunityIcons
-            name="television-classic"
-            size={iconSize.xl}
-            color={colors.primary}
-          />
-          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-            OndeVer
-          </Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>Hoje</Text>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            testID="header-search"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <MaterialCommunityIcons
+              name="magnify"
+              size={22}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            testID="header-notifications"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <MaterialCommunityIcons
+              name="bell-outline"
+              size={22}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          onPress={onPressSettings}
-          testID="header-settings"
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <MaterialCommunityIcons
-            name="cog-outline"
-            size={iconSize.lg}
-            color={colors.textSecondary}
-          />
-        </TouchableOpacity>
       </View>
-
-      <View style={styles.dateRow}>
-        <Text style={[styles.dateText, { color: colors.textSecondary }]}>
-          Hoje {'\u00B7'} {formatTodayDate()}
-        </Text>
-        <TouchableOpacity testID="header-search">
-          <MaterialCommunityIcons
-            name="magnify"
-            size={iconSize.lg}
-            color={colors.textSecondary}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {renderChips()}
+      <Text style={[styles.subtitle, { color: colors.textTertiary }]}>
+        {formatTodayLong()}
+      </Text>
     </View>
   );
 
-  const renderChips = () => (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.chipsContainer}
-    >
-      {SPORTS.map(({ sport, label, icon }) => {
-        const isActive = selectedSport === sport;
+  const renderTabs = () => (
+    <View style={[styles.tabsRow, { borderBottomColor: colors.border }]}>
+      {SPORT_TABS.map((t) => {
+        const active = activeTab === t.key;
         return (
           <TouchableOpacity
-            key={sport}
-            style={[
-              styles.chip,
-              isActive
-                ? { backgroundColor: colors.chipActiveBg }
-                : {
-                    backgroundColor: colors.chipInactiveBg,
-                    borderColor: colors.chipBorder,
-                    borderWidth: 1,
-                  },
-            ]}
+            key={t.key}
+            onPress={() => handleTabPress(t.key)}
+            testID={`sport-tab-${t.key}`}
             activeOpacity={0.7}
-            onPress={() => handleSportPress(sport)}
-            testID={`sport-chip-${sport}`}
+            style={[
+              styles.tab,
+              {
+                borderBottomColor: active ? colors.primary : 'transparent',
+              },
+            ]}
           >
-            <MaterialCommunityIcons
-              name={icon}
-              size={iconSize.sm}
-              color={isActive ? colors.chipActiveText : colors.chipInactiveText}
-            />
             <Text
               style={[
-                styles.chipLabel,
+                styles.tabLabel,
                 {
-                  color: isActive
-                    ? colors.chipActiveText
-                    : colors.chipInactiveText,
+                  color: active ? colors.textPrimary : colors.textTertiary,
+                  fontWeight: active ? '700' : '500',
                 },
               ]}
             >
-              {label}
+              {t.label}
             </Text>
           </TouchableOpacity>
         );
       })}
-    </ScrollView>
+    </View>
+  );
+
+  const renderListHeader = () => (
+    <View>
+      {favoriteMatches.map(({ match, team, opponent }) => (
+        <FavoriteTeamBanner
+          key={match.id}
+          team={team}
+          opponentName={opponent.name}
+          onPress={() => onPressMatch(match)}
+        />
+      ))}
+    </View>
   );
 
   const renderContent = () => {
@@ -176,7 +199,6 @@ export function HomeScreen({ onPressMatch, onPressSettings }: HomeScreenProps) {
           testID="skeleton-loading"
           contentContainerStyle={styles.skeletonContainer}
         >
-          {/* Favorite banner skeleton */}
           <View
             style={[
               styles.bannerSkeleton,
@@ -192,13 +214,9 @@ export function HomeScreen({ onPressMatch, onPressSettings }: HomeScreenProps) {
               <SkeletonBlock width={160} height={12} borderRadius={4} />
             </View>
           </View>
-
-          {/* Section title skeleton */}
           <View style={styles.sectionTitleSkeleton}>
             <SkeletonBlock width={100} height={18} borderRadius={4} />
           </View>
-
-          {/* Match card skeletons */}
           <MatchCardSkeleton />
           <MatchCardSkeleton />
           <MatchCardSkeleton />
@@ -223,48 +241,49 @@ export function HomeScreen({ onPressMatch, onPressSettings }: HomeScreenProps) {
     }
 
     return (
-      <FlatList
-        data={filteredMatches}
+      <SectionList
+        sections={sections}
         keyExtractor={(item: Match) => item.id}
-        ListHeaderComponent={
-          <>
-            {favoriteMatches.map(({ match, team, opponent }) => (
-              <FavoriteTeamBanner
-                key={match.id}
-                team={team}
-                opponentName={opponent.name}
-                onPress={() => onPressMatch(match)}
-              />
-            ))}
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-              Jogos do Dia
+        stickySectionHeadersEnabled={false}
+        ListHeaderComponent={renderListHeader()}
+        renderSectionHeader={({ section }) => (
+          <View
+            style={[styles.sectionHeader, { backgroundColor: colors.surface }]}
+          >
+            <Text
+              style={[
+                styles.sectionLabel,
+                {
+                  color: section.dim ? colors.textTertiary : colors.textPrimary,
+                },
+              ]}
+            >
+              {section.title}
             </Text>
-          </>
-        }
-        renderItem={({ item }) => (
-          <MatchCard
+            <Text style={[styles.sectionCount, { color: colors.textTertiary }]}>
+              {section.data.length}
+            </Text>
+          </View>
+        )}
+        renderItem={({ item, section }) => (
+          <MatchRow
             match={item}
             onPress={() => onPressMatch(item)}
-            onPressReminder={(match) => {
-              if (match.sport !== 'formula1') {
-                setReminderMatch(match as TeamMatch);
-              }
-            }}
-            onPressWatch={(match) => onPressMatch(match)}
+            dim={(section as MatchSection).dim}
           />
         )}
-        contentContainerStyle={styles.list}
-        onRefresh={refetch}
-        refreshing={loading}
         ListEmptyComponent={
           <View style={styles.centered}>
             <Text style={[styles.emptyText, { color: colors.textTertiary }]}>
-              Nenhum jogo encontrado
+              Nenhum jogo encontrado para esse esporte.
             </Text>
           </View>
         }
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
+        contentContainerStyle={styles.listContent}
+        onRefresh={refetch}
+        refreshing={loading}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
         windowSize={5}
         removeClippedSubviews
       />
@@ -272,9 +291,10 @@ export function HomeScreen({ onPressMatch, onPressSettings }: HomeScreenProps) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <StatusBar style={colors.statusBar} />
       {renderHeader()}
+      {renderTabs()}
       {renderContent()}
 
       <ReminderSheet
@@ -298,66 +318,72 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingTop: 56,
-    paddingBottom: spacing.lg,
-    paddingHorizontal: spacing.xl,
+    paddingTop: 52,
+    paddingHorizontal: 24,
+    paddingBottom: 16,
   },
   headerTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  logoRow: {
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.56,
+  },
+  headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: 14,
   },
-  headerTitle: {
-    fontSize: typography.size.xxl,
-    fontWeight: typography.weight.bold,
+  subtitle: {
+    fontSize: 14,
+    marginTop: 2,
   },
-  dateRow: {
+  tabsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: spacing.lg,
+    gap: 20,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
   },
-  dateText: {
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.bold,
+  tab: {
+    paddingTop: 6,
+    paddingBottom: 10,
+    borderBottomWidth: 2,
+    marginBottom: -1,
   },
-  chipsContainer: {
+  tabLabel: {
+    fontSize: 14,
+  },
+  sectionHeader: {
     flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.md,
+    alignItems: 'baseline',
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 10,
   },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.88,
+    textTransform: 'uppercase',
   },
-  chipLabel: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
+  sectionCount: {
+    fontSize: 11,
+    fontWeight: '400',
   },
-  sectionTitle: {
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.bold,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.sm,
-  },
-  list: {
-    paddingBottom: spacing.lg,
+  listContent: {
+    paddingBottom: spacing.xl,
+    flexGrow: 1,
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 40,
+    paddingHorizontal: 24,
   },
   skeletonContainer: {
     paddingTop: spacing.sm,
@@ -383,16 +409,16 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   errorText: {
-    fontSize: typography.size.md,
+    fontSize: 16,
     textAlign: 'center',
-    marginHorizontal: spacing.xxxl,
   },
   retryText: {
     marginTop: spacing.md,
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.semibold,
+    fontSize: 14,
+    fontWeight: '600',
   },
   emptyText: {
-    fontSize: typography.size.md,
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
