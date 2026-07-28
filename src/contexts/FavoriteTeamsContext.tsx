@@ -9,15 +9,9 @@ import {
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Team, Sport } from '../types/match';
-import { registerForPushNotifications } from '../services/notificationService';
-import {
-  registerSubscriberTeams,
-  unregisterSubscriber,
-} from '../services/subscriberService';
 
 const STORAGE_KEY = '@favorite_teams';
 const OLD_STORAGE_KEY = '@favorite_team';
-const SUBSCRIBER_REGISTERED_KEY = '@subscriber_registered';
 
 export interface FavoriteTeamEntry {
   team: Team;
@@ -46,24 +40,11 @@ interface FavoriteTeamsProviderProps {
   children: ReactNode;
 }
 
-async function syncWithBackend(teams: FavoriteTeamEntry[]): Promise<void> {
+async function persistFavoriteTeams(teams: FavoriteTeamEntry[]): Promise<void> {
   try {
-    const token = await registerForPushNotifications();
-    if (!token) return;
-
-    if (teams.length === 0) {
-      await unregisterSubscriber(token);
-      await AsyncStorage.removeItem(SUBSCRIBER_REGISTERED_KEY);
-      return;
-    }
-
-    await registerSubscriberTeams(
-      token,
-      teams.map((t) => ({ teamSlug: t.team.slug, sport: t.sport })),
-    );
-    await AsyncStorage.setItem(SUBSCRIBER_REGISTERED_KEY, token);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
   } catch (err) {
-    console.warn('Failed to sync subscriber:', err);
+    console.warn('Failed to sync favorite teams:', err);
   }
 }
 
@@ -87,7 +68,6 @@ export function FavoriteTeamsProvider({
             const migrated = [oldData];
             await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
             await AsyncStorage.removeItem(OLD_STORAGE_KEY);
-            await AsyncStorage.removeItem(SUBSCRIBER_REGISTERED_KEY);
             teamsJson = JSON.stringify(migrated);
           }
         }
@@ -96,14 +76,6 @@ export function FavoriteTeamsProvider({
 
         const teams = JSON.parse(teamsJson) as FavoriteTeamEntry[];
         setFavoriteTeams(teams);
-
-        // Check if we need to register with backend
-        const registeredToken = await AsyncStorage.getItem(
-          SUBSCRIBER_REGISTERED_KEY,
-        );
-        if (!registeredToken && teams.length > 0) {
-          await syncWithBackend(teams);
-        }
       } catch (err) {
         console.warn('Failed to initialize favorite teams:', err);
       } finally {
@@ -119,8 +91,7 @@ export function FavoriteTeamsProvider({
         { team, sport },
       ];
       setFavoriteTeams(updated);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      await syncWithBackend(updated);
+      await persistFavoriteTeams(updated);
     },
     [favoriteTeams],
   );
@@ -129,8 +100,7 @@ export function FavoriteTeamsProvider({
     async (teamSlug: string) => {
       const updated = favoriteTeams.filter((f) => f.team.slug !== teamSlug);
       setFavoriteTeams(updated);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      await syncWithBackend(updated);
+      await persistFavoriteTeams(updated);
     },
     [favoriteTeams],
   );
@@ -138,7 +108,7 @@ export function FavoriteTeamsProvider({
   const clearAllFavoriteTeams = useCallback(async () => {
     setFavoriteTeams([]);
     await AsyncStorage.removeItem(STORAGE_KEY);
-    await syncWithBackend([]);
+    await persistFavoriteTeams([]);
   }, []);
 
   const isFavorite = useCallback(

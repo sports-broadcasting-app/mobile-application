@@ -1,21 +1,25 @@
 import {
   Bracket,
-  BracketsResponse,
   DailySchedule,
   Sport,
   Team,
-  StandingsResponse,
   StandingsTable,
 } from '../types/match';
-import { API_BASE_URL } from '../constants/api';
-
-function buildQuery(params: Record<string, string | undefined>): string {
-  const entries = Object.entries(params).filter(
-    (entry): entry is [string, string] => entry[1] !== undefined,
-  );
-  if (entries.length === 0) return '';
-  return '?' + new URLSearchParams(entries).toString();
-}
+import { USE_SUPABASE_DATA } from '../constants/api';
+import {
+  getLocalBrackets,
+  getLocalSchedule,
+  getLocalTeamLogos,
+  getLocalTeams,
+  localStandings,
+} from '../data/localSportsData';
+import { getStoredStandings, seedStandingsIfEmpty } from './standingsStore';
+import {
+  fetchSupabaseSchedule,
+  fetchSupabaseStandings,
+  fetchSupabaseTeamLogos,
+  fetchSupabaseTeams,
+} from './supabaseSportsService';
 
 function getLocalDate(): string {
   const now = new Date();
@@ -27,28 +31,22 @@ function getLocalDate(): string {
 
 export async function fetchTodayMatches(sport?: Sport): Promise<DailySchedule> {
   const date = getLocalDate();
-  const query = buildQuery({ sport });
-  const response = await fetch(`${API_BASE_URL}/api/matches/${date}${query}`);
-
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+  if (USE_SUPABASE_DATA) {
+    return fetchSupabaseSchedule(date, sport);
   }
 
-  return response.json() as Promise<DailySchedule>;
+  return getLocalSchedule(date, sport);
 }
 
 export async function fetchMatchesByDate(
   date: string,
   sport?: Sport,
 ): Promise<DailySchedule> {
-  const query = buildQuery({ sport });
-  const response = await fetch(`${API_BASE_URL}/api/matches/${date}${query}`);
-
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+  if (USE_SUPABASE_DATA) {
+    return fetchSupabaseSchedule(date, sport);
   }
 
-  return response.json() as Promise<DailySchedule>;
+  return getLocalSchedule(date, sport);
 }
 
 export interface League {
@@ -62,29 +60,23 @@ export interface TeamsResponse {
 }
 
 export async function fetchTeams(sport?: Sport): Promise<TeamsResponse> {
-  const query = buildQuery({ sport });
-  const response = await fetch(`${API_BASE_URL}/api/teams${query}`);
-
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+  if (USE_SUPABASE_DATA) {
+    return fetchSupabaseTeams(sport);
   }
 
-  return response.json() as Promise<TeamsResponse>;
+  return getLocalTeams(sport);
 }
 
 export async function fetchStandings(
   championship?: string,
   sport?: Sport,
 ): Promise<StandingsTable[]> {
-  const query = buildQuery({ championship, sport });
-  const response = await fetch(`${API_BASE_URL}/api/standings${query}`);
-
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+  if (USE_SUPABASE_DATA) {
+    return fetchSupabaseStandings(championship, sport);
   }
 
-  const data = (await response.json()) as StandingsResponse;
-  return data.tables;
+  await seedStandingsIfEmpty(localStandings);
+  return getStoredStandings(championship, sport);
 }
 
 export interface TeamLogosResponse {
@@ -96,24 +88,13 @@ export async function fetchBrackets(
   championship?: string,
   sport?: Sport,
 ): Promise<Bracket[]> {
-  const query = buildQuery({ championship, sport });
-  const response = await fetch(`${API_BASE_URL}/api/brackets${query}`);
-
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
-  }
-
-  const data = (await response.json()) as BracketsResponse;
-  return data.brackets;
+  return getLocalBrackets(championship, sport);
 }
 
 export async function fetchTeamLogos(): Promise<Record<string, string>> {
-  const response = await fetch(`${API_BASE_URL}/api/team-logos`);
-
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+  if (USE_SUPABASE_DATA) {
+    return fetchSupabaseTeamLogos();
   }
 
-  const data = (await response.json()) as TeamLogosResponse;
-  return data.logos;
+  return getLocalTeamLogos();
 }

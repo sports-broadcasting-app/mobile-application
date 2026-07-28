@@ -1,5 +1,6 @@
 const CHAMPIONSHIP_LABELS: Record<string, string> = {
   brasileiro: 'Brasileiro',
+  'brasileiro-serie-a': 'Brasileiro Serie A',
   ingles: 'Ingles',
   espanhol: 'Espanhol (La Liga)',
   italiano: 'Italiano (Serie A)',
@@ -9,9 +10,12 @@ const CHAMPIONSHIP_LABELS: Record<string, string> = {
   libertadores: 'Libertadores',
   'copa-do-brasil': 'Copa do Brasil',
   sulamericana: 'Sul-Americana',
+  'copa-sudamericana': 'Copa Sul-Americana',
   superliga: 'Superliga Masculina',
+  'superliga-masculina': 'Superliga Masculina',
   'superliga-feminina': 'Superliga Feminina',
   'brasileirao-b': 'Brasileiro Serie B',
+  'brasileiro-serie-b': 'Brasileiro Serie B',
   formula1: 'Formula 1',
 };
 
