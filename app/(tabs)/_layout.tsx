@@ -20,29 +20,40 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Jogos',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="television-classic"
               size={size}
-              color={color}
+              color={color as string}
             />
           ),
         }}
       />
       <Tabs.Screen
-        name="configuracoes"
+        name="classificacao"
         options={{
-          title: 'Config',
+          title: 'Classificacao',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cog" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="trophy-outline"
+              size={size}
+              color={color as string}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="campeonatos"
+        name="favoritos"
         options={{
-          href: null,
+          title: 'Favoritos',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="star"
+              size={size}
+              color={color as string}
+            />
+          ),
         }}
       />
     </Tabs>

@@ -2,11 +2,11 @@
 
 ## Project Overview
 
-A React Native (Expo) mobile application that helps users find which TV channels or streaming platforms are broadcasting sports events (football and volleyball). It consumes a crawler API backend that scrapes UOL Central de Jogos daily.
+A React Native (Expo) mobile application that shows where Superliga volleyball matches (men's and women's) are broadcast, with day matches and standings. There is no login and no backend: the app downloads a static JSON on first run and keeps everything on the device in SQLite.
 
 ## Tech Stack
 
-- **Framework**: React Native with Expo SDK 55
+- **Framework**: React Native with Expo SDK 58
 - **Language**: TypeScript (strict mode enabled)
 - **Navigation**: Expo Router (file-based routing with tabs + stack-over-tabs)
 - **Package Manager**: Yarn (do NOT use npm)
@@ -15,84 +15,61 @@ A React Native (Expo) mobile application that helps users find which TV channels
 - **Formatting**: Prettier
 - **Git Hooks**: Husky + lint-staged (runs ESLint + Prettier on pre-commit)
 - **Icons**: `@expo/vector-icons` (MaterialCommunityIcons)
+- **Local storage**: `expo-sqlite` (matches, standings, teams, favorites)
 
 ## Project Structure
 
 ```
 .
-├── app/                        # Expo Router file-based routes
-│   ├── _layout.tsx             # Root Stack (wraps tabs + stack screens)
-│   ├── (tabs)/                 # Bottom Tab Navigator group
-│   │   ├── _layout.tsx         # Tab layout (Home + Campeonatos)
-│   │   ├── index.tsx           # Home tab (highlights, search, sport chips)
-│   │   └── campeonatos.tsx     # Campeonatos tab (sport picker)
-│   ├── championship/
-│   │   └── [sport].tsx         # Championship list (stack over tabs)
-│   ├── matches/
-│   │   └── [sport].tsx         # Match list (stack over tabs)
-│   └── match/
-│       └── [id].tsx            # Match detail (stack over tabs)
+├── app/                        # Expo Router file-based routes (re-export src/screens)
+│   ├── _layout.tsx             # Providers, SyncGate, root Stack
+│   ├── (tabs)/                 # Jogos, Classificacao, Favoritos
+│   └── match/[id].tsx          # Match detail
 ├── src/
-│   ├── components/             # Reusable UI components
-│   │   ├── MatchCard.tsx       # Match card (time, teams, live badge, broadcast badges)
-│   │   ├── SearchBar.tsx       # Search input with magnify icon
-│   │   ├── TeamCircle.tsx      # Colored circle with team acronym
-│   │   └── BroadcastCard.tsx   # Broadcast card ("Abrir no App" / "Assistir na TV")
-│   ├── services/               # API calls (matchService)
-│   ├── hooks/                  # Custom React hooks (useTodayMatches)
-│   ├── types/                  # TypeScript type definitions (match.ts)
-│   ├── contexts/               # React contexts
-│   │   └── ThemeContext.tsx    # Theme provider, useTheme() hook, toggleTheme
-│   ├── constants/              # App-wide constants (api.ts, theme.ts)
-│   ├── utils/                  # Pure utility functions
-│   │   ├── championshipLabel.ts # Slug to display label mapping
-│   │   ├── teamColor.ts       # Deterministic color from team slug
-│   │   └── dateFormat.ts      # Date/time formatting helpers
-│   └── __tests__/              # Test files (6 suites, 43 tests)
-├── assets/                     # Images, fonts, static files
-├── app.json                    # Expo config (scheme: where-to-watch)
-├── tsconfig.json               # TypeScript config (strict: true)
-├── jest.config.js              # Jest configuration
-├── eslint.config.mjs           # ESLint flat config
-├── .prettierrc                 # Prettier config
-└── .husky/                     # Git hooks (pre-commit: lint-staged)
+│   ├── components/             # MatchCard, StandingsList, SegmentedChips, SyncGate, TeamCircle...
+│   ├── screens/                # Home, Standings, Favorites, MatchDetail
+│   ├── contexts/               # ThemeContext, SyncContext, FavoritesContext
+│   ├── data/database.ts        # SQLite schema and every query
+│   ├── services/               # snapshotService (download), syncService (freshness rules)
+│   ├── hooks/useSuperliga.ts   # React Query reads over SQLite
+│   ├── types/superliga.ts      # Snapshot contract, shared with the collector
+│   ├── constants/              # config, theme, designTokens
+│   ├── utils/                  # date, broadcast, teamColor
+│   └── __tests__/              # Test files
+├── scripts/superliga/          # Collector that generates superliga.json
+└── .github/workflows/          # Scheduled collector, publishes to GitHub Pages
 ```
 
 ## Navigation Flow
 
 ```
 Bottom Tabs:
-  Home tab (/) → highlights, search, sport chips
-  Campeonatos tab (/campeonatos) → sport picker
+  Jogos (/)                    → Ontem/Hoje/Amanha, competition filter, next matches on empty days
+  Classificacao (/classificacao) → standings per competition
+  Favoritos (/favoritos)       → one favorite team per competition, theme switch
 
 Stack over tabs:
-  ChampionshipScreen (/championship/[sport])
-    → MatchesScreen (/matches/[sport]?championship=slug)
-      → MatchDetailScreen (/match/[id]?sport=...)
+  MatchDetailScreen (/match/[id]) → score, sets, channel links
 ```
 
-- **Home tab**: Sport chips (Futebol/Volei), "Em Destaque Hoje" with search bar, highlighted matches (live first)
-- **Campeonatos tab**: Sport picker cards, navigates to championship list
-- **ChampionshipScreen**: Text list of championships for selected sport
-- **MatchesScreen**: FlatList of MatchCard with pull-to-refresh, date label, "Tabela" header button
-- **MatchDetailScreen**: Team circles with acronyms, match info, broadcast cards with "Abrir no App"/"Assistir na TV", related matches
+## Data Flow
 
-## API Integration
+```
+GitHub Action (every 2h) → reads cbv.com.br → validates → publishes superliga.json (GitHub Pages)
+App → downloads the JSON (EXPO_PUBLIC_SUPERLIGA_DATA_URL) → writes SQLite → screens read only SQLite
+```
 
-The app consumes a crawler API backend (configured via `EXPO_PUBLIC_API_URL`, defaults to `http://localhost:3000`).
+- **First run**: `SyncGate` blocks with a loader; on failure it shows a retry.
+- **Later runs**: opens from SQLite and refreshes in the background when data is older than 6h (15min on match days).
+- **Offline**: keeps local data and says so on the Home header.
+- **`saveSnapshot` must never touch the `favorites` table.**
+- **Dates**: `startsAt` carries a European offset. Always compare instants; never slice the text to get the day.
+- **Collector privacy**: the source page holds contact e-mails and rosters. `parseCbv.ts` copies only whitelisted fields.
 
-### Endpoints used:
-
-- `GET /api/matches/today` — all matches today
-- `GET /api/matches/today?sport=football` — football only
-- `GET /api/matches/today?sport=volleyball` — volleyball only
-
-### Key types:
-
-- `Sport`: `'football' | 'volleyball'`
-- `MatchScore`: discriminated union (`type: 'football'` with goals/penalties, `type: 'volleyball'` with sets/setScores)
-- `Match`: includes `sport`, `championship`, teams, broadcast channels, score, status
-- `DailySchedule`: `{ date, crawledAt, matches[] }`
+```bash
+node scripts/superliga/collect.ts public/superliga.json            # live collection
+node scripts/superliga/collect.ts out.json <dir-with-saved-html>   # offline, {slug}-agenda.html and {slug}-classificacao.html
+```
 
 ## Commands
 
@@ -148,7 +125,8 @@ eas update --channel production --message "description"    # Update production b
 - Every new component/hook must have at least one test
 - Use `@testing-library/react-native` for component tests
 - Mock `expo-router` in tests: `jest.mock('expo-router', () => ({ useRouter, useLocalSearchParams, Stack: { Screen: () => null } }))`
-- Mock `matchService` for screen tests: `jest.mock('../services/matchService')`
+- Mock `../data/database` for screen tests; for tests of the SQL itself, mock `expo-sqlite` with `createExpoSqliteMock()` from `src/test-sqlite.ts` (real SQLite through `node:sqlite`)
+- Jest runs with `TZ=America/Sao_Paulo` (set in `jest.config.js`)
 - Mock `expo-linking` in tests that use Linking: `jest.mock('expo-linking', () => ({ openURL: jest.fn() }))`
 - Test behavior, not implementation details
 - Run `yarn test` before committing (husky pre-commit runs lint-staged)
@@ -195,31 +173,6 @@ const { colors, toggleTheme, isDark } = useTheme();
 | Token         | Value                             |
 | ------------- | --------------------------------- |
 | Border radius | `12` (cards), `20` (badges/pills) |
-
-## Push Notifications
-
-The app uses Expo Push Notifications to send match reminders 30 minutes before kickoff for the user's favorite team.
-
-### Architecture
-
-- **`src/services/notificationService.ts`**: Registers for push permissions, gets Expo push token, schedules local reminders
-- **`src/services/subscriberService.ts`**: Registers/unregisters push token + favorite team on the backend (`POST /api/subscribers`)
-- **`src/contexts/FavoriteTeamContext.tsx`**: Manages favorite team state, auto-registers subscriber on startup if not yet registered
-- **`src/components/NotificationScheduler.tsx`**: Schedules local notifications for favorite team matches
-- **`google-services.json`**: Firebase config (required for Android push token generation via FCM)
-
-### Flow
-
-1. User selects favorite team → app gets Expo push token → `POST /api/subscribers { pushToken, teamSlug, sport }`
-2. Backend (Fly.io) crawls matches at 6am/18am → schedules push notifications 30min before matches via `expo-server-sdk`
-3. Expo Push Service → FCM → Android device receives notification
-
-### Manual crawl trigger
-
-```bash
-curl -X POST https://backend-application.fly.dev/api/crawl \
-  -H "X-API-Key: <CRAWL_API_KEY>"
-```
 
 ## Git Workflow
 

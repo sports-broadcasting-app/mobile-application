@@ -1,15 +1,17 @@
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
-import { FavoriteTeamProvider } from '../src/contexts/FavoriteTeamContext';
+import { FavoritesProvider } from '../src/contexts/FavoritesContext';
+import { SyncProvider } from '../src/contexts/SyncContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
-import { NotificationScheduler } from '../src/components/NotificationScheduler';
+import { SyncGate } from '../src/components/SyncGate';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 2,
+      networkMode: 'always',
+      staleTime: Infinity,
+      retry: false,
     },
   },
 });
@@ -18,22 +20,17 @@ function RootStack() {
   const { colors } = useTheme();
 
   return (
-    <>
-      <NotificationScheduler />
-      <Stack
-        screenOptions={{
-          headerTintColor: colors.primary,
-          headerTitleStyle: { color: colors.textPrimary, fontWeight: '700' },
-          headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.surface },
-        }}
-      >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="championship/[sport]" />
-        <Stack.Screen name="matches/[sport]" />
-        <Stack.Screen name="match/[id]" options={{ headerShown: false }} />
-      </Stack>
-    </>
+    <Stack
+      screenOptions={{
+        headerTintColor: colors.primary,
+        headerTitleStyle: { color: colors.textPrimary, fontWeight: '700' },
+        headerShadowVisible: false,
+        headerStyle: { backgroundColor: colors.surface },
+      }}
+    >
+      <Stack.Screen name="match/[id]" />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
   );
 }
 
@@ -42,9 +39,13 @@ export default function RootLayout() {
     <ThemeProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <FavoriteTeamProvider>
-            <RootStack />
-          </FavoriteTeamProvider>
+          <SyncProvider>
+            <FavoritesProvider>
+              <SyncGate>
+                <RootStack />
+              </SyncGate>
+            </FavoritesProvider>
+          </SyncProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </ThemeProvider>

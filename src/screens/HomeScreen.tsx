@@ -1,175 +1,168 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Sport, Match, TeamMatch } from '../types/match';
-import { useTodayMatches } from '../hooks/useTodayMatches';
-import { useFavoriteTeam } from '../contexts/FavoriteTeamContext';
-import { SPORTS } from '../constants/sports';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MatchCard } from '../components/MatchCard';
-import { FavoriteTeamBanner } from '../components/FavoriteTeamBanner';
-import { GradientHeader } from '../components/GradientHeader';
+import { SegmentedChips } from '../components/SegmentedChips';
+import { useFavorites } from '../contexts/FavoritesContext';
+import { useSync } from '../contexts/SyncContext';
 import { useTheme } from '../contexts/ThemeContext';
+import {
+  sortForDisplay,
+  useDayMatches,
+  useNextMatches,
+  useTeamsById,
+} from '../hooks/useSuperliga';
+import { CompetitionSlug, Match } from '../types/superliga';
+import {
+  addDays,
+  formatDay,
+  formatRelativeSync,
+  getDayBounds,
+} from '../utils/date';
+import { spacing, typography } from '../constants/designTokens';
 
-interface HomeScreenProps {
-  onPressMatch: (match: Match) => void;
-}
+type DayOption = '-1' | '0' | '1';
+type CompetitionFilter = 'todos' | CompetitionSlug;
 
-export function HomeScreen({ onPressMatch }: HomeScreenProps) {
+const DAY_OPTIONS: { value: DayOption; label: string }[] = [
+  { value: '-1', label: 'Ontem' },
+  { value: '0', label: 'Hoje' },
+  { value: '1', label: 'Amanha' },
+];
+
+const COMPETITION_OPTIONS: { value: CompetitionFilter; label: string }[] = [
+  { value: 'todos', label: 'Todos' },
+  { value: 'masculina', label: 'Masculina' },
+  { value: 'feminina', label: 'Feminina' },
+];
+
+export default function HomeScreen() {
+  const router = useRouter();
   const { colors } = useTheme();
-  const { highlightedMatches, loading, error, refetch } = useTodayMatches();
-  const { favoriteTeam } = useFavoriteTeam();
-  const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
+  const { lastSyncAt, refreshing, refreshFailed, refresh } = useSync();
+  const { favorites, isFavorite } = useFavorites();
+  const teamsById = useTeamsById();
+  const [dayOption, setDayOption] = useState<DayOption>('0');
+  const [filter, setFilter] = useState<CompetitionFilter>('todos');
 
-  const filteredMatches = useMemo(() => {
-    if (!selectedSport) return highlightedMatches;
-    return highlightedMatches.filter((m) => m.sport === selectedSport);
-  }, [highlightedMatches, selectedSport]);
+  const day = addDays(new Date(), Number(dayOption));
+  const competition = filter === 'todos' ? undefined : filter;
+  const { data: dayMatches } = useDayMatches(day);
 
-  const favoriteMatch = useMemo(() => {
-    if (!favoriteTeam) return null;
-    const slug = favoriteTeam.team.slug;
-    return (
-      filteredMatches.find(
-        (m): m is TeamMatch =>
-          m.sport !== 'formula1' &&
-          (m.homeTeam.slug === slug || m.awayTeam.slug === slug),
-      ) ?? null
-    );
-  }, [filteredMatches, favoriteTeam]);
-
-  const handleSportPress = (sport: Sport) => {
-    setSelectedSport((prev) => (prev === sport ? null : sport));
-  };
-
-  const renderChips = () => (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.chipsContainer}
-    >
-      {SPORTS.map(({ sport, label, icon }) => {
-        const isActive = selectedSport === sport;
-        return (
-          <TouchableOpacity
-            key={sport}
-            style={[
-              styles.chip,
-              isActive
-                ? { backgroundColor: colors.chipActiveBg }
-                : {
-                    backgroundColor: 'rgba(255,255,255,0.15)',
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    borderWidth: 1,
-                  },
-            ]}
-            activeOpacity={0.7}
-            onPress={() => handleSportPress(sport)}
-            testID={`sport-chip-${sport}`}
-          >
-            <MaterialCommunityIcons
-              name={icon}
-              size={18}
-              color={isActive ? colors.chipActiveText : '#fff'}
-            />
-            <Text
-              style={[
-                styles.chipLabel,
-                {
-                  color: isActive ? colors.chipActiveText : '#fff',
-                },
-              ]}
-            >
-              {label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </ScrollView>
+  const matches = useMemo(
+    () =>
+      sortForDisplay(
+        (dayMatches ?? []).filter(
+          (match) => !competition || match.competition === competition,
+        ),
+        isFavorite,
+      ),
+    [dayMatches, competition, isFavorite],
   );
 
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-            Carregando jogos...
-          </Text>
-        </View>
-      );
-    }
+  const isEmpty = dayMatches !== undefined && matches.length === 0;
+  const { data: nextMatches } = useNextMatches(
+    getDayBounds(day).end,
+    competition,
+    isEmpty,
+  );
 
-    if (error) {
-      return (
-        <View style={styles.centered}>
-          <Text style={[styles.errorText, { color: colors.error }]}>
-            {error}
-          </Text>
-          <Text
-            style={[styles.retryText, { color: colors.primary }]}
-            onPress={refetch}
-          >
-            Tentar novamente
-          </Text>
-        </View>
-      );
-    }
+  const renderMatch = (match: Match, showDate: boolean) => {
+    const homeTeam = teamsById.get(match.homeTeamId);
+    const awayTeam = teamsById.get(match.awayTeamId);
+    if (!homeTeam || !awayTeam) return null;
 
     return (
-      <FlatList
-        data={filteredMatches}
-        keyExtractor={(item: Match) => item.id}
-        ListHeaderComponent={
-          <>
-            {favoriteMatch && (
-              <FavoriteTeamBanner
-                team={favoriteTeam!.team}
-                matchHour={favoriteMatch.hour}
-                opponentName={
-                  favoriteMatch.homeTeam.slug === favoriteTeam!.team.slug
-                    ? favoriteMatch.awayTeam.name
-                    : favoriteMatch.homeTeam.name
-                }
-                onPress={() => onPressMatch(favoriteMatch)}
-              />
-            )}
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-              Jogos do Dia
-            </Text>
-          </>
-        }
-        renderItem={({ item }) => (
-          <MatchCard match={item} onPress={() => onPressMatch(item)} />
-        )}
-        contentContainerStyle={styles.list}
-        onRefresh={refetch}
-        refreshing={loading}
-        ListEmptyComponent={
-          <View style={styles.centered}>
-            <Text style={[styles.emptyText, { color: colors.textTertiary }]}>
-              Nenhum jogo encontrado
-            </Text>
-          </View>
-        }
+      <MatchCard
+        key={match.id}
+        match={match}
+        homeTeam={homeTeam}
+        awayTeam={awayTeam}
+        favorite={isFavorite(match.homeTeamId) || isFavorite(match.awayTeamId)}
+        showDate={showDate}
+        onPress={() => router.push(`/match/${match.id}`)}
       />
     );
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar style="light" />
-      <GradientHeader>{renderChips()}</GradientHeader>
-      {renderContent()}
-    </View>
+    <SafeAreaView
+      edges={['top']}
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>
+          Superliga
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          {refreshFailed
+            ? 'Sem conexao: mostrando dados salvos'
+            : lastSyncAt !== null
+              ? formatRelativeSync(lastSyncAt, Date.now())
+              : ''}
+        </Text>
+      </View>
+
+      <SegmentedChips
+        options={DAY_OPTIONS}
+        selected={dayOption}
+        onSelect={setDayOption}
+      />
+      <SegmentedChips
+        options={COMPETITION_OPTIONS}
+        selected={filter}
+        onSelect={setFilter}
+      />
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
+        <Text style={[styles.dayLabel, { color: colors.sectionHeaderText }]}>
+          {formatDay(day)}
+        </Text>
+
+        {Object.keys(favorites).length === 0 && (
+          <TouchableOpacity onPress={() => router.push('/favoritos')}>
+            <Text style={[styles.hint, { color: colors.primary }]}>
+              Escolha seu time favorito em cada competicao
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {matches.map((match) => renderMatch(match, false))}
+
+        {isEmpty && (
+          <>
+            <Text style={[styles.empty, { color: colors.textSecondary }]}>
+              Nenhum jogo neste dia
+            </Text>
+            {(nextMatches ?? []).length > 0 && (
+              <Text
+                style={[styles.dayLabel, { color: colors.sectionHeaderText }]}
+              >
+                Proximos jogos
+              </Text>
+            )}
+            {(nextMatches ?? []).map((match) => renderMatch(match, true))}
+          </>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -177,54 +170,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  chipsContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 16,
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
   },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+  title: {
+    fontSize: typography.size.title,
+    fontWeight: typography.weight.bold,
   },
-  chipLabel: {
-    fontSize: 13,
-    fontWeight: '600',
+  subtitle: {
+    fontSize: typography.size.sm,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 8,
+  content: {
+    flexGrow: 1,
+    paddingBottom: spacing.xxxl,
   },
-  list: {
-    paddingBottom: 16,
+  dayLabel: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
+    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
   },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
+  hint: {
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.semibold,
+    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-  },
-  errorText: {
-    fontSize: 16,
+  empty: {
+    fontSize: typography.size.body,
+    paddingVertical: spacing.lg,
     textAlign: 'center',
-    marginHorizontal: 32,
-  },
-  retryText: {
-    marginTop: 12,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  emptyText: {
-    fontSize: 16,
   },
 });
