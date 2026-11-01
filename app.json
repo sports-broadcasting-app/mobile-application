@@ -7,11 +7,6 @@
     "icon": "./assets/icon.png",
     "scheme": "where-to-watch",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#14532d"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.diego-serrat.wheretowatch",
@@ -21,7 +16,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#14532d",
+        "backgroundColor": "#0f172a",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -42,6 +37,21 @@
       "eas": {
         "projectId": "d6b5c58b-a580-4329-8332-30a9f2767eaf"
       }
-    }
+    },
+    "plugins": [
+      "expo-image",
+      "expo-router",
+      "expo-sqlite",
+      "expo-status-bar",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0f172a"
+        }
+      ]
+    ]
   }
 }

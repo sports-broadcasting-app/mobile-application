@@ -6,7 +6,7 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 
 ## Tech Stack
 
-- **Framework**: React Native with Expo SDK 55
+- **Framework**: React Native with Expo SDK 58
 - **Language**: TypeScript (strict mode enabled)
 - **Navigation**: Expo Router (file-based routing with tabs + stack-over-tabs)
 - **Package Manager**: Yarn (do NOT use npm)

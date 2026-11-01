@@ -25,7 +25,7 @@ export default function TabLayout() {
             <MaterialCommunityIcons
               name="television-classic"
               size={size}
-              color={color}
+              color={color as string}
             />
           ),
         }}
@@ -38,7 +38,7 @@ export default function TabLayout() {
             <MaterialCommunityIcons
               name="trophy-outline"
               size={size}
-              color={color}
+              color={color as string}
             />
           ),
         }}
@@ -48,7 +48,11 @@ export default function TabLayout() {
         options={{
           title: 'Favoritos',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="star" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="star"
+              size={size}
+              color={color as string}
+            />
           ),
         }}
       />

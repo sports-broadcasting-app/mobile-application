@@ -18,7 +18,13 @@ const fetchMock = jest.fn();
 global.fetch = fetchMock;
 
 function respondWith(body: unknown, ok = true, status = 200) {
-  fetchMock.mockResolvedValueOnce({ ok, status, json: async () => body });
+  fetchMock.mockResolvedValueOnce({
+    ok,
+    status,
+    url: 'https://example.com/superliga.json',
+    headers: new Headers({ 'content-type': 'application/json' }),
+    text: async () => JSON.stringify(body),
+  });
 }
 
 describe('fetchSnapshot', () => {
@@ -30,6 +36,28 @@ describe('fetchSnapshot', () => {
   it('rejects an HTTP error', async () => {
     respondWith({}, false, 503);
     await expect(fetchSnapshot()).rejects.toThrow('503');
+  });
+
+  it('rejects a body that is not JSON', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      url: 'https://example.com/superliga.json',
+      headers: new Headers({ 'content-type': 'text/html' }),
+      text: async () => '<html></html>',
+    });
+    await expect(fetchSnapshot()).rejects.toThrow();
+  });
+
+  it('logs the status of a failed download', async () => {
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+    respondWith({}, false, 404);
+    await expect(fetchSnapshot()).rejects.toThrow('404');
+    expect(log).toHaveBeenCalledWith(
+      '[sync] download finished',
+      expect.stringContaining('"status":404'),
+    );
+    log.mockRestore();
   });
 
   it('rejects an unknown format', async () => {

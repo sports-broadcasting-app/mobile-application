@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { Alert, Text } from 'react-native';
 import { fireEvent, render, screen } from '../test-utils';
 import { SyncGate } from '../components/SyncGate';
 import { useSync } from '../contexts/SyncContext';
@@ -31,11 +31,28 @@ describe('SyncGate', () => {
     mockedUseSync.mockReturnValue({
       phase: 'failed',
       refreshing: false,
+      lastError: 'Falha ao baixar os dados (404)',
       refresh,
     });
     renderGate();
     fireEvent.press(await screen.findByText('Tentar novamente'));
     expect(refresh).toHaveBeenCalled();
+  });
+
+  it('shows the error details on demand', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    mockedUseSync.mockReturnValue({
+      phase: 'failed',
+      refreshing: false,
+      lastError: 'Falha ao baixar os dados (404)',
+    });
+    renderGate();
+    fireEvent.press(await screen.findByText('Ver detalhes'));
+    expect(alert).toHaveBeenCalledWith(
+      'Detalhes do erro',
+      expect.stringMatching(/\(404\)[\s\S]*EXPO_PUBLIC_SUPERLIGA_DATA_URL: /),
+    );
+    alert.mockRestore();
   });
 
   it('shows the app when local data exists', async () => {

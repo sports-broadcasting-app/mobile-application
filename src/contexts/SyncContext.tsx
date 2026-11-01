@@ -19,6 +19,7 @@ interface SyncContextValue {
   lastSyncAt: number | null;
   refreshing: boolean;
   refreshFailed: boolean;
+  lastError: string | null;
   refresh: () => Promise<void>;
 }
 
@@ -27,6 +28,7 @@ const SyncContext = createContext<SyncContextValue>({
   lastSyncAt: null,
   refreshing: false,
   refreshFailed: false,
+  lastError: null,
   refresh: async () => {},
 });
 
@@ -35,6 +37,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshFailed, setRefreshFailed] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
   const lastSyncRef = useRef<number | null>(null);
   const inFlight = useRef<Promise<void> | null>(null);
 
@@ -47,11 +50,13 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         lastSyncRef.current = syncedAt;
         setLastSyncAt(syncedAt);
         setRefreshFailed(false);
+        setLastError(null);
         setPhase('ready');
       })
       .catch((error: unknown) => {
         console.warn('Failed to sync Superliga data:', error);
         setRefreshFailed(true);
+        setLastError(error instanceof Error ? error.message : String(error));
         setPhase(lastSyncRef.current === null ? 'failed' : 'ready');
       })
       .finally(() => {
@@ -75,6 +80,9 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         await refreshIfNeeded();
       } catch (error) {
         console.warn('Failed to read local data:', error);
+        setLastError(
+          `Banco local: ${error instanceof Error ? error.message : String(error)}`,
+        );
         setPhase('failed');
       }
     })();
@@ -88,8 +96,15 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   }, [refreshIfNeeded]);
 
   const value = useMemo(
-    () => ({ phase, lastSyncAt, refreshing, refreshFailed, refresh }),
-    [phase, lastSyncAt, refreshing, refreshFailed, refresh],
+    () => ({
+      phase,
+      lastSyncAt,
+      refreshing,
+      refreshFailed,
+      lastError,
+      refresh,
+    }),
+    [phase, lastSyncAt, refreshing, refreshFailed, lastError, refresh],
   );
 
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;

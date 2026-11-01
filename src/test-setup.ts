@@ -8,6 +8,11 @@ jest.mock('expo-image', () => {
   };
 });
 
+jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
+  const { View } = require('react-native');
+  return { __esModule: true, default: View };
+});
+
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(() => Promise.resolve(null)),
   setItem: jest.fn(() => Promise.resolve()),
