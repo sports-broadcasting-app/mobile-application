@@ -49,3 +49,6 @@ coverage/
 
 # npm
 package-lock.json
+
+# collector output
+/public

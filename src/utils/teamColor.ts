@@ -13,9 +13,7 @@ const PALETTE = [
   '#0e7490',
 ];
 
-export function getTeamColor(slug: string): string {
-  const hash = slug
-    .split('')
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+export function getTeamColor(id: string): string {
+  const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return PALETTE[hash % PALETTE.length];
 }

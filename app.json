@@ -27,19 +27,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "useNextNotificationsApi": true,
-      "package": "com.diego_serrat.wheretowatch",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.diego_serrat.wheretowatch"
     },
-    "plugins": [
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/icon.png",
-          "color": "#16a34a"
-        }
-      ]
-    ],
     "updates": {
       "url": "https://u.expo.dev/d6b5c58b-a580-4329-8332-30a9f2767eaf"
     },

@@ -1,16 +1,17 @@
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
-import { FavoriteTeamsProvider } from '../src/contexts/FavoriteTeamsContext';
-import { TeamLogoProvider } from '../src/contexts/TeamLogoContext';
+import { FavoritesProvider } from '../src/contexts/FavoritesContext';
+import { SyncProvider } from '../src/contexts/SyncContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
-import { NotificationScheduler } from '../src/components/NotificationScheduler';
+import { SyncGate } from '../src/components/SyncGate';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 2,
+      networkMode: 'always',
+      staleTime: Infinity,
+      retry: false,
     },
   },
 });
@@ -19,24 +20,17 @@ function RootStack() {
   const { colors } = useTheme();
 
   return (
-    <>
-      <NotificationScheduler />
-      <Stack
-        screenOptions={{
-          headerTintColor: colors.primary,
-          headerTitleStyle: { color: colors.textPrimary, fontWeight: '700' },
-          headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.surface },
-        }}
-      >
-        <Stack.Screen name="championship/[sport]" />
-        <Stack.Screen name="matches/[sport]" />
-        <Stack.Screen name="match/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="standings/[championship]" />
-        <Stack.Screen name="brackets/[championship]" />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-    </>
+    <Stack
+      screenOptions={{
+        headerTintColor: colors.primary,
+        headerTitleStyle: { color: colors.textPrimary, fontWeight: '700' },
+        headerShadowVisible: false,
+        headerStyle: { backgroundColor: colors.surface },
+      }}
+    >
+      <Stack.Screen name="match/[id]" />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
   );
 }
 
@@ -45,11 +39,13 @@ export default function RootLayout() {
     <ThemeProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <TeamLogoProvider>
-            <FavoriteTeamsProvider>
-              <RootStack />
-            </FavoriteTeamsProvider>
-          </TeamLogoProvider>
+          <SyncProvider>
+            <FavoritesProvider>
+              <SyncGate>
+                <RootStack />
+              </SyncGate>
+            </FavoritesProvider>
+          </SyncProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </ThemeProvider>
