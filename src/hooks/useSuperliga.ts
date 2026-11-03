@@ -2,11 +2,13 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSync } from '../contexts/SyncContext';
 import {
+  countTransfers,
   getMatch,
   getMatchesBetween,
   getNextMatches,
   getStandings,
   getTeams,
+  getTransfers,
 } from '../data/database';
 import { CompetitionSlug, Match, Team } from '../types/superliga';
 import { getDayBounds } from '../utils/date';
@@ -82,6 +84,23 @@ export function useMatch(id: string) {
     queryKey: ['match', id, lastSyncAt],
     queryFn: () => getMatch(id),
   });
+}
+
+export function useTransfers(competition: CompetitionSlug) {
+  const { lastSyncAt } = useSync();
+  return useQuery({
+    queryKey: ['transfers', competition, lastSyncAt],
+    queryFn: () => getTransfers(competition),
+  });
+}
+
+export function useHasTransfers(): boolean {
+  const { lastSyncAt } = useSync();
+  const { data } = useQuery({
+    queryKey: ['transferCount', lastSyncAt],
+    queryFn: countTransfers,
+  });
+  return (data ?? 0) > 0;
 }
 
 export function useStandings(competition: CompetitionSlug) {

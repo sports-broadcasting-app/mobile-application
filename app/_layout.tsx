@@ -29,6 +29,7 @@ function RootStack() {
       }}
     >
       <Stack.Screen name="match/[id]" />
+      <Stack.Screen name="transferencias" />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
     </Stack>
   );

@@ -6,6 +6,10 @@ import type {
   SuperligaSnapshot,
 } from '../../src/types/superliga';
 import { assertValidSnapshot, buildCompetition } from './parseCbv.ts';
+import { resolveTransfers, type TransferFile } from './transfers.ts';
+
+/** Hand-curated from news articles; see the README. */
+const TRANSFERS_FILE = new URL('./transfers.json', import.meta.url);
 
 const BASE_URL = 'https://cbv.com.br/volei-de-quadra';
 const USER_AGENT =
@@ -60,9 +64,19 @@ async function main(): Promise<void> {
   const [output, fixturesDir] = process.argv.slice(2);
   if (!output) throw new Error('Missing the output path');
 
+  const transferFile = JSON.parse(
+    await readFile(TRANSFERS_FILE, 'utf8'),
+  ) as TransferFile;
+
   const competitions: CompetitionData[] = [];
   for (const { slug, name, path } of COMPETITIONS) {
-    competitions.push(await collect(slug, name, path, fixturesDir));
+    const competition = await collect(slug, name, path, fixturesDir);
+    competition.transfers = resolveTransfers(
+      slug,
+      transferFile[slug] ?? [],
+      competition.teams,
+    );
+    competitions.push(competition);
   }
 
   const snapshot: SuperligaSnapshot = {
@@ -77,7 +91,7 @@ async function main(): Promise<void> {
   await writeFile(output, JSON.stringify(snapshot));
   for (const c of competitions) {
     console.log(
-      `${c.name}: ${c.teams.length} teams, ${c.matches.length} matches`,
+      `${c.name}: ${c.teams.length} teams, ${c.matches.length} matches, ${c.transfers?.length ?? 0} transfers`,
     );
   }
 }

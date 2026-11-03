@@ -1,4 +1,4 @@
-import { Match, SuperligaSnapshot, Team } from './types/superliga';
+import { Match, SuperligaSnapshot, Team, Transfer } from './types/superliga';
 
 export const homeTeam: Team = {
   id: '1',
@@ -55,6 +55,39 @@ export const finishedMatch: Match = {
   city: 'BELO HORIZONTE',
 };
 
+export const transfers: Transfer[] = [
+  {
+    id: 't1',
+    athleteName: 'Ana Souza',
+    position: 'Ponteira',
+    from: { teamId: '2', name: 'VOLEI RENATA' },
+    to: { teamId: '1', name: 'SADA CRUZEIRO' },
+    date: '2026-10-28',
+    loan: false,
+    sourceUrl: 'https://www.lance.com.br/volei/ana-souza.html',
+  },
+  {
+    id: 't2',
+    athleteName: 'Bruno Lima',
+    position: 'Levantador',
+    from: { teamId: null, name: 'Modena (ITA)' },
+    to: { teamId: '2', name: 'VOLEI RENATA' },
+    date: '2026-09-15',
+    loan: true,
+    sourceUrl: 'https://ge.globo.com/volei/bruno-lima.ghtml',
+  },
+  {
+    id: 't3',
+    athleteName: 'Caio Dias',
+    position: null,
+    from: { teamId: '1', name: 'SADA CRUZEIRO' },
+    to: { teamId: null, name: 'Clube Livre' },
+    date: null,
+    loan: false,
+    sourceUrl: 'https://noataque.com.br/volei/caio-dias',
+  },
+];
+
 export function buildSnapshot(matches: Match[]): SuperligaSnapshot {
   return {
     version: 1,
@@ -66,6 +99,7 @@ export function buildSnapshot(matches: Match[]): SuperligaSnapshot {
         name: 'Superliga Masculina',
         teams: [homeTeam, awayTeam],
         matches,
+        transfers,
         standings: [
           {
             teamId: '2',

@@ -4,8 +4,10 @@ import SettingsScreen from '../screens/SettingsScreen';
 import HomeScreen from '../screens/HomeScreen';
 import MatchDetailScreen from '../screens/MatchDetailScreen';
 import StandingsScreen from '../screens/StandingsScreen';
+import TransfersScreen from '../screens/TransfersScreen';
 import { useSync } from '../contexts/SyncContext';
 import {
+  countTransfers,
   deleteFavorite,
   getFavorites,
   getMatch,
@@ -13,6 +15,7 @@ import {
   getNextMatches,
   getStandings,
   getTeams,
+  getTransfers,
   saveFavorite,
 } from '../data/database';
 import * as Linking from 'expo-linking';
@@ -23,6 +26,7 @@ import {
   finishedMatch,
   homeTeam,
   scheduledMatch,
+  transfers,
 } from '../test-fixtures';
 import { Match } from '../types/superliga';
 
@@ -45,6 +49,8 @@ jest.mock('../data/database', () => ({
   getNextMatches: jest.fn(async () => []),
   getStandings: jest.fn(async () => []),
   getTeams: jest.fn(async () => []),
+  getTransfers: jest.fn(async () => []),
+  countTransfers: jest.fn(async () => 0),
   saveFavorite: jest.fn(async () => {}),
 }));
 
@@ -64,6 +70,8 @@ beforeEach(() => {
   (getFavorites as jest.Mock).mockResolvedValue({});
   mockDayMatches([]);
   (getNextMatches as jest.Mock).mockResolvedValue([]);
+  (getTransfers as jest.Mock).mockResolvedValue([]);
+  (countTransfers as jest.Mock).mockResolvedValue(0);
 });
 
 describe('HomeScreen', () => {
@@ -140,12 +148,82 @@ describe('StandingsScreen', () => {
     await waitFor(() => expect(getStandings).toHaveBeenCalledWith('feminina'));
   });
 
+  it('links to transfers only when there are some', async () => {
+    (getStandings as jest.Mock).mockResolvedValue([]);
+    const { unmount } = render(<StandingsScreen />);
+    await screen.findByTestId('standings-legend');
+    expect(screen.queryByTestId('open-transfers')).toBeNull();
+    unmount();
+
+    (countTransfers as jest.Mock).mockResolvedValue(3);
+    render(<StandingsScreen />);
+    fireEvent.press(await screen.findByTestId('open-transfers'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/transferencias',
+      params: { competition: 'masculina' },
+    });
+  });
+
   it('explains every column in the legend', async () => {
     (getStandings as jest.Mock).mockResolvedValue([]);
     render(<StandingsScreen />);
     const legend = await screen.findByTestId('standings-legend');
     expect(legend).toHaveTextContent(/P\s+Pontos/);
     expect(legend).toHaveTextContent(/SP\s+Sets perdidos/);
+  });
+});
+
+describe('TransfersScreen', () => {
+  beforeEach(() => {
+    (useLocalSearchParams as jest.Mock).mockReturnValue({});
+    (getTransfers as jest.Mock).mockResolvedValue(transfers);
+  });
+
+  it('lists every transfer without a favorite', async () => {
+    render(<TransfersScreen />);
+    expect(await screen.findByText('Todas')).toBeTruthy();
+    expect(screen.getByTestId('transfer-card-t2')).toBeTruthy();
+    expect(screen.queryByText('Seu time')).toBeNull();
+  });
+
+  it('opens the news article a transfer came from', async () => {
+    render(<TransfersScreen />);
+    fireEvent.press(await screen.findByTestId('transfer-source-t1'));
+    expect(screen.getByText('Fonte: lance.com.br')).toBeTruthy();
+    expect(Linking.openURL).toHaveBeenCalledWith(transfers[0].sourceUrl);
+  });
+
+  it('puts the favorite team first and marks arrivals and departures', async () => {
+    (getFavorites as jest.Mock).mockResolvedValue({ masculina: '1' });
+    render(<TransfersScreen />);
+    expect(await screen.findByText('Seu time')).toBeTruthy();
+    expect(screen.getByText('Demais times')).toBeTruthy();
+    expect(screen.getByText('Chegou ao seu time')).toBeTruthy();
+    expect(screen.getByText('Saiu do seu time')).toBeTruthy();
+  });
+
+  it('searches and says when nothing matches', async () => {
+    render(<TransfersScreen />);
+    await screen.findByTestId('transfer-card-t1');
+    fireEvent.changeText(screen.getByTestId('transfer-search'), 'modena');
+    expect(screen.queryByTestId('transfer-card-t1')).toBeNull();
+    expect(screen.getByTestId('transfer-card-t2')).toBeTruthy();
+    fireEvent.changeText(screen.getByTestId('transfer-search'), 'xyz');
+    expect(screen.getByText('Nenhuma transferência encontrada')).toBeTruthy();
+  });
+
+  it('opens on the competition it was given', async () => {
+    (useLocalSearchParams as jest.Mock).mockReturnValue({
+      competition: 'feminina',
+    });
+    (getTransfers as jest.Mock).mockResolvedValue([]);
+    render(<TransfersScreen />);
+    expect(
+      await screen.findByText(
+        'Nenhuma transferência registrada nesta temporada',
+      ),
+    ).toBeTruthy();
+    expect(getTransfers).toHaveBeenCalledWith('feminina');
   });
 });
 

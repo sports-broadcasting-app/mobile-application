@@ -1,0 +1,96 @@
+{
+  "masculina": [
+    {
+      "athlete": "Yoandy Leal",
+      "position": "Ponteiro",
+      "from": "Vôlei turco",
+      "to": "SDC",
+      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+    },
+    {
+      "athlete": "Douglas Souza",
+      "position": "Ponteiro",
+      "from": "SDC",
+      "to": "BVC",
+      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+    },
+    {
+      "athlete": "Éder Carbonara",
+      "position": "Central",
+      "from": "SES",
+      "to": "BVC",
+      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+    },
+    {
+      "athlete": "Bryan",
+      "position": "Oposto",
+      "from": "SVG",
+      "to": "MTC",
+      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+    },
+    {
+      "athlete": "Maique",
+      "position": "Líbero",
+      "from": "BVC",
+      "to": "MTC",
+      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+    },
+    {
+      "athlete": "Honorato",
+      "position": "Ponteiro",
+      "from": "Vôlei polonês",
+      "to": "MTC",
+      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+    },
+    {
+      "athlete": "Guilherme Voss",
+      "position": "Central",
+      "from": "Exterior",
+      "to": "PCU",
+      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+    },
+    {
+      "athlete": "Samuel Neufeld",
+      "from": "MTC",
+      "to": "SES",
+      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+    }
+  ],
+  "feminina": [
+    {
+      "athlete": "Magdalena Stysiak",
+      "position": "Oposta",
+      "from": "Vôlei turco",
+      "to": "OVC",
+      "source": "https://www.lance.com.br/volei/aposta-em-estrangeiras-e-destaques-da-selecao-os-principais-reforcos-da-superliga-2026-27.html"
+    },
+    {
+      "athlete": "Sofya Kuznetsova",
+      "position": "Ponteira",
+      "from": "Vôlei japonês",
+      "to": "DPC",
+      "source": "https://www.lance.com.br/volei/aposta-em-estrangeiras-e-destaques-da-selecao-os-principais-reforcos-da-superliga-2026-27.html"
+    },
+    {
+      "athlete": "Sabrina",
+      "position": "Oposta",
+      "from": "Denso Airybees (JPN)",
+      "to": "DPC",
+      "source": "https://www.lance.com.br/volei/aposta-em-estrangeiras-e-destaques-da-selecao-os-principais-reforcos-da-superliga-2026-27.html"
+    },
+    {
+      "athlete": "Maiara Basso",
+      "position": "Ponteira",
+      "from": "OVC",
+      "to": "GMT",
+      "source": "https://www.lance.com.br/volei/aposta-em-estrangeiras-e-destaques-da-selecao-os-principais-reforcos-da-superliga-2026-27.html"
+    },
+    {
+      "athlete": "Morgahn Fingall",
+      "position": "Oposta",
+      "from": "DPC",
+      "to": "SVB",
+      "source": "https://www.lance.com.br/volei/aposta-em-estrangeiras-e-destaques-da-selecao-os-principais-reforcos-da-superliga-2026-27.html"
+    }
+  ]
+}

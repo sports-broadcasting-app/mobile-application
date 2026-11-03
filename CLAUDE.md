@@ -50,6 +50,26 @@ Bottom Tabs:
 
 Stack over tabs:
   MatchDetailScreen (/match/[id]) → score, sets, channel links
+  TransfersScreen (/transferencias) → season transfers, favorite team first; opened from Classificacao, link hidden while there are none
+```
+
+- **Transfers**: CBV publishes no transfer list, so they are hand-curated from news articles in `scripts/superliga/transfers.json` and merged by the collector. Each line needs the article URL in `source` (shown in the app as "Fonte"); Superliga clubs go by their standings code (e.g. `SDC`) or full name, any other club by plain name. `resolveTransfers` rejects the whole run on a bad line, so the last good snapshot stays published. Record facts only (athlete, clubs, date), never copy article text.
+
+```json
+{
+  "masculina": [
+    {
+      "athlete": "Nome",
+      "position": "Ponteiro",
+      "from": "Modena (ITA)",
+      "to": "SDC",
+      "date": "2026-07-15",
+      "loan": false,
+      "source": "https://..."
+    }
+  ],
+  "feminina": []
+}
 ```
 
 ## Data Flow
