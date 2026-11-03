@@ -3,13 +3,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppearancePicker } from '../components/AppearancePicker';
+import { SearchField } from '../components/SearchField';
 import { SegmentedChips } from '../components/SegmentedChips';
 import { TeamCircle } from '../components/TeamCircle';
 import { useFavorites } from '../contexts/FavoritesContext';
@@ -17,12 +17,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useTeams } from '../hooks/useSuperliga';
 import { CompetitionSlug } from '../types/superliga';
 import { normalizeForSearch } from '../utils/search';
-import {
-  iconSize,
-  radius,
-  spacing,
-  typography,
-} from '../constants/designTokens';
+import { iconSize, spacing, typography } from '../constants/designTokens';
 
 const COMPETITION_OPTIONS: { value: CompetitionSlug; label: string }[] = [
   { value: 'masculina', label: 'Masculina' },
@@ -81,29 +76,12 @@ export default function SettingsScreen() {
           onSelect={setCompetition}
         />
 
-        <View
-          style={[
-            styles.search,
-            { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
-          ]}
-        >
-          <MaterialCommunityIcons
-            name="magnify"
-            size={iconSize.md}
-            color={colors.textTertiary}
-          />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Buscar time"
-            placeholderTextColor={colors.textTertiary}
-            autoCorrect={false}
-            clearButtonMode="while-editing"
-            returnKeyType="search"
-            testID="team-search"
-            style={[styles.searchInput, { color: colors.textPrimary }]}
-          />
-        </View>
+        <SearchField
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Buscar time"
+          testID="team-search"
+        />
 
         {visibleTeams.map((team) => {
           const selected = favorites[competition] === team.id;
@@ -168,21 +146,6 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xs,
-  },
-  search: {
-    alignItems: 'center',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginHorizontal: spacing.lg,
-    marginVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: typography.size.body,
-    paddingVertical: spacing.md,
   },
   row: {
     alignItems: 'center',

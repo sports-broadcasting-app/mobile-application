@@ -5,6 +5,7 @@ import {
   Standing,
   SuperligaSnapshot,
   Team,
+  Transfer,
 } from '../types/superliga';
 
 const DB_NAME = 'superliga.db';
@@ -34,6 +35,13 @@ async function openDb(): Promise<SQLite.SQLiteDatabase> {
       position INTEGER NOT NULL,
       payload TEXT NOT NULL,
       PRIMARY KEY (competition, teamId)
+    );
+    CREATE TABLE IF NOT EXISTS transfers (
+      id TEXT NOT NULL,
+      competition TEXT NOT NULL,
+      date TEXT,
+      payload TEXT NOT NULL,
+      PRIMARY KEY (competition, id)
     );
     CREATE TABLE IF NOT EXISTS meta (
       key TEXT PRIMARY KEY,
@@ -73,6 +81,7 @@ export async function saveSnapshot(
     await db.runAsync('DELETE FROM teams');
     await db.runAsync('DELETE FROM matches');
     await db.runAsync('DELETE FROM standings');
+    await db.runAsync('DELETE FROM transfers');
 
     for (const competition of snapshot.competitions) {
       for (const team of competition.teams) {
@@ -104,6 +113,19 @@ export async function saveSnapshot(
             standing.teamId,
             standing.position,
             JSON.stringify(standing),
+          ],
+        );
+      }
+
+      for (const transfer of competition.transfers ?? []) {
+        await db.runAsync(
+          `INSERT OR REPLACE INTO transfers (id, competition, date, payload)
+            VALUES (?, ?, ?, ?)`,
+          [
+            transfer.id,
+            competition.slug,
+            transfer.date,
+            JSON.stringify(transfer),
           ],
         );
       }
@@ -190,6 +212,27 @@ export async function getStandings(
     [competition],
   );
   return parseRows<Standing>(rows);
+}
+
+/** Newest first; transfers without a date go last. */
+export async function getTransfers(
+  competition: CompetitionSlug,
+): Promise<Transfer[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ payload: string }>(
+    `SELECT payload FROM transfers WHERE competition = ?
+      ORDER BY date IS NULL, date DESC, id ASC`,
+    [competition],
+  );
+  return parseRows<Transfer>(rows);
+}
+
+export async function countTransfers(): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ total: number }>(
+    'SELECT COUNT(*) AS total FROM transfers',
+  );
+  return row?.total ?? 0;
 }
 
 export type Favorites = Partial<Record<CompetitionSlug, string>>;

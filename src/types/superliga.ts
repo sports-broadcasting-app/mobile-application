@@ -45,12 +45,33 @@ export interface Standing {
   pointsLost: number;
 }
 
+/** A club in a transfer. `teamId` is null for clubs outside the Superliga. */
+export interface TransferClub {
+  teamId: string | null;
+  name: string;
+}
+
+export interface Transfer {
+  id: string;
+  athleteName: string;
+  position: string | null;
+  from: TransferClub;
+  to: TransferClub;
+  /** Calendar date `YYYY-MM-DD`, not an instant. */
+  date: string | null;
+  loan: boolean;
+  /** The news article the transfer was taken from. */
+  sourceUrl: string;
+}
+
 export interface CompetitionData {
   slug: CompetitionSlug;
   name: string;
   teams: Team[];
   matches: Match[];
   standings: Standing[];
+  /** Optional until the collector has a source for transfers. */
+  transfers?: Transfer[];
 }
 
 export interface SuperligaSnapshot {

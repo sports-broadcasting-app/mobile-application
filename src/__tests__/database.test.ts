@@ -1,4 +1,5 @@
 import {
+  countTransfers,
   deleteFavorite,
   getFavorites,
   getLastSyncAt,
@@ -7,10 +8,16 @@ import {
   getNextMatches,
   getStandings,
   getTeams,
+  getTransfers,
   saveFavorite,
   saveSnapshot,
 } from '../data/database';
-import { buildSnapshot, finishedMatch, scheduledMatch } from '../test-fixtures';
+import {
+  buildSnapshot,
+  finishedMatch,
+  scheduledMatch,
+  transfers,
+} from '../test-fixtures';
 import { getDayBounds } from '../utils/date';
 
 jest.mock('expo-sqlite', () =>
@@ -60,6 +67,21 @@ describe('database', () => {
     await saveFavorite('feminina', '3');
     await saveSnapshot(buildSnapshot([finishedMatch]), 2000);
     expect(await getFavorites()).toEqual({ masculina: '1', feminina: '3' });
+  });
+
+  it('lists transfers newest first, undated last', async () => {
+    const stored = await getTransfers('masculina');
+    expect(stored.map((transfer) => transfer.id)).toEqual(['t1', 't2', 't3']);
+    expect(stored[1]).toEqual(transfers[1]);
+    expect(await getTransfers('feminina')).toEqual([]);
+    expect(await countTransfers()).toBe(3);
+  });
+
+  it('accepts a snapshot without transfers', async () => {
+    const snapshot = buildSnapshot([scheduledMatch]);
+    delete snapshot.competitions[0].transfers;
+    await saveSnapshot(snapshot, 2000);
+    expect(await countTransfers()).toBe(0);
   });
 
   it('stores a single favorite per competition', async () => {

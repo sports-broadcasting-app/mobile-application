@@ -4,17 +4,29 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SegmentedChips } from '../components/SegmentedChips';
 import { StandingsList } from '../components/StandingsList';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useSync } from '../contexts/SyncContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { useStandings, useTeamsById } from '../hooks/useSuperliga';
+import {
+  useHasTransfers,
+  useStandings,
+  useTeamsById,
+} from '../hooks/useSuperliga';
 import { CompetitionSlug } from '../types/superliga';
-import { spacing, typography } from '../constants/designTokens';
+import {
+  iconSize,
+  radius,
+  spacing,
+  typography,
+} from '../constants/designTokens';
 
 const OPTIONS: { value: CompetitionSlug; label: string }[] = [
   { value: 'masculina', label: 'Masculina' },
@@ -37,6 +49,8 @@ export default function StandingsScreen() {
   const teamsById = useTeamsById();
   const [competition, setCompetition] = useState<CompetitionSlug>('masculina');
   const { data: standings } = useStandings(competition);
+  const hasTransfers = useHasTransfers();
+  const router = useRouter();
 
   return (
     <SafeAreaView
@@ -64,6 +78,33 @@ export default function StandingsScreen() {
           />
         }
       >
+        {hasTransfers && (
+          <TouchableOpacity
+            accessibilityRole="button"
+            testID="open-transfers"
+            style={[styles.transfers, { backgroundColor: colors.surface }]}
+            onPress={() =>
+              router.push({
+                pathname: '/transferencias',
+                params: { competition },
+              })
+            }
+          >
+            <MaterialCommunityIcons
+              name="swap-horizontal"
+              size={iconSize.md}
+              color={colors.primary}
+            />
+            <Text style={[styles.transfersText, { color: colors.textPrimary }]}>
+              Transferências da temporada
+            </Text>
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={iconSize.md}
+              color={colors.textTertiary}
+            />
+          </TouchableOpacity>
+        )}
         <StandingsList
           standings={standings ?? []}
           teamsById={teamsById}
@@ -103,6 +144,20 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingBottom: spacing.xxxl,
+  },
+  transfers: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+    marginHorizontal: spacing.lg,
+    padding: spacing.md,
+  },
+  transfersText: {
+    flex: 1,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.semibold,
   },
   legend: {
     flexDirection: 'row',
