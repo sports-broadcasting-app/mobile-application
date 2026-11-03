@@ -62,7 +62,7 @@ describe('fetchSnapshot', () => {
 
   it('rejects an unknown format', async () => {
     respondWith({ ...buildSnapshot([]), version: 2 });
-    await expect(fetchSnapshot()).rejects.toThrow('Dados invalidos');
+    await expect(fetchSnapshot()).rejects.toThrow('Dados inválidos');
   });
 });
 

@@ -112,7 +112,7 @@ export const MatchCard = React.memo(function MatchCard({
           ))
         ) : (
           <Text style={[styles.meta, { color: colors.textTertiary }]}>
-            Transmissao a definir
+            Transmissão a definir
           </Text>
         )}
       </View>

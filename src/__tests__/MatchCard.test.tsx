@@ -46,7 +46,7 @@ describe('MatchCard', () => {
         favorite
       />,
     );
-    expect(await screen.findByText('Transmissao a definir')).toBeTruthy();
+    expect(await screen.findByText('Transmissão a definir')).toBeTruthy();
     expect(screen.getByText('AO VIVO')).toBeTruthy();
     expect(screen.getByTestId('favorite-star')).toBeTruthy();
   });

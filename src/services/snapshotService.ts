@@ -50,7 +50,7 @@ export async function fetchSnapshot(): Promise<SuperligaSnapshot> {
       logSync('invalid snapshot', {
         bodyPreview: body.slice(0, BODY_PREVIEW_LENGTH),
       });
-      throw new Error('Dados invalidos');
+      throw new Error('Dados inválidos');
     }
     return data;
   } catch (error) {

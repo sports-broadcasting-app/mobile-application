@@ -29,7 +29,7 @@ export default function MatchDetailScreen() {
         <Stack.Screen options={{ title: 'Jogo' }} />
         {!isLoading && (
           <Text style={{ color: colors.textSecondary }}>
-            Jogo nao encontrado
+            Jogo não encontrado
           </Text>
         )}
       </View>
@@ -95,7 +95,7 @@ export default function MatchDetailScreen() {
         </Text>
         {match.channels.length === 0 && (
           <Text style={[styles.info, { color: colors.textSecondary }]}>
-            Transmissao a definir
+            Transmissão a definir
           </Text>
         )}
         {match.channels.map((channel) => {

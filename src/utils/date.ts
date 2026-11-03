@@ -1,4 +1,4 @@
-const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
+const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function pad(value: number): string {
@@ -30,9 +30,9 @@ export function formatMatchDate(isoDate: string): string {
 export function formatRelativeSync(syncedAt: number, now: number): string {
   const minutes = Math.floor((now - syncedAt) / 60000);
   if (minutes < 1) return 'Atualizado agora';
-  if (minutes < 60) return `Atualizado ha ${minutes} min`;
+  if (minutes < 60) return `Atualizado há ${minutes} min`;
   if (now - syncedAt < DAY_MS) {
-    return `Atualizado ha ${Math.floor(minutes / 60)} h`;
+    return `Atualizado há ${Math.floor(minutes / 60)} h`;
   }
   return `Atualizado em ${formatDay(new Date(syncedAt))}`;
 }
