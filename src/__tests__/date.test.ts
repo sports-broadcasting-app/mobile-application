@@ -30,10 +30,10 @@ describe('date utils', () => {
     const minute = 60000;
     expect(formatRelativeSync(now, now)).toBe('Atualizado agora');
     expect(formatRelativeSync(now - 5 * minute, now)).toBe(
-      'Atualizado ha 5 min',
+      'Atualizado há 5 min',
     );
     expect(formatRelativeSync(now - 120 * minute, now)).toBe(
-      'Atualizado ha 2 h',
+      'Atualizado há 2 h',
     );
     expect(formatRelativeSync(new Date(2026, 10, 1).getTime(), now)).toBe(
       'Atualizado em dom, 01/11',

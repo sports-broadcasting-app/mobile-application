@@ -7,25 +7,25 @@ import {
   useCallback,
   ReactNode,
 } from 'react';
-import { useColorScheme } from 'react-native';
+import { Appearance, useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeColors, lightTheme, darkTheme } from '../constants/theme';
 
-type ThemeMode = 'system' | 'light' | 'dark';
+export type ThemeMode = 'system' | 'light' | 'dark';
 const STORAGE_KEY = '@theme_mode';
 
 interface ThemeContextValue {
   colors: ThemeColors;
   mode: ThemeMode;
   isDark: boolean;
-  toggleTheme: () => void;
+  setThemeMode: (mode: ThemeMode) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
   colors: lightTheme,
   mode: 'system',
   isDark: false,
-  toggleTheme: () => {},
+  setThemeMode: () => {},
 });
 
 interface ThemeProviderProps {
@@ -50,20 +50,16 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       .catch(() => {});
   }, []);
 
-  const toggleTheme = useCallback(() => {
-    setMode((prev) => {
-      const nextMode =
-        prev === 'system'
-          ? systemScheme === 'dark'
-            ? 'light'
-            : 'dark'
-          : prev === 'dark'
-            ? 'light'
-            : 'dark';
-      AsyncStorage.setItem(STORAGE_KEY, nextMode).catch(() => {});
-      return nextMode;
-    });
-  }, [systemScheme]);
+  // Native UI (the Liquid Glass tab bar) follows UIKit's style, not our
+  // colors, so the manual choice has to override it too.
+  useEffect(() => {
+    Appearance.setColorScheme(mode === 'system' ? 'auto' : mode);
+  }, [mode]);
+
+  const setThemeMode = useCallback((nextMode: ThemeMode) => {
+    setMode(nextMode);
+    AsyncStorage.setItem(STORAGE_KEY, nextMode).catch(() => {});
+  }, []);
 
   const value = useMemo(() => {
     let isDark: boolean;
@@ -77,9 +73,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       colors: isDark ? darkTheme : lightTheme,
       mode,
       isDark,
-      toggleTheme,
+      setThemeMode,
     };
-  }, [mode, systemScheme, toggleTheme]);
+  }, [mode, systemScheme, setThemeMode]);
 
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

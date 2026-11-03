@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '../test-utils';
-import FavoritesScreen from '../screens/FavoritesScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import SettingsScreen from '../screens/SettingsScreen';
 import HomeScreen from '../screens/HomeScreen';
 import MatchDetailScreen from '../screens/MatchDetailScreen';
 import StandingsScreen from '../screens/StandingsScreen';
@@ -83,11 +84,19 @@ describe('HomeScreen', () => {
     );
   });
 
+  it('names the selected competition in the title', async () => {
+    mockDayMatches([scheduledMatch]);
+    render(<HomeScreen />);
+    expect(screen.getByText('Superliga')).toBeTruthy();
+    fireEvent.press(screen.getByText('Masculina'));
+    expect(await screen.findByText('Superliga Masculina')).toBeTruthy();
+  });
+
   it('changes the day', async () => {
     render(<HomeScreen />);
     await screen.findByText('Nenhum jogo neste dia');
     const calls = (getMatchesBetween as jest.Mock).mock.calls.length;
-    fireEvent.press(screen.getByText('Amanha'));
+    fireEvent.press(screen.getByText('Amanhã'));
     await waitFor(() =>
       expect(
         (getMatchesBetween as jest.Mock).mock.calls.length,
@@ -98,7 +107,7 @@ describe('HomeScreen', () => {
   it('suggests next matches on an empty day', async () => {
     (getNextMatches as jest.Mock).mockResolvedValue([scheduledMatch]);
     render(<HomeScreen />);
-    expect(await screen.findByText('Proximos jogos')).toBeTruthy();
+    expect(await screen.findByText('Próximos jogos')).toBeTruthy();
     expect(await screen.findByTestId('match-card-100')).toBeTruthy();
   });
 
@@ -115,7 +124,8 @@ describe('HomeScreen', () => {
 
   it('asks for a favorite only while there is none', async () => {
     render(<HomeScreen />);
-    expect(await screen.findByText(/Escolha seu time/)).toBeTruthy();
+    fireEvent.press(await screen.findByText(/Escolha seu time/));
+    expect(mockPush).toHaveBeenCalledWith('/configuracoes');
   });
 });
 
@@ -129,11 +139,19 @@ describe('StandingsScreen', () => {
     fireEvent.press(screen.getByText('Feminina'));
     await waitFor(() => expect(getStandings).toHaveBeenCalledWith('feminina'));
   });
+
+  it('explains every column in the legend', async () => {
+    (getStandings as jest.Mock).mockResolvedValue([]);
+    render(<StandingsScreen />);
+    const legend = await screen.findByTestId('standings-legend');
+    expect(legend).toHaveTextContent(/P\s+Pontos/);
+    expect(legend).toHaveTextContent(/SP\s+Sets perdidos/);
+  });
 });
 
-describe('FavoritesScreen', () => {
+describe('SettingsScreen', () => {
   it('saves and removes a favorite in the database', async () => {
-    render(<FavoritesScreen />);
+    render(<SettingsScreen />);
     fireEvent.press(await screen.findByTestId('team-option-1'));
     await waitFor(() =>
       expect(saveFavorite).toHaveBeenCalledWith('masculina', '1'),
@@ -147,6 +165,44 @@ describe('FavoritesScreen', () => {
     fireEvent.press(screen.getByTestId('team-option-1'));
     await waitFor(() =>
       expect(deleteFavorite).toHaveBeenCalledWith('masculina'),
+    );
+  });
+});
+
+describe('SettingsScreen search and theme', () => {
+  it('finds a team ignoring case and accents', async () => {
+    (getTeams as jest.Mock).mockResolvedValue([
+      homeTeam,
+      { ...awayTeam, name: 'VÔLEI RENATA' },
+    ]);
+    render(<SettingsScreen />);
+    await screen.findByTestId('team-option-2');
+    fireEvent.changeText(screen.getByTestId('team-search'), 'volei');
+    await waitFor(() =>
+      expect(screen.queryByTestId('team-option-1')).toBeNull(),
+    );
+    expect(screen.getByTestId('team-option-2')).toBeTruthy();
+  });
+
+  it('says when no team matches', async () => {
+    render(<SettingsScreen />);
+    await screen.findByTestId('team-option-1');
+    fireEvent.changeText(screen.getByTestId('team-search'), 'xyz');
+    expect(await screen.findByText('Nenhum time encontrado')).toBeTruthy();
+  });
+
+  it('saves the chosen appearance', async () => {
+    render(<SettingsScreen />);
+    expect(
+      (await screen.findByTestId('appearance-system')).props.accessibilityState
+        .selected,
+    ).toBe(true);
+    fireEvent.press(screen.getByTestId('appearance-dark'));
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith('@theme_mode', 'dark');
+    await waitFor(() =>
+      expect(
+        screen.getByTestId('appearance-dark').props.accessibilityState.selected,
+      ).toBe(true),
     );
   });
 });
@@ -170,6 +226,6 @@ describe('MatchDetailScreen', () => {
   it('handles an unknown match', async () => {
     (getMatch as jest.Mock).mockResolvedValue(null);
     render(<MatchDetailScreen />);
-    expect(await screen.findByText('Jogo nao encontrado')).toBeTruthy();
+    expect(await screen.findByText('Jogo não encontrado')).toBeTruthy();
   });
 });

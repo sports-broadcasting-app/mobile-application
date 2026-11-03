@@ -21,6 +21,15 @@ const OPTIONS: { value: CompetitionSlug; label: string }[] = [
   { value: 'feminina', label: 'Feminina' },
 ];
 
+const LEGEND = [
+  { code: 'P', label: 'Pontos' },
+  { code: 'J', label: 'Jogos' },
+  { code: 'V', label: 'Vitórias' },
+  { code: 'D', label: 'Derrotas' },
+  { code: 'SV', label: 'Sets vencidos' },
+  { code: 'SP', label: 'Sets perdidos' },
+];
+
 export default function StandingsScreen() {
   const { colors } = useTheme();
   const { refreshing, refresh } = useSync();
@@ -36,7 +45,7 @@ export default function StandingsScreen() {
     >
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          Classificacao
+          Classificação
         </Text>
       </View>
       <SegmentedChips
@@ -46,6 +55,7 @@ export default function StandingsScreen() {
       />
       <ScrollView
         contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -59,10 +69,21 @@ export default function StandingsScreen() {
           teamsById={teamsById}
           isFavorite={isFavorite}
         />
-        <Text style={[styles.legend, { color: colors.textTertiary }]}>
-          P pontos, J jogos, V vitorias, D derrotas, SV sets vencidos, SP sets
-          perdidos
-        </Text>
+        <View style={styles.legend} testID="standings-legend">
+          {LEGEND.map(({ code, label }) => (
+            <Text
+              key={code}
+              style={[styles.legendItem, { color: colors.textTertiary }]}
+            >
+              <Text
+                style={[styles.legendCode, { color: colors.textSecondary }]}
+              >
+                {code}
+              </Text>
+              {`  ${label}`}
+            </Text>
+          ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -84,7 +105,16 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxxl,
   },
   legend: {
-    fontSize: typography.size.xs,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     padding: spacing.lg,
+    rowGap: spacing.sm,
+  },
+  legendItem: {
+    width: '50%',
+    fontSize: typography.size.sm,
+  },
+  legendCode: {
+    fontWeight: typography.weight.bold,
   },
 });

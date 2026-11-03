@@ -35,7 +35,7 @@ type CompetitionFilter = 'todos' | CompetitionSlug;
 const DAY_OPTIONS: { value: DayOption; label: string }[] = [
   { value: '-1', label: 'Ontem' },
   { value: '0', label: 'Hoje' },
-  { value: '1', label: 'Amanha' },
+  { value: '1', label: 'Amanhã' },
 ];
 
 const COMPETITION_OPTIONS: { value: CompetitionFilter; label: string }[] = [
@@ -43,6 +43,11 @@ const COMPETITION_OPTIONS: { value: CompetitionFilter; label: string }[] = [
   { value: 'masculina', label: 'Masculina' },
   { value: 'feminina', label: 'Feminina' },
 ];
+
+const COMPETITION_TITLES: Record<CompetitionSlug, string> = {
+  masculina: 'Masculina',
+  feminina: 'Feminina',
+};
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -100,11 +105,13 @@ export default function HomeScreen() {
     >
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          Superliga
+          {competition
+            ? `Superliga ${COMPETITION_TITLES[competition]}`
+            : 'Superliga'}
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           {refreshFailed
-            ? 'Sem conexao: mostrando dados salvos'
+            ? 'Sem conexão: mostrando dados salvos'
             : lastSyncAt !== null
               ? formatRelativeSync(lastSyncAt, Date.now())
               : ''}
@@ -124,6 +131,7 @@ export default function HomeScreen() {
 
       <ScrollView
         contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -137,9 +145,9 @@ export default function HomeScreen() {
         </Text>
 
         {Object.keys(favorites).length === 0 && (
-          <TouchableOpacity onPress={() => router.push('/favoritos')}>
+          <TouchableOpacity onPress={() => router.push('/configuracoes')}>
             <Text style={[styles.hint, { color: colors.primary }]}>
-              Escolha seu time favorito em cada competicao
+              Escolha seu time favorito em cada competição
             </Text>
           </TouchableOpacity>
         )}
@@ -155,7 +163,7 @@ export default function HomeScreen() {
               <Text
                 style={[styles.dayLabel, { color: colors.sectionHeaderText }]}
               >
-                Proximos jogos
+                Próximos jogos
               </Text>
             )}
             {(nextMatches ?? []).map((match) => renderMatch(match, true))}

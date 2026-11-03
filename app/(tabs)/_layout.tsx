@@ -1,61 +1,52 @@
-import { Tabs } from 'expo-router';
+import { NativeTabs } from 'expo-router/native-tabs';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../../src/contexts/ThemeContext';
 
+// Native tab bar: floating Liquid Glass on iOS 26+, Material bar on Android.
 export default function TabLayout() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textTertiary,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-        },
-        headerShown: false,
-      }}
+    <NativeTabs
+      tintColor={isDark ? colors.textPrimary : colors.primary}
+      minimizeBehavior="onScrollDown"
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Jogos',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Label>Jogos</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'tv', selected: 'tv.fill' }}
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
               name="television-classic"
-              size={size}
-              color={color as string}
             />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="classificacao"
-        options={{
-          title: 'Classificacao',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
+          }
+        />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="classificacao">
+        <NativeTabs.Trigger.Label>Classificação</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'trophy', selected: 'trophy.fill' }}
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
               name="trophy-outline"
-              size={size}
-              color={color as string}
             />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="favoritos"
-        options={{
-          title: 'Favoritos',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="star"
-              size={size}
-              color={color as string}
+          }
+        />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="configuracoes">
+        <NativeTabs.Trigger.Label>Configurações</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'gearshape', selected: 'gearshape.fill' }}
+          src={
+            <NativeTabs.Trigger.VectorIcon
+              family={MaterialCommunityIcons}
+              name="cog"
             />
-          ),
-        }}
-      />
-    </Tabs>
+          }
+        />
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }

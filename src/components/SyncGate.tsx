@@ -18,7 +18,7 @@ export function SyncGate({ children }: { children: ReactNode }) {
   const showDetails = () => {
     Alert.alert(
       'Detalhes do erro',
-      `${lastError ?? 'Erro desconhecido'}\n\nEXPO_PUBLIC_SUPERLIGA_DATA_URL: ${HAS_SUPERLIGA_DATA_URL_ENV ? 'recebida' : 'nao recebida (usando URL padrao)'}\n\nURL: ${SUPERLIGA_DATA_URL}\n\n${new Date().toISOString()}`,
+      `${lastError ?? 'Erro desconhecido'}\n\nEXPO_PUBLIC_SUPERLIGA_DATA_URL: ${HAS_SUPERLIGA_DATA_URL_ENV ? 'recebida' : 'não recebida (usando URL padrão)'}\n\nURL: ${SUPERLIGA_DATA_URL}\n\n${new Date().toISOString()}`,
     );
   };
 
@@ -34,7 +34,7 @@ export function SyncGate({ children }: { children: ReactNode }) {
       ) : (
         <>
           <Text style={[styles.message, { color: colors.textSecondary }]}>
-            Nao foi possivel carregar os dados. Verifique sua conexao.
+            Não foi possível carregar os dados. Verifique sua conexão.
           </Text>
           <Text
             accessibilityRole="button"

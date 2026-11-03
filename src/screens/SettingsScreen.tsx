@@ -1,0 +1,205 @@
+import { useMemo, useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppearancePicker } from '../components/AppearancePicker';
+import { SegmentedChips } from '../components/SegmentedChips';
+import { TeamCircle } from '../components/TeamCircle';
+import { useFavorites } from '../contexts/FavoritesContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { useTeams } from '../hooks/useSuperliga';
+import { CompetitionSlug } from '../types/superliga';
+import { normalizeForSearch } from '../utils/search';
+import {
+  iconSize,
+  radius,
+  spacing,
+  typography,
+} from '../constants/designTokens';
+
+const COMPETITION_OPTIONS: { value: CompetitionSlug; label: string }[] = [
+  { value: 'masculina', label: 'Masculina' },
+  { value: 'feminina', label: 'Feminina' },
+];
+
+export default function SettingsScreen() {
+  const { colors } = useTheme();
+  const { favorites, toggleFavorite } = useFavorites();
+  const [competition, setCompetition] = useState<CompetitionSlug>('masculina');
+  const [query, setQuery] = useState('');
+  const { data: teams } = useTeams(competition);
+
+  const visibleTeams = useMemo(() => {
+    const term = normalizeForSearch(query);
+    if (!term) return teams ?? [];
+    return (teams ?? []).filter((team) =>
+      normalizeForSearch(`${team.name} ${team.code}`).includes(term),
+    );
+  }, [teams, query]);
+
+  return (
+    <SafeAreaView
+      edges={['top']}
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <ScrollView
+        contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            Configurações
+          </Text>
+        </View>
+
+        <Text
+          style={[styles.sectionTitle, { color: colors.sectionHeaderText }]}
+        >
+          Aparência
+        </Text>
+        <AppearancePicker />
+
+        <Text
+          style={[styles.sectionTitle, { color: colors.sectionHeaderText }]}
+        >
+          Time favorito
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          Escolha um time por competição
+        </Text>
+        <SegmentedChips
+          options={COMPETITION_OPTIONS}
+          selected={competition}
+          onSelect={setCompetition}
+        />
+
+        <View
+          style={[
+            styles.search,
+            { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
+          ]}
+        >
+          <MaterialCommunityIcons
+            name="magnify"
+            size={iconSize.md}
+            color={colors.textTertiary}
+          />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Buscar time"
+            placeholderTextColor={colors.textTertiary}
+            autoCorrect={false}
+            clearButtonMode="while-editing"
+            returnKeyType="search"
+            testID="team-search"
+            style={[styles.searchInput, { color: colors.textPrimary }]}
+          />
+        </View>
+
+        {visibleTeams.map((team) => {
+          const selected = favorites[competition] === team.id;
+          return (
+            <TouchableOpacity
+              key={team.id}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              testID={`team-option-${team.id}`}
+              style={[styles.row, { borderBottomColor: colors.borderLight }]}
+              onPress={() => toggleFavorite(competition, team.id)}
+            >
+              <TeamCircle team={team} size={36} />
+              <Text
+                numberOfLines={1}
+                style={[styles.teamName, { color: colors.textPrimary }]}
+              >
+                {team.name}
+              </Text>
+              <MaterialCommunityIcons
+                name={selected ? 'star' : 'star-outline'}
+                size={iconSize.lg}
+                color={selected ? colors.primary : colors.textTertiary}
+              />
+            </TouchableOpacity>
+          );
+        })}
+
+        {teams !== undefined && visibleTeams.length === 0 && (
+          <Text style={[styles.empty, { color: colors.textSecondary }]}>
+            Nenhum time encontrado
+          </Text>
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    paddingBottom: spacing.xxxl,
+  },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+  },
+  title: {
+    fontSize: typography.size.title,
+    fontWeight: typography.weight.bold,
+  },
+  sectionTitle: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
+    textTransform: 'uppercase',
+  },
+  subtitle: {
+    fontSize: typography.size.sm,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xs,
+  },
+  search: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginHorizontal: spacing.lg,
+    marginVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: typography.size.body,
+    paddingVertical: spacing.md,
+  },
+  row: {
+    alignItems: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  teamName: {
+    flex: 1,
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.semibold,
+  },
+  empty: {
+    fontSize: typography.size.body,
+    paddingVertical: spacing.lg,
+    textAlign: 'center',
+  },
+});
