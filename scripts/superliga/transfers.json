@@ -1,96 +1,2077 @@
 {
   "masculina": [
     {
-      "athlete": "Yoandy Leal",
+      "athlete": "Pedro Berlitz de Almeida",
+      "position": "Levantador",
+      "from": "Minas Tênis Clube U16",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Kayron Morais",
+      "position": "Oposto",
+      "from": "Minas Tênis Clube U21",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "João Gabriel Cunha",
       "position": "Ponteiro",
-      "from": "Vôlei turco",
+      "from": "ASM",
+      "to": "Aztecas VTY (México)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Wilian Gabriel Doardo",
+      "position": "Ponteiro",
+      "from": "SDC",
+      "to": "Al-Ahli (Arábia Saudita)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Luís Rodrigues",
+      "position": "Levantador",
+      "from": "SEC",
+      "to": "NRD",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Juan Camilo Ambuila",
+      "position": "Levantador",
+      "from": "MCV",
+      "to": "Shabab Al-Ahli (Emirados Árabes)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Guilherme Narciso",
+      "position": "Oposto",
+      "from": "Vôlei São José U21",
+      "to": "VSJ",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Rafael Bairros",
+      "position": "Ponteiro",
+      "from": "NRD",
+      "to": "CS Arcada Galați (Romênia)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Caio Horácio",
+      "position": "Levantador",
+      "from": "SDC",
+      "to": "Sada Cruzeiro U21",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Luiz Henrique Teixeira",
+      "position": "Líbero",
+      "from": "Minas Tênis Clube U21",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Daniel Lameira",
+      "position": "Ponteiro",
+      "from": "Minas Tênis Clube U19",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "José Erick",
+      "position": "Ponteiro",
+      "from": "Minas Tênis Clube U17",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Henrique Gabriel Gardino",
+      "position": "Central",
+      "from": "Vôlei Renata U19",
+      "to": "BVC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Michael Barbosa",
+      "position": "Ponteiro",
+      "from": "BVC",
+      "to": "Vôlei Renata U21",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Danthon Todt",
+      "position": "Líbero",
+      "from": "SVG",
+      "to": "APAN/Roll-On",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Pedro Henrique Silva Miranda",
+      "position": "Levantador",
+      "from": "VSJ",
+      "to": "Salvador Vôlei",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Robson Rodrigues",
+      "position": "Ponteiro",
+      "from": "GOI",
+      "to": "Hapoel Mate-Asher Akko (Israel)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Gabriel Ferreira Garcia",
+      "position": "Levantador",
+      "from": "NRD",
+      "to": "KV Peja (Kosovo)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Guilherme Araújo",
+      "position": "Oposto",
+      "from": "SES",
+      "to": "Ciudad Vóley (Argentina)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Gabriel Brad",
+      "position": "Líbero",
+      "from": "PCU",
+      "to": "Fluminense FC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "João Victor Scalcon",
+      "position": "Levantador",
+      "from": "SES",
+      "to": "Sesi Bauru U21",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Cledenílson Souza",
+      "position": "Central",
+      "from": "SDC",
+      "to": "Ciudad Vóley (Argentina)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Amadou Diallo",
+      "position": "Ponteiro",
+      "from": "MCV",
+      "to": "Nordenskov UIF (Dinamarca)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Raphael Vieira de Oliveira",
+      "position": "Levantador",
+      "from": "Rana Verona (Itália)",
       "to": "SDC",
-      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Aridone Borgonovo",
+      "from": "Joinville Vôlei",
+      "to": "BVC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Arthur Jaeger",
+      "position": "Levantador",
+      "from": "PCU",
+      "to": "JF Vôlei",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Antony Burger",
+      "position": "Levantador",
+      "from": "SEC",
+      "to": "APROV/Chapecó/Sicredi/Unoesc",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Lucas Carvalho",
+      "position": "Ponteiro",
+      "from": "SDC",
+      "to": "JF Vôlei",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Arthur Lessa",
+      "position": "Líbero",
+      "from": "SDC",
+      "to": "JF Vôlei",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Bernardo Santos",
+      "position": "Central",
+      "from": "Ilhabela Miclean",
+      "to": "GOI",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "João Pedro Lima",
+      "position": "Levantador",
+      "from": "SEC",
+      "to": "Brasília Vôlei/BRB",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Nathan Mota Krupp",
+      "position": "Ponteiro",
+      "from": "MCV",
+      "to": "JF Vôlei",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "João Victtor Cornelsen",
+      "position": "Central",
+      "from": "MCV",
+      "to": "Ilhabela Miclean",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "João Pedro Luzeiro",
+      "position": "Ponteiro",
+      "from": "Minas Tênis Clube U21",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Gabriel Gomes",
+      "position": "Levantador",
+      "from": "MTC",
+      "to": "Minas Tênis Clube U21",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Daniel Muniz",
+      "position": "Ponteiro",
+      "from": "Cisterna Volley (Itália)",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Mateus Winck",
+      "position": "Levantador",
+      "from": "Joinville Vôlei",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Maique Reis",
+      "position": "Líbero",
+      "from": "SVG",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Thiago Veloso",
+      "position": "Levantador",
+      "from": "Stilon Gorzów (Polônia)",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "José Massó Álvarez",
+      "position": "Oposto",
+      "from": "Al Ahly (Egito)",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Bryan Lucas",
+      "position": "Oposto",
+      "from": "SVG",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Pietro Santos",
+      "position": "Central",
+      "from": "PCU",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Henrique Honorato",
+      "position": "Ponteiro",
+      "from": "Ślepsk Malow Suwałki (Polônia)",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Ricardo Lucarelli",
+      "position": "Ponteiro",
+      "from": "JTEKT Stings Aichi (Japão)",
+      "to": "MTC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Alisson Melo",
+      "position": "Ponteiro",
+      "from": "Al Rayyan (Catar)",
+      "to": "SEC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "João Vitor Lima",
+      "position": "Oposto",
+      "from": "GOI",
+      "to": "SKV Montana (Bulgária)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Maycon Leitte",
+      "position": "Central",
+      "from": "SEC",
+      "to": "ORDU VK (Azerbaijão)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Eduardo Pires Ayala",
+      "position": "Ponteiro",
+      "from": "Joinville Vôlei",
+      "to": "GOI",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Geraldo Graciano Da Silva Filho",
+      "position": "Oposto",
+      "from": "Al-Salam (Omã)",
+      "to": "GOI",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Elizeu Kruger Junior",
+      "position": "Levantador",
+      "from": "MCV",
+      "to": "Sancor/AMAVÔLEI",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Guilherme Henrique",
+      "position": "Central",
+      "from": "SDC",
+      "to": "ASM",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Mateus Pássaro",
+      "position": "Líbero",
+      "from": "SES",
+      "to": "CAMV Sports",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Hugo Hamacher",
+      "position": "Ponteiro",
+      "from": "MTC",
+      "to": "Akedaş Onikişubat Belediyespor (Turquia)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Marcus Vinícius Oliveira",
+      "position": "Ponteiro",
+      "from": "SEC",
+      "to": "NRD",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Arthur Puron",
+      "position": "Central",
+      "from": "Elase Voleibol",
+      "to": "NRD",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Rodrigo Honório da Silva",
+      "position": "Ponteiro",
+      "from": "VSJ",
+      "to": "GOI",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Emerson Almeida",
+      "position": "Ponteiro",
+      "from": "Saint-Quentin Volley (França)",
+      "to": "NRD",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Lucas Salles",
+      "position": "Central",
+      "from": "GFC Ajaccio (França)",
+      "to": "NRD",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Ítalo Nascimento",
+      "position": "Levantador",
+      "from": "Univassouras/MotoChefe/Tijuca/RJ",
+      "to": "NRD",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Augusto Cauduro",
+      "position": "Central",
+      "from": "SES",
+      "to": "NRD",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Cláudio Bento",
+      "position": "Levantador",
+      "from": "GOI",
+      "to": "NRD",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Gabriel de Carvalho Cavalcante",
+      "position": "Ponteiro",
+      "from": "NRD",
+      "to": "Vôlei BSB Tec",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Diego Silva",
+      "position": "Ponteiro",
+      "from": "Vôlei Unifor",
+      "to": "NRD",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Aboubacar Dramé Neto",
+      "position": "Oposto",
+      "from": "MTC",
+      "to": "SL Benfica (Portugal)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Bruno Almeida",
+      "position": "Central",
+      "from": "Sada Cruzeiro U21",
+      "to": "SDC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Rafael Cartaxo",
+      "position": "Levantador",
+      "from": "Clube Matense",
+      "to": "NRD",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Pedro Pereira da Silva Filho",
+      "position": "Ponteiro",
+      "from": "PCU",
+      "to": "CV Manacor (Espanha)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Renan Bonora",
+      "position": "Ponteiro",
+      "from": "BVC",
+      "to": "Unicaja Costa de Almería (Espanha)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Michael Sánchez Bozhulev",
+      "position": "Oposto",
+      "from": "GOI",
+      "to": "SVG",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Bernardo De Macedo Alves",
+      "position": "Ponteiro",
+      "from": "SVG",
+      "to": "Fundesport/Araraquara",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Anderson Batalha",
+      "position": "Levantador",
+      "from": "JF Vôlei",
+      "to": "BVC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Kauan Jaques",
+      "position": "Oposto",
+      "from": "Joinville Vôlei",
+      "to": "SVG",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "João Pedro Centola",
+      "position": "Líbero",
+      "from": "SDC",
+      "to": "SVG",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Murylo Almeida",
+      "position": "Líbero",
+      "from": "Instituto Ace",
+      "to": "GOI",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Eduardo Carísio",
+      "position": "Levantador",
+      "from": "Saint-Nazaire VB Atlantique (França)",
+      "to": "GOI",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Daniel Pinto",
+      "position": "Ponteiro",
+      "from": "ASM",
+      "to": "SVG",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Thales Falcão",
+      "position": "Central",
+      "from": "ASM",
+      "to": "SVG",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Felipe Parra",
+      "position": "Ponteiro",
+      "from": "SDC",
+      "to": "SVG",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Thiago Vaccari",
+      "position": "Ponteiro",
+      "from": "Vôlei Renata U21",
+      "to": "SVG",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "David Figueiredo",
+      "position": "Central",
+      "from": "SEC",
+      "to": "Vôlei Nilton Lins",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Ralwan Castro",
+      "position": "Oposto",
+      "from": "SEC",
+      "to": "Ilhabela Miclean",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Renan Andrey Fornazari",
+      "position": "Central",
+      "from": "NRD",
+      "to": "Elase Voleibol",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Dionata Assis",
+      "position": "Levantador",
+      "from": "Instituto Ace",
+      "to": "GOI",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Gustavo Asevedo",
+      "position": "Central",
+      "from": "SVG",
+      "to": "AGEE São Carlos",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Rodrigo Siuves",
+      "position": "Levantador",
+      "from": "SVG",
+      "to": "ASM",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Abrhaao Camargo",
+      "position": "Central",
+      "from": "PCU",
+      "to": "Joinville Vôlei",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Pedro Henrique Tomasi",
+      "position": "Líbero",
+      "from": "Araguari Vôlei EVA",
+      "to": "BVC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Antony Gabriel Gonçalves",
+      "position": "Ponteiro",
+      "from": "CSM Corona Brașov (Romênia)",
+      "to": "ASM",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Gustavo Kruger",
+      "position": "Ponteiro",
+      "from": "SES",
+      "to": "Sesi Bauru U21",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Filipe Baioco",
+      "position": "Líbero",
+      "from": "Sabesp Praia Grande Vôlei",
+      "to": "ASM",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Éder Carbonera",
+      "position": "Central",
+      "from": "SES",
+      "to": "BVC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Felipe Brito",
+      "position": "Central",
+      "from": "Joinville Vôlei",
+      "to": "VSJ",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Marcus Vinícius Coelho",
+      "position": "Ponteiro",
+      "from": "Joinville Vôlei",
+      "to": "BVC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Adriano Xavier",
+      "position": "Ponteiro",
+      "from": "BVC",
+      "to": "Itas Trentino (Itália)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Frank Bastos",
+      "position": "Central",
+      "from": "MCV",
+      "to": "Ilhabela Miclean",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Mathaus Wojtylla Mesquita Campos",
+      "position": "Levantador",
+      "from": "VSJ",
+      "to": "Ilhabela Miclean",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Mario Quesada Cruz",
+      "position": "Oposto",
+      "from": "VSJ",
+      "to": "Ilhabela Miclean",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Gabriel Bertolini",
+      "position": "Central",
+      "from": "MTC",
+      "to": "GOI",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Marcos Jose Júnior",
+      "position": "Oposto",
+      "from": "SES",
+      "to": "Joinville Vôlei",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Guilherme Voss",
+      "position": "Central",
+      "from": "Tours Volley-Ball (França)",
+      "to": "PCU",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Wesleen Soares",
+      "position": "Oposto",
+      "from": "JF Vôlei",
+      "to": "PCU",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Joaquim Werninghaus Tavares",
+      "position": "Ponteiro",
+      "from": "Joinville Vôlei",
+      "to": "PCU",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Wilson Silva",
+      "position": "Ponteiro",
+      "from": "Spacer's Toulouse Volley (França)",
+      "to": "PCU",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Rogério Batista Filho",
+      "position": "Líbero",
+      "from": "MTC",
+      "to": "VSJ",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Gabriel Ostapechen",
+      "position": "Ponteiro",
+      "from": "SEC",
+      "to": "MCV",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Matheus Celestino",
+      "position": "Ponteiro",
+      "from": "PCU",
+      "to": "VSJ",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Anderson Júnior",
+      "position": "Ponteiro",
+      "from": "SVG",
+      "to": "Salvador Vôlei",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Gabriel Pessoa",
+      "position": "Ponteiro",
+      "from": "SEC",
+      "to": "VSJ",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Renato Russomano",
+      "position": "Ponteiro",
+      "from": "MTC",
+      "to": "Joinville Vôlei",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Johan Marengoni",
+      "position": "Central",
+      "from": "SES",
+      "to": "VSJ",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Rodrigo Ribeiro Rodrigues",
+      "position": "Levantador",
+      "from": "NRD",
+      "to": "MCV",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
     },
     {
       "athlete": "Douglas Souza",
       "position": "Ponteiro",
       "from": "SDC",
       "to": "BVC",
-      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
     },
     {
-      "athlete": "Éder Carbonara",
+      "athlete": "Matheus Pedrosa",
       "position": "Central",
-      "from": "SES",
-      "to": "BVC",
-      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+      "from": "SEC",
+      "to": "VSJ",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
     },
     {
-      "athlete": "Bryan",
-      "position": "Oposto",
-      "from": "SVG",
-      "to": "MTC",
-      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+      "athlete": "Tiago Socher",
+      "position": "Central",
+      "from": "Brasília Vôlei/BRB",
+      "to": "MCV",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
     },
     {
-      "athlete": "Maique",
-      "position": "Líbero",
-      "from": "BVC",
-      "to": "MTC",
-      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
-    },
-    {
-      "athlete": "Honorato",
+      "athlete": "Jan Martínez Franchi",
       "position": "Ponteiro",
-      "from": "Vôlei polonês",
-      "to": "MTC",
-      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+      "from": "Tourcoing Lille Métropole (França)",
+      "to": "BVC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
     },
     {
-      "athlete": "Guilherme Voss",
+      "athlete": "Manuel Armoa Morel",
+      "position": "Ponteiro",
+      "from": "Al Jazira (Emirados Árabes)",
+      "to": "SDC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Juan Pablo Gama",
+      "position": "Levantador",
+      "from": "SES",
+      "to": "Sabesp Praia Grande Vôlei",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Carlos Henrique Santos",
+      "position": "Levantador",
+      "from": "Brasília Vôlei/BRB",
+      "to": "MCV",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Maicol Ortiz Castañeda",
+      "position": "Oposto",
+      "from": "Vôlei São José U21",
+      "to": "VSJ",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Juan Restrepo Orozco",
+      "position": "Levantador",
+      "from": "Vôlei São José U21",
+      "to": "VSJ",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Yoandy Leal Hidalgo",
+      "position": "Ponteiro",
+      "from": "Halkbank (Turquia)",
+      "to": "SDC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Luiz Ricardo Evangelista",
+      "position": "Líbero",
+      "from": "SEC",
+      "to": "MCV",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Wagner Pereira da Silva",
+      "position": "Oposto",
+      "from": "Akedaş Onikişubat Belediyespor (Turquia)",
+      "to": "SES",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Guilherme Amorim",
+      "position": "Ponteiro",
+      "from": "Joinville Vôlei",
+      "to": "SES",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Bruno Henrique Alves",
+      "position": "Levantador",
+      "from": "VSJ",
+      "to": "SES",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Matias Provensi",
+      "position": "Ponteiro",
+      "from": "VBC Chalon-sur-Saône (França)",
+      "to": "MCV",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Victor Babugia",
       "position": "Central",
-      "from": "Exterior",
-      "to": "PCU",
-      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+      "from": "VSJ",
+      "to": "MCV",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Víctor Hugo Pereira",
+      "position": "Central",
+      "from": "GOI",
+      "to": "SES",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Rajé Alleyne",
+      "position": "Oposto",
+      "from": "JF Vôlei",
+      "to": "MCV",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
     },
     {
       "athlete": "Samuel Neufeld",
+      "position": "Oposto",
       "from": "MTC",
       "to": "SES",
-      "source": "https://www.lance.com.br/volei/retornos-e-estrelas-da-selecao-os-reforcos-da-superliga-masculina-2026-27.html"
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Judson Nunes",
+      "position": "Central",
+      "from": "BVC",
+      "to": "JTEKT Stings Aichi (Japão)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Dusan Bonacic",
+      "position": "Ponteiro",
+      "from": "VK TROX Příbram (Chéquia)",
+      "to": "MCV",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Mikael Moraes",
+      "position": "Central",
+      "from": "ASM",
+      "to": "SUAC Canarias (Espanha)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Matheus Passarelli Bento",
+      "position": "Levantador",
+      "from": "Sabesp Praia Grande Vôlei",
+      "to": "SEC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Luiz Fernando Andrada",
+      "position": "Ponteiro",
+      "from": "SES",
+      "to": "SEC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Tiago Brendle",
+      "position": "Líbero",
+      "from": "VSJ",
+      "to": "Lausanne UC (Suíça)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Guilherme Rech",
+      "position": "Central",
+      "from": "NRD",
+      "to": "HIC-Necton Itaquá",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Lucas França Santos",
+      "position": "Central",
+      "from": "SL Benfica (Portugal)",
+      "to": "SEC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Vítor Baesso",
+      "position": "Ponteiro",
+      "from": "SCM Universitatea Craiova (Romênia)",
+      "to": "SEC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Lucas De Deus",
+      "position": "Líbero",
+      "from": "BVC",
+      "to": "SEC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Maurício Borges",
+      "position": "Ponteiro",
+      "from": "BVC",
+      "to": "SEC",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Gustavo Orlando",
+      "position": "Levantador",
+      "from": "MTC",
+      "to": "VSJ",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Javad Karimisouchelmaei",
+      "position": "Levantador",
+      "from": "MTC",
+      "to": "Arago de Sète (França)",
+      "source": "https://volleybox.net/pt/transfers/2026-27/44076/1"
+    },
+    {
+      "athlete": "Vini Henrique",
+      "position": "Ponteiro",
+      "from": "SVG",
+      "to": "BVC",
+      "source": "https://www.lance.com.br/volei/cruzeiro-campinas-e-mais-veja-elencos-de-equipes-da-superliga-2026-27.html"
+    },
+    {
+      "athlete": "Pedrinho",
+      "position": "Líbero",
+      "from": "PCU",
+      "to": "BVC",
+      "source": "https://www.lance.com.br/volei/cruzeiro-campinas-e-mais-veja-elencos-de-equipes-da-superliga-2026-27.html"
     }
   ],
   "feminina": [
     {
-      "athlete": "Magdalena Stysiak",
-      "position": "Oposta",
-      "from": "Vôlei turco",
-      "to": "OVC",
-      "source": "https://www.lance.com.br/volei/aposta-em-estrangeiras-e-destaques-da-selecao-os-principais-reforcos-da-superliga-2026-27.html"
+      "athlete": "Ana Luiza Berto",
+      "position": "Levantadora",
+      "from": "OVC",
+      "to": "Oregon Univ. (EUA)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
     },
     {
-      "athlete": "Sofya Kuznetsova",
+      "athlete": "Isabelle Venâncio",
+      "position": "Central",
+      "from": "DPC",
+      "to": "Tijuca Tênis Clube",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Grace McKale",
       "position": "Ponteira",
-      "from": "Vôlei japonês",
-      "to": "DPC",
-      "source": "https://www.lance.com.br/volei/aposta-em-estrangeiras-e-destaques-da-selecao-os-principais-reforcos-da-superliga-2026-27.html"
+      "from": "ECP",
+      "to": "GS Team 80 (Itália)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
     },
     {
-      "athlete": "Sabrina",
+      "athlete": "Anna Milhomem",
+      "position": "Central",
+      "from": "Brasília Vôlei U16",
+      "to": "BRB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Nia Reed",
       "position": "Oposta",
-      "from": "Denso Airybees (JPN)",
-      "to": "DPC",
-      "source": "https://www.lance.com.br/volei/aposta-em-estrangeiras-e-destaques-da-selecao-os-principais-reforcos-da-superliga-2026-27.html"
+      "from": "SVB",
+      "to": "Los Angeles Orbit (EUA)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Antônia Mauad",
+      "position": "Líbero",
+      "from": "Paulistano/Barueri U21",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Caroline Triches Feijó",
+      "position": "Levantadora",
+      "from": "Mackenzie U23",
+      "to": "MEC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Manuela Villarino",
+      "position": "Central",
+      "from": "Mackenzie U20",
+      "to": "MEC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Dhandara Moreira",
+      "position": "Oposta",
+      "from": "Paulistano/Barueri U21",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Evelyn Carvalho",
+      "position": "Oposta",
+      "from": "Renasce Sorocaba",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Giovanna Rodrigues",
+      "position": "Ponteira",
+      "from": "SVB",
+      "to": "KHG KNRC (Hungria)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Nayla Ferreira",
+      "position": "Central",
+      "from": "Flamengo U21",
+      "to": "SRJ",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Ana Martins",
+      "position": "Central",
+      "from": "Fluminense U21",
+      "to": "FFC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Giovanna Perrotta",
+      "position": "Ponteira",
+      "from": "Flamengo U21",
+      "to": "SRJ",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Keyt Alves",
+      "position": "Líbero",
+      "from": "SVB",
+      "to": "LOVB Nebraska (EUA)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Leticya Franco",
+      "position": "Central",
+      "from": "BRU",
+      "to": "Olva Latino (Peru)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Priscila Souza",
+      "position": "Ponteira",
+      "from": "DPC",
+      "to": "Maccabi XT Haifa (Israel)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Aline Costa",
+      "position": "Ponteira",
+      "from": "Brasília Vôlei U19",
+      "to": "BRB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Maria Koleva",
+      "position": "Ponteira",
+      "from": "DPC",
+      "to": "Aydın Büyükşehir Belediyespor (Turquia)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Kimberly Gomes",
+      "position": "Oposta",
+      "from": "MEC",
+      "to": "Vitória SC (Portugal)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Glayce Vasconcelos",
+      "position": "Ponteira",
+      "from": "GMT",
+      "to": "Osaka Marvelous (Japão)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Anna Sampaio",
+      "position": "Ponteira",
+      "from": "BRU",
+      "to": "Mampituba/Radar/Unesc/FME Criciúma",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Afedo Manyang",
+      "position": "Oposta",
+      "from": "Radnički Blasters (Sérvia)",
+      "to": "ECP",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Emanuelle Dos Santos",
+      "position": "Central",
+      "from": "ECP",
+      "to": "Napoli/Prefeitura de Caçador",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Vallentina Biondo",
+      "position": "Oposta",
+      "from": "Minas Tênis Clube U21",
+      "to": "GMT",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Giovana Guimarães",
+      "position": "Central",
+      "from": "Minas Tênis Clube U19",
+      "to": "GMT",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
     },
     {
       "athlete": "Maiara Basso",
       "position": "Ponteira",
       "from": "OVC",
       "to": "GMT",
-      "source": "https://www.lance.com.br/volei/aposta-em-estrangeiras-e-destaques-da-selecao-os-principais-reforcos-da-superliga-2026-27.html"
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Luzia Nezzo",
+      "position": "Central",
+      "from": "BVC",
+      "to": "GMT",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Jheovana Emanuele",
+      "position": "Oposta",
+      "from": "BVC",
+      "to": "GMT",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Fernanda Rangel",
+      "position": "Ponteira",
+      "from": "Pinheiros U17",
+      "to": "ECP",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Tássia Silva",
+      "position": "Líbero",
+      "from": "CSM Corona Brașov (Romênia)",
+      "to": "BRU",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Milca Da Silva",
+      "position": "Ponteira",
+      "from": "Hylte/Halmstad (Suécia)",
+      "to": "BRB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Luana Kuskowski",
+      "position": "Central",
+      "from": "Oregon Univ. (EUA)",
+      "to": "ECP",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Andressa Gelenski",
+      "position": "Central",
+      "from": "SSV",
+      "to": "ECP",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Adria Silva",
+      "position": "Central",
+      "from": "SRJ",
+      "to": "ECP",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Maria Clara Carvalhaes",
+      "position": "Levantadora",
+      "from": "Tijuca Tênis Clube",
+      "to": "ECP",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Audren Rose",
+      "position": "Líbero",
+      "from": "Renasce Sorocaba",
+      "to": "ECP",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Sabrina Groth",
+      "position": "Ponteira",
+      "from": "BVC",
+      "to": "ECP",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Nelmaira Váldez",
+      "position": "Ponteira",
+      "from": "FFC",
+      "to": "CS Volei Alba-Blaj (Romênia)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Kennedy Muckelroy",
+      "position": "Oposta",
+      "from": "BRU",
+      "to": "ŽOK Morača (Montenegro)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Jordane Tolentino",
+      "position": "Levantadora",
+      "from": "BRB",
+      "to": "Renasce Sorocaba",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Tamara Abila",
+      "position": "Ponteira",
+      "from": "BRU",
+      "to": "Napoli/Prefeitura de Caçador",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Beatriz Carvalho",
+      "position": "Oposta",
+      "from": "ECP",
+      "to": "Renasce Sorocaba",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Lorrayna Marys",
+      "position": "Oposta",
+      "from": "NEC Red Rockets Kawasaki (Japão)",
+      "to": "OVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Anastasia Guerra",
+      "position": "Ponteira",
+      "from": "Bandung BJB Tandamata (Indonésia)",
+      "to": "OVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Marcelle Arruda",
+      "position": "Líbero",
+      "from": "FFC",
+      "to": "OVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Minja Osmajić",
+      "position": "Central",
+      "from": "Victorina Himeji (Japão)",
+      "to": "SRJ",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Lays Freitas",
+      "position": "Central",
+      "from": "FFC",
+      "to": "OVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Vida Helen Santoro",
+      "position": "Oposta",
+      "from": "Unilife Maringá U19",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Lara Nascimento",
+      "position": "Central",
+      "from": "Mampituba/Radar/Unesc/FME Criciúma",
+      "to": "OVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Lara Molinari",
+      "position": "Líbero",
+      "from": "Osasco U21",
+      "to": "OVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Vanessa Sayuri Tsukamoto",
+      "position": "Líbero",
+      "from": "Unilife Maringá U19",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Lindaly Santoro",
+      "position": "Levantadora",
+      "from": "Unilife Maringá U19",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Magdalena Stysiak",
+      "position": "Oposta",
+      "from": "Eczacıbaşı (Turquia)",
+      "to": "OVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Helena Wenk",
+      "position": "Ponteira",
+      "from": "SRJ",
+      "to": "LOVB Miami (EUA)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Paola Villegas",
+      "position": "Líbero",
+      "from": "Olva Latino (Peru)",
+      "to": "ECP",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Marta Bechis",
+      "position": "Levantadora",
+      "from": "Savino Del Bene Scandicci (Itália)",
+      "to": "OVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Mariana Brambilla",
+      "position": "Ponteira",
+      "from": "ŁKS Łódź (Polônia)",
+      "to": "OVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Amanda Campos",
+      "position": "Ponteira",
+      "from": "FFC",
+      "to": "OVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Sabrina Vitoriano",
+      "position": "Ponteira",
+      "from": "SSV",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Thaina Corrêa",
+      "position": "Central",
+      "from": "ECP",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Sophia Dantas",
+      "position": "Líbero",
+      "from": "OVC",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Pietra Jukoski",
+      "position": "Ponteira",
+      "from": "FFC",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Gabrielle Marcondes",
+      "position": "Ponteira",
+      "from": "BRB",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Ana Flávia Galvão",
+      "position": "Levantadora",
+      "from": "Khorfakkan (Emirados Árabes)",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Camilly Salomé",
+      "position": "Ponteira",
+      "from": "Renasce Sorocaba",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Geovana Freitas",
+      "position": "Central",
+      "from": "OVC",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Anna Maccarone",
+      "position": "Oposta",
+      "from": "Pinheiros U21",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Thays Oliveira",
+      "position": "Central",
+      "from": "SVB",
+      "to": "BVC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Victória Maria",
+      "position": "Líbero",
+      "from": "BRB",
+      "to": "Renasce Sorocaba",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Palloma Oliveira",
+      "position": "Central",
+      "from": "BRB",
+      "to": "Renasce Sorocaba",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Payton Caffrey",
+      "position": "Ponteira",
+      "from": "DPC",
+      "to": "Minnesota Forge (EUA)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Maria Luiza Rabelo",
+      "position": "Levantadora",
+      "from": "ECP",
+      "to": "Chapecó/ACV/Unoesc",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Juliana Carrijo",
+      "position": "Levantadora",
+      "from": "DPC",
+      "to": "ECP",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Betina Vanier Zarth",
+      "position": "Levantadora",
+      "from": "Fluminense U21",
+      "to": "FFC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Victoria Martini",
+      "position": "Ponteira",
+      "from": "Fluminense U17",
+      "to": "FFC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Talia Costa",
+      "position": "Ponteira",
+      "from": "SVB",
+      "to": "ECP",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Tais Sartori",
+      "position": "Ponteira",
+      "from": "SVB",
+      "to": "GCV / Vieirominho (Portugal)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Aline Segato",
+      "position": "Ponteira",
+      "from": "BVC",
+      "to": "FFC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Gabriela Martins",
+      "position": "Central",
+      "from": "DPC",
+      "to": "FFC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Natália Danielski",
+      "position": "Ponteira",
+      "from": "OVC",
+      "to": "FFC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Maria Khaletskaya",
+      "position": "Oposta",
+      "from": "GMT",
+      "to": "Korabelka (Rússia)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Melissa Matias",
+      "position": "Levantadora",
+      "from": "ECP",
+      "to": "Vila Nova Vôlei",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Erica Motta",
+      "position": "Líbero",
+      "from": "MEC",
+      "to": "FFC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Katryne Rodrigues",
+      "position": "Central",
+      "from": "ECP",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Vitória Parise",
+      "position": "Ponteira",
+      "from": "Renasce Sorocaba",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Júlia De Paula",
+      "position": "Oposta",
+      "from": "Allianz MTV Stuttgart (Alemanha)",
+      "to": "FFC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Ana Sauer",
+      "position": "Líbero",
+      "from": "Vila Nova Vôlei",
+      "to": "BRB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Isadora Lichtenthaler",
+      "position": "Oposta",
+      "from": "SSV",
+      "to": "Sesi Bauru U21",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Leticia Gomes",
+      "position": "Líbero",
+      "from": "BVC",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Valquíria Dullius",
+      "position": "Central",
+      "from": "OVC",
+      "to": "FFC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Bianca Bertolino",
+      "position": "Ponteira",
+      "from": "Levallois Paris Saint-Cloud (França)",
+      "to": "FFC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Aila Figur",
+      "position": "Ponteira",
+      "from": "ECP",
+      "to": "Vila Nova Vôlei",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Ana Carolina Oliveira",
+      "position": "Central",
+      "from": "Renasce Sorocaba",
+      "to": "DPC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Josefa Fabíola Souza",
+      "position": "Levantadora",
+      "from": "FFC",
+      "to": "DPC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Sabrina Machado",
+      "position": "Oposta",
+      "from": "Denso Airybees (Japão)",
+      "to": "DPC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Lara Nobre",
+      "position": "Central",
+      "from": "FFC",
+      "to": "DPC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Lanna Machado",
+      "position": "Central",
+      "from": "BVC",
+      "to": "DPC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Carla Santos",
+      "position": "Oposta",
+      "from": "MEC",
+      "to": "DPC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Drussyla Costa",
+      "position": "Ponteira",
+      "from": "CS Volei Alba-Blaj (Romênia)",
+      "to": "DPC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Andrea Mitrovic",
+      "position": "Ponteira",
+      "from": "LOVB Madison (EUA)",
+      "to": "DPC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Sofya Kuznetsova",
+      "position": "Ponteira",
+      "from": "Aleeza Aichi (Japão)",
+      "to": "DPC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Luiza Vicente",
+      "position": "Ponteira",
+      "from": "BVC",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Thainalien Castillo",
+      "position": "Ponteira",
+      "from": "SC Braga (Portugal)",
+      "to": "BRB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
     },
     {
       "athlete": "Morgahn Fingall",
       "position": "Oposta",
       "from": "DPC",
       "to": "SVB",
-      "source": "https://www.lance.com.br/volei/aposta-em-estrangeiras-e-destaques-da-selecao-os-principais-reforcos-da-superliga-2026-27.html"
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Milka Marcília",
+      "position": "Central",
+      "from": "DPC",
+      "to": "SVB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Roberta Rabelo",
+      "position": "Ponteira",
+      "from": "KHG KNRC (Hungria)",
+      "to": "MEC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Rebeca Camile",
+      "position": "Central",
+      "from": "Tijuca Tênis Clube",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Lyara Medeiros",
+      "position": "Levantadora",
+      "from": "BVC",
+      "to": "MEC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Nayara Felix",
+      "position": "Ponteira",
+      "from": "BRB",
+      "to": "Cora São Caetano",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Maira Cipriano",
+      "position": "Ponteira",
+      "from": "OVC",
+      "to": "SVB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Sofia Will",
+      "position": "Líbero",
+      "from": "Flamengo U21",
+      "to": "SVB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Vittoria Kuehne",
+      "position": "Ponteira",
+      "from": "SRJ",
+      "to": "Vasas Óbuda (Hungria)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Paulina Souza",
+      "position": "Líbero",
+      "from": "SSV",
+      "to": "MEC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Dayana Martínez",
+      "position": "Central",
+      "from": "SC Braga (Portugal)",
+      "to": "BRB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Bianca Cugno",
+      "position": "Oposta",
+      "from": "OVC",
+      "to": "Il Bisonte Firenze (Itália)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Paula Mohr",
+      "position": "Ponteira",
+      "from": "Tijuca Tênis Clube",
+      "to": "MEC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Lívia Santos",
+      "position": "Central",
+      "from": "BRB",
+      "to": "SVB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Jocelyn Urias",
+      "position": "Central",
+      "from": "Tapatías Voleibol (México)",
+      "to": "MEC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Viviane Goes",
+      "position": "Central",
+      "from": "SC Braga (Portugal)",
+      "to": "BRB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Ariele Moreira",
+      "position": "Ponteira",
+      "from": "Tijuca Tênis Clube",
+      "to": "SRJ",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Maëva Orlé",
+      "position": "Oposta",
+      "from": "Alianza Lima (Peru)",
+      "to": "MEC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Letícia Moura",
+      "position": "Líbero",
+      "from": "Tijuca Tênis Clube",
+      "to": "SVB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Jaqueline Schmitz",
+      "position": "Oposta",
+      "from": "SSV",
+      "to": "SRJ",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Ana Lídia Christofoletti",
+      "position": "Oposta",
+      "from": "Sesi São Paulo",
+      "to": "BRU",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Emily Guebara",
+      "position": "Ponteira",
+      "from": "ADV Jaraguá do Sul U19",
+      "to": "BRU",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Vanessa Janke",
+      "position": "Ponteira",
+      "from": "FFC",
+      "to": "BRU",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Tierney Barlow",
+      "position": "Central",
+      "from": "Utah State Univ. (EUA)",
+      "to": "BRU",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Camila Mesquita",
+      "position": "Oposta",
+      "from": "SRJ",
+      "to": "BRU",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Ewelina Wilińska",
+      "position": "Levantadora",
+      "from": "Chemik Police (Polônia)",
+      "to": "BRU",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Paola Santiago",
+      "position": "Ponteira",
+      "from": "PAOK (Grécia)",
+      "to": "BRU",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Beatriz Paranhos",
+      "position": "Central",
+      "from": "Flamengo U21",
+      "to": "SRJ",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Clara Rodrigues",
+      "position": "Levantadora",
+      "from": "SRJ",
+      "to": "BRB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Maria Clara Andrade",
+      "position": "Ponteira",
+      "from": "DPC",
+      "to": "MEC",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Sofía Maldonado",
+      "position": "Ponteira",
+      "from": "Dallas Pulse (EUA)",
+      "to": "SVB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Carolina Grossi",
+      "position": "Oposta",
+      "from": "FFC",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Gabriella Souza",
+      "position": "Ponteira",
+      "from": "MEC",
+      "to": "SL Benfica (Portugal)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Kyra Holt",
+      "position": "Ponteira",
+      "from": "SL Benfica (Portugal)",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Jenna Gray",
+      "position": "Levantadora",
+      "from": "OVC",
+      "to": "Vallefoglia (Itália)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Daniela Cechetto",
+      "position": "Oposta",
+      "from": "ŁKS Łódź (Polônia)",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Mayany Souza",
+      "position": "Central",
+      "from": "SVB",
+      "to": "Kuzeyboru (Turquia)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Jussara Tiago da Silva",
+      "position": "Central",
+      "from": "Maccabi Ashdod (Israel)",
+      "to": "SSV",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Caitlin Baird",
+      "position": "Ponteira",
+      "from": "OVC",
+      "to": "Il Bisonte Firenze (Itália)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Sarah Evaristo",
+      "position": "Central",
+      "from": "BRB",
+      "to": "Universitario (Peru)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Júlia Kudiess",
+      "position": "Central",
+      "from": "GMT",
+      "to": "Igor Gorgonzola Novara (Itália)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Kenya Malachias",
+      "position": "Levantadora",
+      "from": "MEC",
+      "to": "CS Volei Alba-Blaj (Romênia)",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Anna Beatriz Lobo",
+      "position": "Líbero",
+      "from": "ECP",
+      "to": "Mampituba/Radar/Unesc/FME Criciúma",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Marina Oliveira",
+      "position": "Central",
+      "from": "BRB",
+      "to": "Mampituba/Radar/Unesc/FME Criciúma",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Stephany Morete",
+      "position": "Ponteira",
+      "from": "BRU",
+      "to": "Pinhalense/Zagonel",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Gabriella Dutra",
+      "position": "Líbero",
+      "from": "MEC",
+      "to": "Pinhalense/Zagonel",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
+    },
+    {
+      "athlete": "Francynne Jacintho",
+      "position": "Central",
+      "from": "SSV",
+      "to": "BRB",
+      "source": "https://women.volleybox.net/pt/transfers/2026-27/44473/1"
     }
   ]
 }

@@ -10,6 +10,7 @@ import {
   getSourceName,
   TransferDirection,
 } from '../utils/transfers';
+import { getTeamName } from '../utils/teamName';
 import {
   iconSize,
   radius,
@@ -50,7 +51,7 @@ function Club({
         numberOfLines={2}
         style={[styles.clubName, { color: colors.textPrimary }]}
       >
-        {team?.name ?? club.name}
+        {getTeamName(team?.name ?? club.name)}
       </Text>
     </View>
   );

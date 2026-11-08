@@ -25,6 +25,8 @@ function RootStack() {
         headerTintColor: colors.primary,
         headerTitleStyle: { color: colors.textPrimary, fontWeight: '700' },
         headerShadowVisible: false,
+        // Without it iOS labels the back button with the "(tabs)" group name.
+        headerBackButtonDisplayMode: 'minimal',
         headerStyle: { backgroundColor: colors.surface },
       }}
     >

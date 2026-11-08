@@ -17,6 +17,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useTeams } from '../hooks/useSuperliga';
 import { CompetitionSlug } from '../types/superliga';
 import { normalizeForSearch } from '../utils/search';
+import { getTeamName, teamSearchText } from '../utils/teamName';
 import { iconSize, spacing, typography } from '../constants/designTokens';
 
 const COMPETITION_OPTIONS: { value: CompetitionSlug; label: string }[] = [
@@ -33,10 +34,15 @@ export default function SettingsScreen() {
 
   const visibleTeams = useMemo(() => {
     const term = normalizeForSearch(query);
-    if (!term) return teams ?? [];
-    return (teams ?? []).filter((team) =>
-      normalizeForSearch(`${team.name} ${team.code}`).includes(term),
-    );
+    return (teams ?? [])
+      .filter(
+        (team) =>
+          !term ||
+          normalizeForSearch(teamSearchText(team.name, team.code)).includes(
+            term,
+          ),
+      )
+      .sort((a, b) => getTeamName(a.name).localeCompare(getTeamName(b.name)));
   }, [teams, query]);
 
   return (
@@ -99,7 +105,7 @@ export default function SettingsScreen() {
                 numberOfLines={1}
                 style={[styles.teamName, { color: colors.textPrimary }]}
               >
-                {team.name}
+                {getTeamName(team.name)}
               </Text>
               <MaterialCommunityIcons
                 name={selected ? 'star' : 'star-outline'}

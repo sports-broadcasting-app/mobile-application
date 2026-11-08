@@ -1,5 +1,8 @@
 import { getLastSyncAt, saveFavorite, getFavorites } from '../data/database';
-import { fetchSnapshot } from '../services/snapshotService';
+import {
+  fetchSnapshot,
+  withBundledTransfers,
+} from '../services/snapshotService';
 import {
   DEFAULT_MAX_AGE_MS,
   isStale,
@@ -26,6 +29,42 @@ function respondWith(body: unknown, ok = true, status = 200) {
     text: async () => JSON.stringify(body),
   });
 }
+
+const SUPERLIGA_CODES = {
+  masculina: 'SDC MCV BVC SEC MTC SES SVG PCU GOI ASM NRD VSJ',
+  feminina: 'SRJ SVB DPC OVC GMT FFC ECP BRU SSV MEC BVC BRB',
+};
+
+describe('withBundledTransfers', () => {
+  it('fills both competitions from the list shipped with the app', () => {
+    const snapshot = buildSnapshot([]);
+    for (const competition of snapshot.competitions) {
+      delete competition.transfers;
+      competition.teams = SUPERLIGA_CODES[competition.slug]
+        .split(' ')
+        .map((code) => ({ id: code, name: code, code, badgeUrl: null }));
+    }
+    const [men, women] = withBundledTransfers(snapshot).competitions;
+    expect(men.transfers?.length).toBeGreaterThan(100);
+    expect(women.transfers?.length).toBeGreaterThan(100);
+  });
+
+  it('keeps transfers that came with the snapshot', () => {
+    const snapshot = buildSnapshot([]);
+    const published = snapshot.competitions[0].transfers;
+    expect(withBundledTransfers(snapshot).competitions[0].transfers).toBe(
+      published,
+    );
+  });
+
+  it('skips the list instead of failing the sync when codes do not match', () => {
+    const snapshot = buildSnapshot([]);
+    delete snapshot.competitions[0].transfers;
+    expect(
+      withBundledTransfers(snapshot).competitions[0].transfers,
+    ).toBeUndefined();
+  });
+});
 
 describe('fetchSnapshot', () => {
   it('returns a valid snapshot', async () => {

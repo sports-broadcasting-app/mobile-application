@@ -181,9 +181,9 @@ describe('TransfersScreen', () => {
 
   it('lists every transfer without a favorite', async () => {
     render(<TransfersScreen />);
-    expect(await screen.findByText('Todas')).toBeTruthy();
+    expect(await screen.findByText('Todas (3)')).toBeTruthy();
     expect(screen.getByTestId('transfer-card-t2')).toBeTruthy();
-    expect(screen.queryByText('Seu time')).toBeNull();
+    expect(screen.queryByText(/^Seu time/)).toBeNull();
   });
 
   it('opens the news article a transfer came from', async () => {
@@ -196,8 +196,8 @@ describe('TransfersScreen', () => {
   it('puts the favorite team first and marks arrivals and departures', async () => {
     (getFavorites as jest.Mock).mockResolvedValue({ masculina: '1' });
     render(<TransfersScreen />);
-    expect(await screen.findByText('Seu time')).toBeTruthy();
-    expect(screen.getByText('Demais times')).toBeTruthy();
+    expect(await screen.findByText('Seu time (2)')).toBeTruthy();
+    expect(screen.getByText('Demais times (1)')).toBeTruthy();
     expect(screen.getByText('Chegou ao seu time')).toBeTruthy();
     expect(screen.getByText('Saiu do seu time')).toBeTruthy();
   });
@@ -210,6 +210,30 @@ describe('TransfersScreen', () => {
     expect(screen.getByTestId('transfer-card-t2')).toBeTruthy();
     fireEvent.changeText(screen.getByTestId('transfer-search'), 'xyz');
     expect(screen.getByText('Nenhuma transferência encontrada')).toBeTruthy();
+  });
+
+  it('suggests a team and groups its arrivals and departures', async () => {
+    render(<TransfersScreen />);
+    await screen.findByTestId('transfer-card-t1');
+    fireEvent.changeText(screen.getByTestId('transfer-search'), 'sada');
+    fireEvent.press(screen.getByTestId('team-suggestion-1'));
+
+    expect(screen.getByTestId('selected-team')).toBeTruthy();
+    expect(screen.getByText('Chegaram (1)')).toBeTruthy();
+    expect(screen.getByText('Saíram (1)')).toBeTruthy();
+    expect(screen.queryByTestId('transfer-card-t2')).toBeNull();
+
+    fireEvent.press(screen.getByTestId('clear-team'));
+    expect(screen.getByTestId('transfer-card-t2')).toBeTruthy();
+  });
+
+  it('filters by athlete without suggesting teams', async () => {
+    render(<TransfersScreen />);
+    await screen.findByTestId('transfer-card-t1');
+    fireEvent.changeText(screen.getByTestId('transfer-search'), 'bruno');
+    expect(screen.queryByText('Times')).toBeNull();
+    expect(screen.getByTestId('transfer-card-t2')).toBeTruthy();
+    expect(screen.queryByTestId('transfer-card-t1')).toBeNull();
   });
 
   it('opens on the competition it was given', async () => {
