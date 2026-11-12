@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
 import { FavoritesProvider } from '../src/contexts/FavoritesContext';
@@ -6,6 +7,10 @@ import { SyncProvider } from '../src/contexts/SyncContext';
 import { AdsProvider } from '../src/contexts/AdsContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { SyncGate } from '../src/components/SyncGate';
+import { AnimatedSplash } from '../src/components/AnimatedSplash';
+
+// AnimatedSplash hides the native splash once it can take over seamlessly.
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,20 +45,22 @@ function RootStack() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <ErrorBoundary>
-        <AdsProvider>
-          <QueryClientProvider client={queryClient}>
-            <SyncProvider>
-              <FavoritesProvider>
-                <SyncGate>
-                  <RootStack />
-                </SyncGate>
-              </FavoritesProvider>
-            </SyncProvider>
-          </QueryClientProvider>
-        </AdsProvider>
-      </ErrorBoundary>
-    </ThemeProvider>
+    <AnimatedSplash>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <AdsProvider>
+            <QueryClientProvider client={queryClient}>
+              <SyncProvider>
+                <FavoritesProvider>
+                  <SyncGate>
+                    <RootStack />
+                  </SyncGate>
+                </FavoritesProvider>
+              </SyncProvider>
+            </QueryClientProvider>
+          </AdsProvider>
+        </ErrorBoundary>
+      </ThemeProvider>
+    </AnimatedSplash>
   );
 }
