@@ -52,3 +52,6 @@ package-lock.json
 
 # collector output
 /public
+
+# store review
+store-review

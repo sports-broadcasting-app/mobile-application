@@ -75,10 +75,26 @@ beforeEach(() => {
 });
 
 describe('HomeScreen', () => {
-  it('lists the day matches and opens the detail', async () => {
+  it('asks where to watch when a match is tapped', async () => {
     mockDayMatches([scheduledMatch]);
     render(<HomeScreen />);
     fireEvent.press(await screen.findByTestId('match-card-100'));
+    expect(
+      screen.getByText('Quer abrir o app onde o jogo vai passar?'),
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('watch-open-GE TV'));
+    expect(Linking.openURL).toHaveBeenCalledWith(
+      'https://www.youtube.com/@getv',
+    );
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('opens the detail from the where-to-watch sheet', async () => {
+    mockDayMatches([scheduledMatch]);
+    render(<HomeScreen />);
+    fireEvent.press(await screen.findByTestId('match-card-100'));
+    fireEvent.press(screen.getByTestId('watch-details'));
     expect(mockPush).toHaveBeenCalledWith('/match/100');
   });
 

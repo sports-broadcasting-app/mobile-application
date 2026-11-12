@@ -12,19 +12,13 @@
       "bundleIdentifier": "com.diego-serrat.wheretowatch",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      },
-      "icon": {
-        "light": "./assets/icon-ios-light.png",
-        "dark": "./assets/icon-ios-dark.png",
-        "tinted": "./assets/icon-ios-tinted.png"
       }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0f172a",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundImage": "./assets/android-icon-background.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.diego_serrat.wheretowatch"

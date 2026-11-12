@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AdBanner } from '../components/AdBanner';
 import { MatchCard } from '../components/MatchCard';
+import { WatchSheet } from '../components/WatchSheet';
 import { SegmentedChips } from '../components/SegmentedChips';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useSync } from '../contexts/SyncContext';
@@ -58,6 +59,8 @@ export default function HomeScreen() {
   const teamsById = useTeamsById();
   const [dayOption, setDayOption] = useState<DayOption>('0');
   const [filter, setFilter] = useState<CompetitionFilter>('todos');
+  // Match whose "where to watch" sheet is open; null keeps it closed.
+  const [selected, setSelected] = useState<Match | null>(null);
 
   const day = addDays(new Date(), Number(dayOption));
   const competition = filter === 'todos' ? undefined : filter;
@@ -94,7 +97,7 @@ export default function HomeScreen() {
         awayTeam={awayTeam}
         favorite={isFavorite(match.homeTeamId) || isFavorite(match.awayTeamId)}
         showDate={showDate}
-        onPress={() => router.push(`/match/${match.id}`)}
+        onPress={() => setSelected(match)}
       />
     );
   };
@@ -173,6 +176,17 @@ export default function HomeScreen() {
 
         <AdBanner />
       </ScrollView>
+
+      <WatchSheet
+        match={selected}
+        homeTeam={selected ? teamsById.get(selected.homeTeamId) : undefined}
+        awayTeam={selected ? teamsById.get(selected.awayTeamId) : undefined}
+        onClose={() => setSelected(null)}
+        onDetails={(match) => {
+          setSelected(null);
+          router.push(`/match/${match.id}`);
+        }}
+      />
     </SafeAreaView>
   );
 }
