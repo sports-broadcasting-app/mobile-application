@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AdBanner } from '../components/AdBanner';
 import { MatchCard } from '../components/MatchCard';
 import { SegmentedChips } from '../components/SegmentedChips';
 import { useFavorites } from '../contexts/FavoritesContext';
@@ -169,6 +170,8 @@ export default function HomeScreen() {
             {(nextMatches ?? []).map((match) => renderMatch(match, true))}
           </>
         )}
+
+        <AdBanner />
       </ScrollView>
     </SafeAreaView>
   );

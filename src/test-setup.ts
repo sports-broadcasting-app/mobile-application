@@ -18,3 +18,27 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(() => Promise.resolve()),
   removeItem: jest.fn(() => Promise.resolve()),
 }));
+
+jest.mock('react-native-google-mobile-ads', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const initialize = jest.fn(() => Promise.resolve([]));
+  return {
+    __esModule: true,
+    default: () => ({ initialize }),
+    AdsConsent: {
+      gatherConsent: jest.fn(() => Promise.resolve({ canRequestAds: true })),
+      getConsentInfo: jest.fn(() => Promise.resolve({ canRequestAds: true })),
+    },
+    BannerAd: (props: object) =>
+      React.createElement(View, { testID: 'banner-ad', ...props }),
+    BannerAdSize: { ANCHORED_ADAPTIVE_BANNER: 'ANCHORED_ADAPTIVE_BANNER' },
+    TestIds: { ADAPTIVE_BANNER: 'test-adaptive-banner' },
+  };
+});
+
+jest.mock('expo-tracking-transparency', () => ({
+  requestTrackingPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ granted: true }),
+  ),
+}));

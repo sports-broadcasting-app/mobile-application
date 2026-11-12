@@ -10,6 +10,7 @@ import {
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AdBanner } from '../components/AdBanner';
 import { SegmentedChips } from '../components/SegmentedChips';
 import { StandingsList } from '../components/StandingsList';
 import { useFavorites } from '../contexts/FavoritesContext';
@@ -125,6 +126,7 @@ export default function StandingsScreen() {
             </Text>
           ))}
         </View>
+        <AdBanner />
       </ScrollView>
     </SafeAreaView>
   );

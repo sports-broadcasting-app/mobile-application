@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
 import { FavoritesProvider } from '../src/contexts/FavoritesContext';
 import { SyncProvider } from '../src/contexts/SyncContext';
+import { AdsProvider } from '../src/contexts/AdsContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { SyncGate } from '../src/components/SyncGate';
 
@@ -41,15 +42,17 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <SyncProvider>
-            <FavoritesProvider>
-              <SyncGate>
-                <RootStack />
-              </SyncGate>
-            </FavoritesProvider>
-          </SyncProvider>
-        </QueryClientProvider>
+        <AdsProvider>
+          <QueryClientProvider client={queryClient}>
+            <SyncProvider>
+              <FavoritesProvider>
+                <SyncGate>
+                  <RootStack />
+                </SyncGate>
+              </FavoritesProvider>
+            </SyncProvider>
+          </QueryClientProvider>
+        </AdsProvider>
       </ErrorBoundary>
     </ThemeProvider>
   );
