@@ -8,7 +8,7 @@
     "scheme": "where-to-watch",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.diego-serrat.wheretowatch",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -18,7 +18,8 @@
       "adaptiveIcon": {
         "backgroundColor": "#0f172a",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png"
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.diego_serrat.wheretowatch"
