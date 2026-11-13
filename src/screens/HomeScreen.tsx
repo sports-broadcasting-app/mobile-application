@@ -4,15 +4,17 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AdBanner } from '../components/AdBanner';
+import { FavoritePill } from '../components/FavoritePill';
 import { MatchCard } from '../components/MatchCard';
+import { MatchRow } from '../components/MatchRow';
 import { WatchSheet } from '../components/WatchSheet';
 import { SegmentedChips } from '../components/SegmentedChips';
+import { useCompetition } from '../contexts/CompetitionContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useSync } from '../contexts/SyncContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -30,10 +32,9 @@ import {
   getDayBounds,
 } from '../utils/date';
 import { COMPETITION_OPTIONS, getCompetition } from '../constants/competitions';
-import { spacing, typography } from '../constants/designTokens';
+import { radius, spacing, typography } from '../constants/designTokens';
 
 type DayOption = '-1' | '0' | '1';
-type CompetitionFilter = 'todos' | CompetitionSlug;
 
 const DAY_OPTIONS: { value: DayOption; label: string }[] = [
   { value: '-1', label: 'Ontem' },
@@ -41,10 +42,10 @@ const DAY_OPTIONS: { value: DayOption; label: string }[] = [
   { value: '1', label: 'Amanhã' },
 ];
 
-const COMPETITION_FILTERS: { value: CompetitionFilter; label: string }[] = [
-  { value: 'todos', label: 'Todos' },
-  ...COMPETITION_OPTIONS,
-];
+const COMPETITION_FILTERS: {
+  value: 'todos' | CompetitionSlug;
+  label: string;
+}[] = [{ value: 'todos', label: 'Todos' }, ...COMPETITION_OPTIONS];
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -53,7 +54,7 @@ export default function HomeScreen() {
   const { favorites, isFavorite } = useFavorites();
   const teamsById = useTeamsById();
   const [dayOption, setDayOption] = useState<DayOption>('0');
-  const [filter, setFilter] = useState<CompetitionFilter>('todos');
+  const { filter, setFilter } = useCompetition();
   // Match whose "where to watch" sheet is open; null keeps it closed.
   const [selected, setSelected] = useState<Match | null>(null);
 
@@ -79,7 +80,15 @@ export default function HomeScreen() {
     isEmpty,
   );
 
-  const renderMatch = (match: Match, showDate: boolean) => {
+  // The favorite of the selected competition, else the first one chosen.
+  const favoriteTeamId = competition
+    ? favorites[competition]
+    : Object.values(favorites)[0];
+  const favoriteTeam = favoriteTeamId
+    ? teamsById.get(favoriteTeamId)
+    : undefined;
+
+  const renderMatch = (match: Match) => {
     const homeTeam = teamsById.get(match.homeTeamId);
     const awayTeam = teamsById.get(match.awayTeamId);
     if (!homeTeam || !awayTeam) return null;
@@ -91,7 +100,24 @@ export default function HomeScreen() {
         homeTeam={homeTeam}
         awayTeam={awayTeam}
         favorite={isFavorite(match.homeTeamId) || isFavorite(match.awayTeamId)}
-        showDate={showDate}
+        onPress={() => setSelected(match)}
+      />
+    );
+  };
+
+  // Matches on other days are a compact list: the day's games get the cards.
+  const renderNextMatch = (match: Match) => {
+    const homeTeam = teamsById.get(match.homeTeamId);
+    const awayTeam = teamsById.get(match.awayTeamId);
+    if (!homeTeam || !awayTeam) return null;
+
+    return (
+      <MatchRow
+        key={match.id}
+        match={match}
+        homeTeam={homeTeam}
+        awayTeam={awayTeam}
+        favorite={isFavorite(match.homeTeamId) || isFavorite(match.awayTeamId)}
         onPress={() => setSelected(match)}
       />
     );
@@ -103,16 +129,25 @@ export default function HomeScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>
-          {competition ? getCompetition(competition).name : 'Jogos'}
-        </Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          {refreshFailed
-            ? 'Sem conexão: mostrando dados salvos'
-            : lastSyncAt !== null
-              ? formatRelativeSync(lastSyncAt, Date.now())
-              : ''}
-        </Text>
+        <View style={styles.headerText}>
+          <Text
+            numberOfLines={1}
+            style={[styles.title, { color: colors.textPrimary }]}
+          >
+            {competition ? getCompetition(competition).name : 'Jogos'}
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            {refreshFailed
+              ? 'Sem conexão: mostrando dados salvos'
+              : lastSyncAt !== null
+                ? formatRelativeSync(lastSyncAt, Date.now())
+                : ''}
+          </Text>
+        </View>
+        <FavoritePill
+          team={favoriteTeam}
+          onPress={() => router.push('/configuracoes')}
+        />
       </View>
 
       <SegmentedChips
@@ -124,6 +159,7 @@ export default function HomeScreen() {
         options={COMPETITION_FILTERS}
         selected={filter}
         onSelect={setFilter}
+        scrollable
       />
 
       <ScrollView
@@ -141,15 +177,7 @@ export default function HomeScreen() {
           {formatDay(day)}
         </Text>
 
-        {Object.keys(favorites).length === 0 && (
-          <TouchableOpacity onPress={() => router.push('/configuracoes')}>
-            <Text style={[styles.hint, { color: colors.primary }]}>
-              Escolha seu time favorito em cada competição
-            </Text>
-          </TouchableOpacity>
-        )}
-
-        {matches.map((match) => renderMatch(match, false))}
+        {matches.map(renderMatch)}
 
         {isEmpty && (
           <>
@@ -163,7 +191,11 @@ export default function HomeScreen() {
                 Próximos jogos
               </Text>
             )}
-            {(nextMatches ?? []).map((match) => renderMatch(match, true))}
+            <View
+              style={[styles.nextList, { backgroundColor: colors.surface }]}
+            >
+              {(nextMatches ?? []).map(renderNextMatch)}
+            </View>
           </>
         )}
 
@@ -189,12 +221,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+    gap: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
+  headerText: {
+    flex: 1,
+  },
   title: {
-    fontSize: typography.size.title,
-    fontWeight: typography.weight.bold,
+    fontSize: typography.size.title + 4,
+    fontWeight: typography.weight.heavy,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: typography.size.sm,
@@ -210,11 +249,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
-  hint: {
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.semibold,
-    paddingBottom: spacing.md,
-    paddingHorizontal: spacing.lg,
+  nextList: {
+    borderRadius: radius.lg,
+    marginHorizontal: spacing.lg,
+    paddingHorizontal: spacing.md,
   },
   empty: {
     fontSize: typography.size.body,

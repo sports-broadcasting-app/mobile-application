@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -13,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AdBanner } from '../components/AdBanner';
 import { SegmentedChips } from '../components/SegmentedChips';
 import { StandingsList } from '../components/StandingsList';
+import { useCompetition } from '../contexts/CompetitionContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useSync } from '../contexts/SyncContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -21,7 +21,6 @@ import {
   useStandings,
   useTeamsById,
 } from '../hooks/useSuperliga';
-import { CompetitionSlug } from '../types/snapshot';
 import {
   COMPETITION_OPTIONS,
   getCompetition,
@@ -39,7 +38,7 @@ export default function StandingsScreen() {
   const { refreshing, refresh } = useSync();
   const { isFavorite } = useFavorites();
   const teamsById = useTeamsById();
-  const [competition, setCompetition] = useState<CompetitionSlug>('masculina');
+  const { competition, setCompetition } = useCompetition();
   const { data: standings } = useStandings(competition);
   const hasTransfers = useHasTransfers(competition);
   const router = useRouter();
@@ -59,6 +58,7 @@ export default function StandingsScreen() {
         options={COMPETITION_OPTIONS}
         selected={competition}
         onSelect={setCompetition}
+        scrollable
       />
       <ScrollView
         contentContainerStyle={styles.content}

@@ -12,6 +12,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useMatch, useTeamsById } from '../hooks/useSuperliga';
 import { getChannelUrl } from '../utils/broadcast';
 import { formatMatchDate } from '../utils/date';
+import { formatRound } from '../utils/roundLabel';
 import { getTeamName } from '../utils/teamName';
 import { radius, spacing, typography } from '../constants/designTokens';
 
@@ -45,7 +46,9 @@ export default function MatchDetailScreen() {
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={styles.content}
     >
-      <Stack.Screen options={{ title: match.roundLabel || 'Jogo' }} />
+      <Stack.Screen
+        options={{ title: formatRound(match.roundLabel) || 'Jogo' }}
+      />
 
       <View style={styles.teams}>
         <View style={styles.team}>
