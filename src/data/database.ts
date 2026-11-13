@@ -206,6 +206,48 @@ export async function getNextMatches(
   return parseRows<Match>(rows);
 }
 
+/**
+ * Scheduled matches of the favorite teams from `fromMs` on, soonest first.
+ * Each favorite is matched within its own competition, since team ids of
+ * different sources are not guaranteed to be distinct.
+ */
+export async function getUpcomingFavoriteMatches(
+  favorites: Favorites,
+  fromMs: number,
+  limit: number,
+): Promise<Match[]> {
+  const entries = Object.entries(favorites).filter(
+    (entry): entry is [CompetitionSlug, string] => Boolean(entry[1]),
+  );
+  if (entries.length === 0) return [];
+
+  const db = await getDb();
+  const teamFilter = entries
+    .map(
+      () =>
+        `(competition = ? AND (json_extract(payload, '$.homeTeamId') = ?
+          OR json_extract(payload, '$.awayTeamId') = ?))`,
+    )
+    .join(' OR ');
+  const rows = await db.getAllAsync<{ payload: string }>(
+    `SELECT payload FROM matches
+      WHERE startsAtMs >= ?
+        AND json_extract(payload, '$.status') = 'scheduled'
+        AND (${teamFilter})
+      ORDER BY startsAtMs ASC LIMIT ?`,
+    [
+      fromMs,
+      ...entries.flatMap(([competition, teamId]) => [
+        competition,
+        teamId,
+        teamId,
+      ]),
+      limit,
+    ],
+  );
+  return parseRows<Match>(rows);
+}
+
 export async function getMatch(id: string): Promise<Match | null> {
   const db = await getDb();
   const row = await db.getFirstAsync<{ payload: string }>(

@@ -48,7 +48,7 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 Bottom Tabs:
   Jogos (/)                    → Ontem/Hoje/Amanha, competition filter, next matches on empty days
   Classificacao (/classificacao) → standings per competition (columns depend on the sport)
-  Configuracoes (/configuracoes) → one favorite team per competition, theme switch
+  Configuracoes (/configuracoes) → match reminders switch, one favorite team per competition, theme switch
 
 Stack over tabs:
   MatchDetailScreen (/match/[id]) → score, sets, channel links
@@ -86,7 +86,8 @@ App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens 
 - **Legacy file**: the first release reads `superliga.json` (version 1, Superligas only). `scripts/legacy.ts` keeps publishing it from the new snapshot until those installs are gone.
 - **Brasileirão source**: the ge championship page names the public table service (`api.globoesporte.globo.com/tabela/...`) the page itself calls; rounds and standings come from there, and the broadcasters from each match page (`liveWatchSources`), fetched only for matches up to 8 days ahead. ge gives Brasília wall-clock times; `toInstant` adds the offset.
 
-- **First run**: `SyncGate` blocks with a loader; on failure it shows a retry.
+- **First run**: `SyncGate` blocks with a loader; on failure it shows a retry. Then `OnboardingGate` shows `OnboardingScreen` once (`@onboarding_done` in AsyncStorage): pick favorite teams, then opt in to reminders.
+- **Match reminders**: local notifications only (`expo-notifications`, no push server). `NotificationsContext` rebuilds the whole pending list 30 min before each scheduled match of the favorites whenever favorites, data or the switch change (max 60, iOS caps at 64). On only when the in-app choice (`@match_reminders`) and the system permission are both on. `NotificationResponder` opens `/match/[id]` on tap. Web has no reminders (`notifications.web.ts`).
 - **Later runs**: opens from SQLite and refreshes in the background when data is older than 6h (15min on match days).
 - **Offline**: keeps local data and says so on the Home header.
 - **`saveSnapshot` must never touch the `favorites` table.**

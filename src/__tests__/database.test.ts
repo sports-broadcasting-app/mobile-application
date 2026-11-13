@@ -9,6 +9,7 @@ import {
   getStandings,
   getTeams,
   getTransfers,
+  getUpcomingFavoriteMatches,
   saveFavorite,
   saveSnapshot,
 } from '../data/database';
@@ -89,6 +90,49 @@ describe('database', () => {
     await saveFavorite('masculina', '1');
     await saveFavorite('masculina', '2');
     expect(await getFavorites()).toEqual({ masculina: '2' });
+  });
+
+  it('finds the scheduled matches of the favorites, within their competition', async () => {
+    const later = {
+      ...scheduledMatch,
+      id: '102',
+      startsAt: '2026-11-09T00:30:00+01:00',
+      homeTeamId: '2',
+      awayTeamId: '1',
+    };
+    const others = {
+      ...scheduledMatch,
+      id: '103',
+      homeTeamId: '7',
+      awayTeamId: '8',
+    };
+    await saveSnapshot(
+      buildSnapshot([later, scheduledMatch, finishedMatch, others]),
+      2000,
+    );
+    const from = new Date(2026, 9, 1).getTime();
+
+    const found = await getUpcomingFavoriteMatches(
+      { masculina: '1' },
+      from,
+      10,
+    );
+    expect(found.map((match) => match.id)).toEqual(['100', '102']);
+    expect(
+      await getUpcomingFavoriteMatches({ masculina: '1' }, from, 1),
+    ).toHaveLength(1);
+    // The same id in another competition is another team.
+    expect(
+      await getUpcomingFavoriteMatches({ feminina: '1' }, from, 10),
+    ).toEqual([]);
+    expect(await getUpcomingFavoriteMatches({}, from, 10)).toEqual([]);
+    expect(
+      await getUpcomingFavoriteMatches(
+        { masculina: '1' },
+        Date.parse(later.startsAt),
+        10,
+      ),
+    ).toEqual([later]);
   });
 
   it('keeps the previous data if saving fails midway', async () => {
