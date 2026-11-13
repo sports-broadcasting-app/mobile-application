@@ -3,20 +3,19 @@ import {
   resolveTransfers,
   type TransferFile,
 } from '../../scripts/superliga/transfers.ts';
-import { SUPERLIGA_DATA_URL } from '../constants/config';
-import { SuperligaSnapshot } from '../types/superliga';
+import { isCompetitionSlug } from '../constants/competitions';
+import { DATA_URL } from '../constants/config';
+import { Snapshot } from '../types/snapshot';
 import { logSync } from '../utils/syncLog';
 
 const REQUEST_TIMEOUT_MS = 20_000;
-const EXPECTED_COMPETITIONS = 2;
 const BODY_PREVIEW_LENGTH = 200;
 
-function isValidSnapshot(data: unknown): data is SuperligaSnapshot {
-  const snapshot = data as Partial<SuperligaSnapshot> | null;
+function isValidSnapshot(data: unknown): data is Snapshot {
+  const snapshot = data as Partial<Snapshot> | null;
   return (
-    snapshot?.version === 1 &&
+    snapshot?.version === 2 &&
     Array.isArray(snapshot.competitions) &&
-    snapshot.competitions.length === EXPECTED_COMPETITIONS &&
     snapshot.competitions.every(
       (competition) =>
         competition.teams?.length > 0 && Array.isArray(competition.matches),
@@ -25,16 +24,30 @@ function isValidSnapshot(data: unknown): data is SuperligaSnapshot {
 }
 
 /**
+ * Keeps the competitions this app version knows, so a sport added to the
+ * file later never breaks an older install. At least one must remain.
+ */
+export function keepKnownCompetitions(snapshot: Snapshot): Snapshot {
+  snapshot.competitions = snapshot.competitions.filter((competition) =>
+    isCompetitionSlug(competition.slug),
+  );
+  if (snapshot.competitions.length === 0) {
+    throw new Error('Dados inválidos');
+  }
+  return snapshot;
+}
+
+/**
  * Fills transfers from the list shipped with the app while the published
  * snapshot has none. A bad line drops that competition's transfers, never
  * the sync.
  */
-export function withBundledTransfers(
-  snapshot: SuperligaSnapshot,
-): SuperligaSnapshot {
+export function withBundledTransfers(snapshot: Snapshot): Snapshot {
   const bundled = bundledTransfers as TransferFile;
   for (const competition of snapshot.competitions) {
-    if (competition.transfers?.length) continue;
+    if (competition.sport !== 'volei' || competition.transfers?.length) {
+      continue;
+    }
     try {
       competition.transfers = resolveTransfers(
         competition.slug,
@@ -51,14 +64,14 @@ export function withBundledTransfers(
   return snapshot;
 }
 
-export async function fetchSnapshot(): Promise<SuperligaSnapshot> {
+export async function fetchSnapshot(): Promise<Snapshot> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   const startedAt = Date.now();
-  logSync('download started', { url: SUPERLIGA_DATA_URL });
+  logSync('download started', { url: DATA_URL });
 
   try {
-    const response = await fetch(SUPERLIGA_DATA_URL, {
+    const response = await fetch(DATA_URL, {
       signal: controller.signal,
     });
     const body = await response.text();
@@ -84,10 +97,10 @@ export async function fetchSnapshot(): Promise<SuperligaSnapshot> {
       });
       throw new Error('Dados inválidos');
     }
-    return withBundledTransfers(data);
+    return withBundledTransfers(keepKnownCompetitions(data));
   } catch (error) {
     logSync('download failed', {
-      url: SUPERLIGA_DATA_URL,
+      url: DATA_URL,
       durationMs: Date.now() - startedAt,
       error: error instanceof Error ? error.message : String(error),
     });

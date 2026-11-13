@@ -5,9 +5,8 @@ import type {
   MatchStatus,
   SetScore,
   Standing,
-  SuperligaSnapshot,
   Team,
-} from '../../src/types/superliga';
+} from '../../src/types/snapshot';
 
 type RawObject = Record<string, unknown>;
 
@@ -121,8 +120,8 @@ function toMatch(raw: RawObject, competition: CompetitionSlug): Match | null {
     homeTeamId: String(homeTeamId),
     awayTeamId: String(awayTeamId),
     status,
-    homeSets: hasResult ? toNumber(raw.WonSetHome) : null,
-    awaySets: hasResult ? toNumber(raw.WonSetGuest) : null,
+    homeScore: hasResult ? toNumber(raw.WonSetHome) : null,
+    awayScore: hasResult ? toNumber(raw.WonSetGuest) : null,
     setScores: hasResult ? toSetScores(raw) : [],
     channels: toChannels(raw),
     venue: toText(hall?.Denomination),
@@ -181,11 +180,10 @@ export function parseStandings(payload: string): {
       points: toNumber(raw.points) ?? 0,
       matches: toNumber(raw.matches) ?? 0,
       wins: toNumber(raw.wins) ?? 0,
+      draws: 0,
       losses: toNumber(raw.losses) ?? 0,
-      setsWon: toNumber(raw.setsWon) ?? 0,
-      setsLost: toNumber(raw.setsLost) ?? 0,
-      pointsWon: toNumber(raw.pointsWon) ?? 0,
-      pointsLost: toNumber(raw.pointsLost) ?? 0,
+      scoredFor: toNumber(raw.setsWon) ?? 0,
+      scoredAgainst: toNumber(raw.setsLost) ?? 0,
     });
   }
 
@@ -196,6 +194,7 @@ export function parseStandings(payload: string): {
 export function buildCompetition(
   slug: CompetitionSlug,
   name: string,
+  season: string,
   agendaHtml: string,
   standingsHtml: string,
 ): CompetitionData {
@@ -203,35 +202,5 @@ export function buildCompetition(
   const { teams, standings } = parseStandings(
     extractFlightPayload(standingsHtml),
   );
-  return { slug, name, teams, matches, standings };
-}
-
-/** Throws on a suspicious result so the last good snapshot stays published. */
-export function assertValidSnapshot(snapshot: SuperligaSnapshot): void {
-  for (const competition of snapshot.competitions) {
-    const { name, teams, matches, standings } = competition;
-    if (teams.length < 8) {
-      throw new Error(`${name}: only ${teams.length} teams found`);
-    }
-    if (standings.length !== teams.length) {
-      throw new Error(`${name}: standings do not match the teams`);
-    }
-    if (matches.length < teams.length) {
-      throw new Error(`${name}: only ${matches.length} matches found`);
-    }
-
-    const teamIds = new Set(teams.map((team) => team.id));
-    const orphan = matches.find(
-      (match) =>
-        !teamIds.has(match.homeTeamId) || !teamIds.has(match.awayTeamId),
-    );
-    if (orphan) throw new Error(`${name}: unknown team in match ${orphan.id}`);
-
-    const invalidDate = matches.find((m) =>
-      Number.isNaN(Date.parse(m.startsAt)),
-    );
-    if (invalidDate) {
-      throw new Error(`${name}: invalid date in match ${invalidDate.id}`);
-    }
-  }
+  return { slug, sport: 'volei', name, season, teams, matches, standings };
 }

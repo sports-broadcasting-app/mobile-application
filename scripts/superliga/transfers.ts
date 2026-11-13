@@ -3,7 +3,7 @@ import type {
   Team,
   Transfer,
   TransferClub,
-} from '../../src/types/superliga';
+} from '../../src/types/snapshot';
 import { normalizeForSearch } from '../../src/utils/search.ts';
 
 /**

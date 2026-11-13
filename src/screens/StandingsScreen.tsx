@@ -21,27 +21,18 @@ import {
   useStandings,
   useTeamsById,
 } from '../hooks/useSuperliga';
-import { CompetitionSlug } from '../types/superliga';
+import { CompetitionSlug } from '../types/snapshot';
+import {
+  COMPETITION_OPTIONS,
+  getCompetition,
+  STANDINGS_COLUMNS,
+} from '../constants/competitions';
 import {
   iconSize,
   radius,
   spacing,
   typography,
 } from '../constants/designTokens';
-
-const OPTIONS: { value: CompetitionSlug; label: string }[] = [
-  { value: 'masculina', label: 'Masculina' },
-  { value: 'feminina', label: 'Feminina' },
-];
-
-const LEGEND = [
-  { code: 'P', label: 'Pontos' },
-  { code: 'J', label: 'Jogos' },
-  { code: 'V', label: 'Vitórias' },
-  { code: 'D', label: 'Derrotas' },
-  { code: 'SV', label: 'Sets vencidos' },
-  { code: 'SP', label: 'Sets perdidos' },
-];
 
 export default function StandingsScreen() {
   const { colors } = useTheme();
@@ -50,8 +41,9 @@ export default function StandingsScreen() {
   const teamsById = useTeamsById();
   const [competition, setCompetition] = useState<CompetitionSlug>('masculina');
   const { data: standings } = useStandings(competition);
-  const hasTransfers = useHasTransfers();
+  const hasTransfers = useHasTransfers(competition);
   const router = useRouter();
+  const { sport } = getCompetition(competition);
 
   return (
     <SafeAreaView
@@ -64,7 +56,7 @@ export default function StandingsScreen() {
         </Text>
       </View>
       <SegmentedChips
-        options={OPTIONS}
+        options={COMPETITION_OPTIONS}
         selected={competition}
         onSelect={setCompetition}
       />
@@ -107,12 +99,13 @@ export default function StandingsScreen() {
           </TouchableOpacity>
         )}
         <StandingsList
+          sport={sport}
           standings={standings ?? []}
           teamsById={teamsById}
           isFavorite={isFavorite}
         />
         <View style={styles.legend} testID="standings-legend">
-          {LEGEND.map(({ code, label }) => (
+          {STANDINGS_COLUMNS[sport].map(({ code, label }) => (
             <Text
               key={code}
               style={[styles.legendItem, { color: colors.textTertiary }]}

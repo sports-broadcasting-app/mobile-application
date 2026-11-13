@@ -1,24 +1,26 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import { Standing, Team } from '../types/superliga';
+import { Sport, Standing, Team } from '../types/snapshot';
 import { getTeamName } from '../utils/teamName';
 import { TeamCircle } from './TeamCircle';
+import { STANDINGS_COLUMNS } from '../constants/competitions';
 import { spacing, typography } from '../constants/designTokens';
 
-const COLUMNS = ['P', 'J', 'V', 'D', 'SV', 'SP'];
-
 interface StandingsListProps {
+  sport: Sport;
   standings: Standing[];
   teamsById: Map<string, Team>;
   isFavorite: (teamId: string) => boolean;
 }
 
 export function StandingsList({
+  sport,
   standings,
   teamsById,
   isFavorite,
 }: StandingsListProps) {
   const { colors } = useTheme();
+  const columns = STANDINGS_COLUMNS[sport];
 
   return (
     <View>
@@ -27,12 +29,12 @@ export function StandingsList({
         <Text style={[styles.headerTeam, { color: colors.textTertiary }]}>
           Time
         </Text>
-        {COLUMNS.map((column) => (
+        {columns.map(({ code }) => (
           <Text
-            key={column}
+            key={code}
             style={[styles.column, { color: colors.textTertiary }]}
           >
-            {column}
+            {code}
           </Text>
         ))}
       </View>
@@ -64,23 +66,16 @@ export function StandingsList({
                 {getTeamName(team.name)}
               </Text>
             </View>
-            {[
-              standing.points,
-              standing.matches,
-              standing.wins,
-              standing.losses,
-              standing.setsWon,
-              standing.setsLost,
-            ].map((value, index) => (
+            {columns.map(({ code, value }, index) => (
               <Text
-                key={COLUMNS[index]}
+                key={code}
                 style={[
                   styles.column,
                   { color: colors.textPrimary },
                   index === 0 && styles.points,
                 ]}
               >
-                {value}
+                {value(standing)}
               </Text>
             ))}
           </View>

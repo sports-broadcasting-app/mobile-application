@@ -15,15 +15,11 @@ import { TeamCircle } from '../components/TeamCircle';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTeams } from '../hooks/useSuperliga';
-import { CompetitionSlug } from '../types/superliga';
+import { CompetitionSlug } from '../types/snapshot';
 import { normalizeForSearch } from '../utils/search';
 import { getTeamName, teamSearchText } from '../utils/teamName';
+import { COMPETITION_OPTIONS } from '../constants/competitions';
 import { iconSize, spacing, typography } from '../constants/designTokens';
-
-const COMPETITION_OPTIONS: { value: CompetitionSlug; label: string }[] = [
-  { value: 'masculina', label: 'Masculina' },
-  { value: 'feminina', label: 'Feminina' },
-];
 
 export default function SettingsScreen() {
   const { colors } = useTheme();

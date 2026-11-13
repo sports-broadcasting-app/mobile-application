@@ -1,8 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { getCompetition } from '../constants/competitions';
 import { useTheme } from '../contexts/ThemeContext';
-import { Match, Team } from '../types/superliga';
+import { Match, Team } from '../types/snapshot';
 import { formatMatchDate, formatTime } from '../utils/date';
 import { getTeamName } from '../utils/teamName';
 import { BroadcasterPill } from './BroadcasterPill';
@@ -15,8 +16,6 @@ import {
   typography,
 } from '../constants/designTokens';
 
-const COMPETITION_LABEL = { masculina: 'Masculina', feminina: 'Feminina' };
-
 interface MatchCardProps {
   match: Match;
   homeTeam: Team;
@@ -26,7 +25,7 @@ interface MatchCardProps {
   onPress?: () => void;
 }
 
-function TeamRow({ team, sets }: { team: Team; sets: number | null }) {
+function TeamRow({ team, score }: { team: Team; score: number | null }) {
   const { colors } = useTheme();
 
   return (
@@ -38,8 +37,10 @@ function TeamRow({ team, sets }: { team: Team; sets: number | null }) {
       >
         {getTeamName(team.name)}
       </Text>
-      {sets !== null && (
-        <Text style={[styles.sets, { color: colors.textPrimary }]}>{sets}</Text>
+      {score !== null && (
+        <Text style={[styles.score, { color: colors.textPrimary }]}>
+          {score}
+        </Text>
       )}
     </View>
   );
@@ -76,7 +77,7 @@ export const MatchCard = React.memo(function MatchCard({
           {showDate
             ? formatMatchDate(match.startsAt)
             : formatTime(match.startsAt)}
-          {` · ${COMPETITION_LABEL[match.competition]}`}
+          {` · ${getCompetition(match.competition).label}`}
         </Text>
         {favorite && (
           <MaterialCommunityIcons
@@ -98,8 +99,8 @@ export const MatchCard = React.memo(function MatchCard({
         )}
       </View>
 
-      <TeamRow team={homeTeam} sets={match.homeSets} />
-      <TeamRow team={awayTeam} sets={match.awaySets} />
+      <TeamRow team={homeTeam} score={match.homeScore} />
+      <TeamRow team={awayTeam} score={match.awayScore} />
 
       <View style={styles.channels}>
         <MaterialCommunityIcons
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.body,
     fontWeight: typography.weight.semibold,
   },
-  sets: {
+  score: {
     fontSize: typography.size.md,
     fontWeight: typography.weight.bold,
   },

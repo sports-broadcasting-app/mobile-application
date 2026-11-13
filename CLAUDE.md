@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A React Native (Expo) mobile application that shows where Superliga volleyball matches (men's and women's) are broadcast, with day matches and standings. There is no login and no backend: the app downloads a static JSON on first run and keeps everything on the device in SQLite.
+A React Native (Expo) mobile application that shows where Superliga volleyball matches (men's and women's) and Brasileirão Série A football matches are broadcast, with day matches and standings. There is no login and no backend: the app downloads a static JSON on first run and keeps everything on the device in SQLite.
 
 ## Tech Stack
 
@@ -23,7 +23,7 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 .
 ├── app/                        # Expo Router file-based routes (re-export src/screens)
 │   ├── _layout.tsx             # Providers, SyncGate, root Stack
-│   ├── (tabs)/                 # Jogos, Classificacao, Favoritos
+│   ├── (tabs)/                 # Jogos, Classificacao, Configuracoes
 │   └── match/[id].tsx          # Match detail
 ├── src/
 │   ├── components/             # MatchCard, StandingsList, SegmentedChips, SyncGate, TeamCircle...
@@ -32,11 +32,13 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 │   ├── data/database.ts        # SQLite schema and every query
 │   ├── services/               # snapshotService (download), syncService (freshness rules)
 │   ├── hooks/useSuperliga.ts   # React Query reads over SQLite
-│   ├── types/superliga.ts      # Snapshot contract, shared with the collector
-│   ├── constants/              # config, theme, designTokens
+│   ├── types/snapshot.ts       # Snapshot contract, shared with the collector
+│   ├── constants/              # config, competitions (slugs, labels, standings columns), theme, designTokens
 │   ├── utils/                  # date, broadcast, teamColor
 │   └── __tests__/              # Test files
-├── scripts/superliga/          # Collector that generates superliga.json
+├── scripts/collect.ts          # Collector entry point: writes onde-passa.json and the legacy superliga.json
+├── scripts/superliga/          # CBV parser for both Superligas, curated transfers
+├── scripts/brasileirao/        # ge parser for the Brasileirão Série A
 └── .github/workflows/          # Scheduled collector, publishes to GitHub Pages
 ```
 
@@ -45,8 +47,8 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 ```
 Bottom Tabs:
   Jogos (/)                    → Ontem/Hoje/Amanha, competition filter, next matches on empty days
-  Classificacao (/classificacao) → standings per competition
-  Favoritos (/favoritos)       → one favorite team per competition, theme switch
+  Classificacao (/classificacao) → standings per competition (columns depend on the sport)
+  Configuracoes (/configuracoes) → one favorite team per competition, theme switch
 
 Stack over tabs:
   MatchDetailScreen (/match/[id]) → score, sets, channel links
@@ -75,20 +77,26 @@ Stack over tabs:
 ## Data Flow
 
 ```
-GitHub Action (every 2h) → reads cbv.com.br → validates → publishes superliga.json (GitHub Pages)
-App → downloads the JSON (EXPO_PUBLIC_SUPERLIGA_DATA_URL) → writes SQLite → screens read only SQLite
+GitHub Action (every 2h) → reads cbv.com.br and ge.globo.com → validates → publishes onde-passa.json (GitHub Pages)
+App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens read only SQLite
 ```
+
+- **Competitions**: `masculina` and `feminina` (volleyball, CBV) and `serie-a` (football, ge). `src/constants/competitions.ts` is the single list: slug, sport, names and the standings columns of each sport. The app ignores competitions it does not know, so a sport can be added to the file before the app update ships.
+- **Scores**: `homeScore`/`awayScore` are sets in volleyball and goals in football; `setScores` is empty in football. `Standing.scoredFor`/`scoredAgainst` follow the same rule, and `draws` is always 0 in volleyball.
+- **Legacy file**: the first release reads `superliga.json` (version 1, Superligas only). `scripts/legacy.ts` keeps publishing it from the new snapshot until those installs are gone.
+- **Brasileirão source**: the ge championship page names the public table service (`api.globoesporte.globo.com/tabela/...`) the page itself calls; rounds and standings come from there, and the broadcasters from each match page (`liveWatchSources`), fetched only for matches up to 8 days ahead. ge gives Brasília wall-clock times; `toInstant` adds the offset.
 
 - **First run**: `SyncGate` blocks with a loader; on failure it shows a retry.
 - **Later runs**: opens from SQLite and refreshes in the background when data is older than 6h (15min on match days).
 - **Offline**: keeps local data and says so on the Home header.
 - **`saveSnapshot` must never touch the `favorites` table.**
-- **Dates**: `startsAt` carries a European offset. Always compare instants; never slice the text to get the day.
+- **Dates**: `startsAt` carries an offset (European for the CBV, Brasília for ge). Always compare instants; never slice the text to get the day.
 - **Collector privacy**: the source page holds contact e-mails and rosters. `parseCbv.ts` copies only whitelisted fields.
 
 ```bash
-node scripts/superliga/collect.ts public/superliga.json            # live collection
-node scripts/superliga/collect.ts out.json <dir-with-saved-html>   # offline, {slug}-agenda.html and {slug}-classificacao.html
+node scripts/collect.ts public                 # live collection: public/onde-passa.json + public/superliga.json
+node scripts/collect.ts out <dir-with-fixtures> # offline: {slug}-agenda.html, {slug}-classificacao.html (CBV),
+                                               # serie-a-tabela.html, serie-a-classificacao.json, serie-a-rodada-{n}.json, serie-a-jogo-{id}.html (ge)
 ```
 
 ## Commands

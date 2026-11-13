@@ -13,7 +13,7 @@ import {
   getFavorites,
   saveFavorite,
 } from '../data/database';
-import { CompetitionSlug } from '../types/superliga';
+import { CompetitionSlug } from '../types/snapshot';
 
 interface FavoritesContextValue {
   favorites: Favorites;

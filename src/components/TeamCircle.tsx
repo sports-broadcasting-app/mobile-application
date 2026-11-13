@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
-import { Team } from '../types/superliga';
+import { Team } from '../types/snapshot';
 import { getTeamColor } from '../utils/teamColor';
 
 interface TeamCircleProps {

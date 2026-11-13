@@ -4,7 +4,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import * as Linking from 'expo-linking';
 import { TeamCircle } from './TeamCircle';
 import { useTheme } from '../contexts/ThemeContext';
-import { Team, Transfer, TransferClub } from '../types/superliga';
+import { Team, Transfer, TransferClub } from '../types/snapshot';
 import {
   formatTransferDate,
   getSourceName,

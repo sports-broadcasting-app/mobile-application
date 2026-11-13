@@ -3,13 +3,16 @@ import {
   CompetitionSlug,
   Match,
   Standing,
-  SuperligaSnapshot,
+  Snapshot,
   Team,
   Transfer,
-} from '../types/superliga';
+} from '../types/snapshot';
 
 const DB_NAME = 'superliga.db';
 const LAST_SYNC_KEY = 'lastSyncAt';
+const SCHEMA_KEY = 'schemaVersion';
+/** Bump when the stored payloads change shape; favorites are always kept. */
+const SCHEMA_VERSION = '2';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -53,6 +56,26 @@ async function openDb(): Promise<SQLite.SQLiteDatabase> {
       updatedAt INTEGER NOT NULL
     );
   `);
+
+  const schema = await db.getFirstAsync<{ value: string }>(
+    'SELECT value FROM meta WHERE key = ?',
+    [SCHEMA_KEY],
+  );
+  if (schema?.value !== SCHEMA_VERSION) {
+    // Data written by an older app has another shape: drop it so the next
+    // sync rebuilds it. Favorites survive.
+    await db.execAsync(`
+      DELETE FROM teams;
+      DELETE FROM matches;
+      DELETE FROM standings;
+      DELETE FROM transfers;
+      DELETE FROM meta;
+    `);
+    await db.runAsync('INSERT INTO meta (key, value) VALUES (?, ?)', [
+      SCHEMA_KEY,
+      SCHEMA_VERSION,
+    ]);
+  }
   return db;
 }
 
@@ -72,7 +95,7 @@ function parseRows<T>(rows: { payload: string }[]): T[] {
 
 /** Replaces the competition data atomically. Favorites are never touched. */
 export async function saveSnapshot(
-  snapshot: SuperligaSnapshot,
+  snapshot: Snapshot,
   syncedAt: number,
 ): Promise<void> {
   const db = await getDb();
@@ -227,10 +250,13 @@ export async function getTransfers(
   return parseRows<Transfer>(rows);
 }
 
-export async function countTransfers(): Promise<number> {
+export async function countTransfers(
+  competition: CompetitionSlug,
+): Promise<number> {
   const db = await getDb();
   const row = await db.getFirstAsync<{ total: number }>(
-    'SELECT COUNT(*) AS total FROM transfers',
+    'SELECT COUNT(*) AS total FROM transfers WHERE competition = ?',
+    [competition],
   );
   return row?.total ?? 0;
 }

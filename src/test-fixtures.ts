@@ -1,4 +1,10 @@
-import { Match, SuperligaSnapshot, Team, Transfer } from './types/superliga';
+import {
+  CompetitionData,
+  Match,
+  Snapshot,
+  Team,
+  Transfer,
+} from './types/snapshot';
 
 export const homeTeam: Team = {
   id: '1',
@@ -30,8 +36,8 @@ export const scheduledMatch: Match = {
   homeTeamId: '1',
   awayTeamId: '2',
   status: 'scheduled',
-  homeSets: null,
-  awaySets: null,
+  homeScore: null,
+  awayScore: null,
   setScores: [],
   channels: ['GE TV'],
   venue: null,
@@ -42,8 +48,8 @@ export const finishedMatch: Match = {
   ...scheduledMatch,
   id: '101',
   status: 'finished',
-  homeSets: 3,
-  awaySets: 1,
+  homeScore: 3,
+  awayScore: 1,
   setScores: [
     { home: 25, away: 20 },
     { home: 22, away: 25 },
@@ -53,6 +59,70 @@ export const finishedMatch: Match = {
   channels: ['SporTV 2'],
   venue: 'ARENA MINAS',
   city: 'BELO HORIZONTE',
+};
+
+export const flamengo: Team = {
+  id: '262',
+  name: 'Flamengo',
+  code: 'FLA',
+  badgeUrl: 'https://s.sde.globo.com/flamengo.svg',
+};
+
+export const palmeiras: Team = {
+  id: '275',
+  name: 'Palmeiras',
+  code: 'PAL',
+  badgeUrl: null,
+};
+
+export const footballMatch: Match = {
+  id: '346365',
+  competition: 'serie-a',
+  startsAt: '2026-11-14T18:30:00-03:00',
+  round: 35,
+  roundLabel: '35ª rodada',
+  homeTeamId: '262',
+  awayTeamId: '275',
+  status: 'finished',
+  homeScore: 2,
+  awayScore: 1,
+  setScores: [],
+  channels: ['Premiere'],
+  venue: 'Maracanã',
+  city: null,
+};
+
+export const footballCompetition: CompetitionData = {
+  slug: 'serie-a',
+  sport: 'futebol',
+  name: 'Brasileirão Série A',
+  season: '2026',
+  teams: [flamengo, palmeiras],
+  matches: [footballMatch],
+  standings: [
+    {
+      teamId: '262',
+      position: 1,
+      points: 76,
+      matches: 34,
+      wins: 23,
+      draws: 7,
+      losses: 4,
+      scoredFor: 71,
+      scoredAgainst: 29,
+    },
+    {
+      teamId: '275',
+      position: 2,
+      points: 73,
+      matches: 34,
+      wins: 21,
+      draws: 10,
+      losses: 3,
+      scoredFor: 62,
+      scoredAgainst: 23,
+    },
+  ],
 };
 
 export const transfers: Transfer[] = [
@@ -88,15 +158,17 @@ export const transfers: Transfer[] = [
   },
 ];
 
-export function buildSnapshot(matches: Match[]): SuperligaSnapshot {
+/** Both Superligas; the men's one holds `matches`. */
+export function buildSnapshot(matches: Match[]): Snapshot {
   return {
-    version: 1,
+    version: 2,
     generatedAt: '2026-11-01T12:00:00.000Z',
-    season: '2026/27',
     competitions: [
       {
         slug: 'masculina',
+        sport: 'volei',
         name: 'Superliga Masculina',
+        season: '2026/27',
         teams: [homeTeam, awayTeam],
         matches,
         transfers,
@@ -107,11 +179,10 @@ export function buildSnapshot(matches: Match[]): SuperligaSnapshot {
             points: 9,
             matches: 3,
             wins: 3,
+            draws: 0,
             losses: 0,
-            setsWon: 9,
-            setsLost: 1,
-            pointsWon: 250,
-            pointsLost: 200,
+            scoredFor: 9,
+            scoredAgainst: 1,
           },
           {
             teamId: '1',
@@ -119,17 +190,18 @@ export function buildSnapshot(matches: Match[]): SuperligaSnapshot {
             points: 6,
             matches: 3,
             wins: 2,
+            draws: 0,
             losses: 1,
-            setsWon: 7,
-            setsLost: 4,
-            pointsWon: 240,
-            pointsLost: 220,
+            scoredFor: 7,
+            scoredAgainst: 4,
           },
         ],
       },
       {
         slug: 'feminina',
+        sport: 'volei',
         name: 'Superliga Feminina',
+        season: '2026/27',
         teams: [womenTeam],
         matches: [],
         standings: [],

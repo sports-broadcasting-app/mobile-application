@@ -14,6 +14,6 @@ yarn test
 
 ## Data
 
-`.github/workflows/superliga-data.yml` runs `scripts/superliga/collect.ts` every 2 hours and publishes `superliga.json` to GitHub Pages. The app reads it from `EXPO_PUBLIC_SUPERLIGA_DATA_URL`.
+`.github/workflows/data.yml` runs `scripts/collect.ts` every 2 hours and publishes `onde-passa.json` (Superliga and Brasileirão Série A) plus the legacy `superliga.json` to GitHub Pages. The app reads the first one from `EXPO_PUBLIC_DATA_URL`.
 
 Check that the source allows this use before publishing the app. See `CLAUDE.md` for the architecture and conventions.

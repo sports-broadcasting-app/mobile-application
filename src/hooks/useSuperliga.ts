@@ -10,7 +10,7 @@ import {
   getTeams,
   getTransfers,
 } from '../data/database';
-import { CompetitionSlug, Match, Team } from '../types/superliga';
+import { CompetitionSlug, Match, Team } from '../types/snapshot';
 import { getDayBounds } from '../utils/date';
 
 const NEXT_MATCHES_LIMIT = 6;
@@ -94,11 +94,11 @@ export function useTransfers(competition: CompetitionSlug) {
   });
 }
 
-export function useHasTransfers(): boolean {
+export function useHasTransfers(competition: CompetitionSlug): boolean {
   const { lastSyncAt } = useSync();
   const { data } = useQuery({
-    queryKey: ['transferCount', lastSyncAt],
-    queryFn: countTransfers,
+    queryKey: ['transferCount', competition, lastSyncAt],
+    queryFn: () => countTransfers(competition),
   });
   return (data ?? 0) > 0;
 }

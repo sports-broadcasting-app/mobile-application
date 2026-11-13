@@ -10,7 +10,11 @@ import {
   shouldSync,
   syncSnapshot,
 } from '../services/syncService';
-import { buildSnapshot, scheduledMatch } from '../test-fixtures';
+import {
+  buildSnapshot,
+  footballCompetition,
+  scheduledMatch,
+} from '../test-fixtures';
 
 jest.mock('expo-sqlite', () =>
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -30,7 +34,7 @@ function respondWith(body: unknown, ok = true, status = 200) {
   });
 }
 
-const SUPERLIGA_CODES = {
+const SUPERLIGA_CODES: Record<string, string> = {
   masculina: 'SDC MCV BVC SEC MTC SES SVG PCU GOI ASM NRD VSJ',
   feminina: 'SRJ SVB DPC OVC GMT FFC ECP BRU SSV MEC BVC BRB',
 };
@@ -69,7 +73,7 @@ describe('withBundledTransfers', () => {
 describe('fetchSnapshot', () => {
   it('returns a valid snapshot', async () => {
     respondWith(buildSnapshot([]));
-    await expect(fetchSnapshot()).resolves.toMatchObject({ version: 1 });
+    await expect(fetchSnapshot()).resolves.toMatchObject({ version: 2 });
   });
 
   it('rejects an HTTP error', async () => {
@@ -100,7 +104,25 @@ describe('fetchSnapshot', () => {
   });
 
   it('rejects an unknown format', async () => {
-    respondWith({ ...buildSnapshot([]), version: 2 });
+    respondWith({ ...buildSnapshot([]), version: 1 });
+    await expect(fetchSnapshot()).rejects.toThrow('Dados inválidos');
+  });
+
+  it('ignores a competition this app version does not know', async () => {
+    const snapshot = buildSnapshot([]);
+    snapshot.competitions.push({
+      ...footballCompetition,
+      slug: 'nba' as never,
+    });
+    respondWith(snapshot);
+    const { competitions } = await fetchSnapshot();
+    expect(competitions.map((c) => c.slug)).toEqual(['masculina', 'feminina']);
+  });
+
+  it('rejects a file whose competitions are all unknown', async () => {
+    const snapshot = buildSnapshot([]);
+    snapshot.competitions = [{ ...footballCompetition, slug: 'nba' as never }];
+    respondWith(snapshot);
     await expect(fetchSnapshot()).rejects.toThrow('Dados inválidos');
   });
 });

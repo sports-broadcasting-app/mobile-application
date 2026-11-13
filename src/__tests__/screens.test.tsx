@@ -24,11 +24,14 @@ import {
   awayTeam,
   buildSnapshot,
   finishedMatch,
+  flamengo,
+  footballCompetition,
   homeTeam,
+  palmeiras,
   scheduledMatch,
   transfers,
 } from '../test-fixtures';
-import { Match } from '../types/superliga';
+import { Match } from '../types/snapshot';
 
 const mockPush = jest.fn();
 
@@ -102,7 +105,7 @@ describe('HomeScreen', () => {
     mockDayMatches([scheduledMatch]);
     render(<HomeScreen />);
     await screen.findByTestId('match-card-100');
-    fireEvent.press(screen.getByText('Feminina'));
+    fireEvent.press(screen.getByText('Superliga F'));
     await waitFor(() =>
       expect(screen.queryByTestId('match-card-100')).toBeNull(),
     );
@@ -111,8 +114,8 @@ describe('HomeScreen', () => {
   it('names the selected competition in the title', async () => {
     mockDayMatches([scheduledMatch]);
     render(<HomeScreen />);
-    expect(screen.getByText('Superliga')).toBeTruthy();
-    fireEvent.press(screen.getByText('Masculina'));
+    expect(screen.getByText('Jogos')).toBeTruthy();
+    fireEvent.press(screen.getByText('Superliga M'));
     expect(await screen.findByText('Superliga Masculina')).toBeTruthy();
   });
 
@@ -160,7 +163,7 @@ describe('StandingsScreen', () => {
     );
     render(<StandingsScreen />);
     expect(await screen.findByTestId('standing-row-2')).toBeTruthy();
-    fireEvent.press(screen.getByText('Feminina'));
+    fireEvent.press(screen.getByText('Superliga F'));
     await waitFor(() => expect(getStandings).toHaveBeenCalledWith('feminina'));
   });
 
@@ -186,6 +189,21 @@ describe('StandingsScreen', () => {
     const legend = await screen.findByTestId('standings-legend');
     expect(legend).toHaveTextContent(/P\s+Pontos/);
     expect(legend).toHaveTextContent(/SP\s+Sets perdidos/);
+  });
+
+  it('switches to the football columns for the Brasileirão', async () => {
+    (getTeams as jest.Mock).mockResolvedValue([flamengo, palmeiras]);
+    (getStandings as jest.Mock).mockResolvedValue(
+      footballCompetition.standings,
+    );
+    render(<StandingsScreen />);
+    fireEvent.press(screen.getByText('Brasileirão'));
+    const row = await screen.findByTestId('standing-row-262');
+    expect(row).toHaveTextContent(/Flamengo\s*76\s*34\s*23\s*7\s*4\s*42/);
+    const legend = screen.getByTestId('standings-legend');
+    expect(legend).toHaveTextContent(/E\s+Empates/);
+    expect(legend).toHaveTextContent(/SG\s+Saldo de gols/);
+    expect(legend).not.toHaveTextContent(/Sets/);
   });
 });
 

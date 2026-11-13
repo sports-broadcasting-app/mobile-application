@@ -1,9 +1,6 @@
 import { ReactNode } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
-import {
-  HAS_SUPERLIGA_DATA_URL_ENV,
-  SUPERLIGA_DATA_URL,
-} from '../constants/config';
+import { HAS_DATA_URL_ENV, DATA_URL } from '../constants/config';
 import { useSync } from '../contexts/SyncContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing, typography } from '../constants/designTokens';
@@ -18,7 +15,7 @@ export function SyncGate({ children }: { children: ReactNode }) {
   const showDetails = () => {
     Alert.alert(
       'Detalhes do erro',
-      `${lastError ?? 'Erro desconhecido'}\n\nEXPO_PUBLIC_SUPERLIGA_DATA_URL: ${HAS_SUPERLIGA_DATA_URL_ENV ? 'recebida' : 'não recebida (usando URL padrão)'}\n\nURL: ${SUPERLIGA_DATA_URL}\n\n${new Date().toISOString()}`,
+      `${lastError ?? 'Erro desconhecido'}\n\nEXPO_PUBLIC_DATA_URL: ${HAS_DATA_URL_ENV ? 'recebida' : 'não recebida (usando URL padrão)'}\n\nURL: ${DATA_URL}\n\n${new Date().toISOString()}`,
     );
   };
 

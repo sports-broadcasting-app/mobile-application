@@ -15,7 +15,7 @@ import { TransferCard } from '../components/TransferCard';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTeams, useTeamsById, useTransfers } from '../hooks/useSuperliga';
-import { CompetitionSlug, Team, Transfer } from '../types/superliga';
+import { CompetitionSlug, Team, Transfer } from '../types/snapshot';
 import {
   filterTransfers,
   findTeams,
@@ -32,8 +32,8 @@ import {
 } from '../constants/designTokens';
 
 const OPTIONS: { value: CompetitionSlug; label: string }[] = [
-  { value: 'masculina', label: 'Masculina' },
-  { value: 'feminina', label: 'Feminina' },
+  { value: 'masculina', label: 'Superliga M' },
+  { value: 'feminina', label: 'Superliga F' },
 ];
 
 const TEAM_SUGGESTIONS = 4;

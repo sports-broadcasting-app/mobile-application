@@ -1,4 +1,4 @@
-name: Superliga data
+name: Match data
 
 on:
   schedule:
@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: superliga-data
+  group: match-data
   cancel-in-progress: false
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: 24
       # A failed or suspicious collection stops here, so the last good file stays online.
-      - run: node scripts/superliga/collect.ts public/superliga.json
+      - run: node scripts/collect.ts public
       - uses: actions/upload-pages-artifact@v3
         with:
           path: public

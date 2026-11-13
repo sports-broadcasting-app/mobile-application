@@ -37,7 +37,7 @@ export default function MatchDetailScreen() {
     );
   }
 
-  const hasResult = match.homeSets !== null && match.awaySets !== null;
+  const hasResult = match.homeScore !== null && match.awayScore !== null;
   const place = [match.venue, match.city].filter(Boolean).join(' - ');
 
   return (
@@ -55,7 +55,7 @@ export default function MatchDetailScreen() {
           </Text>
         </View>
         <Text style={[styles.score, { color: colors.textPrimary }]}>
-          {hasResult ? `${match.homeSets} x ${match.awaySets}` : 'x'}
+          {hasResult ? `${match.homeScore} x ${match.awayScore}` : 'x'}
         </Text>
         <View style={styles.team}>
           <TeamCircle team={awayTeam} />
