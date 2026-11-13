@@ -12,6 +12,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useMatch, useTeamsById } from '../hooks/useSuperliga';
 import { getChannelUrl } from '../utils/broadcast';
 import { formatMatchDate } from '../utils/date';
+import { getTeamName } from '../utils/teamName';
 import { radius, spacing, typography } from '../constants/designTokens';
 
 export default function MatchDetailScreen() {
@@ -50,7 +51,7 @@ export default function MatchDetailScreen() {
         <View style={styles.team}>
           <TeamCircle team={homeTeam} />
           <Text style={[styles.teamName, { color: colors.textPrimary }]}>
-            {homeTeam.name}
+            {getTeamName(homeTeam.name)}
           </Text>
         </View>
         <Text style={[styles.score, { color: colors.textPrimary }]}>
@@ -59,7 +60,7 @@ export default function MatchDetailScreen() {
         <View style={styles.team}>
           <TeamCircle team={awayTeam} />
           <Text style={[styles.teamName, { color: colors.textPrimary }]}>
-            {awayTeam.name}
+            {getTeamName(awayTeam.name)}
           </Text>
         </View>
       </View>

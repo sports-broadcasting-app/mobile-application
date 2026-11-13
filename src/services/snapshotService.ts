@@ -1,3 +1,8 @@
+import bundledTransfers from '../../scripts/superliga/transfers.json';
+import {
+  resolveTransfers,
+  type TransferFile,
+} from '../../scripts/superliga/transfers.ts';
 import { SUPERLIGA_DATA_URL } from '../constants/config';
 import { SuperligaSnapshot } from '../types/superliga';
 import { logSync } from '../utils/syncLog';
@@ -17,6 +22,33 @@ function isValidSnapshot(data: unknown): data is SuperligaSnapshot {
         competition.teams?.length > 0 && Array.isArray(competition.matches),
     )
   );
+}
+
+/**
+ * Fills transfers from the list shipped with the app while the published
+ * snapshot has none. A bad line drops that competition's transfers, never
+ * the sync.
+ */
+export function withBundledTransfers(
+  snapshot: SuperligaSnapshot,
+): SuperligaSnapshot {
+  const bundled = bundledTransfers as TransferFile;
+  for (const competition of snapshot.competitions) {
+    if (competition.transfers?.length) continue;
+    try {
+      competition.transfers = resolveTransfers(
+        competition.slug,
+        bundled[competition.slug] ?? [],
+        competition.teams,
+      );
+    } catch (error) {
+      logSync('bundled transfers skipped', {
+        competition: competition.slug,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+  return snapshot;
 }
 
 export async function fetchSnapshot(): Promise<SuperligaSnapshot> {
@@ -52,7 +84,7 @@ export async function fetchSnapshot(): Promise<SuperligaSnapshot> {
       });
       throw new Error('Dados inválidos');
     }
-    return data;
+    return withBundledTransfers(data);
   } catch (error) {
     logSync('download failed', {
       url: SUPERLIGA_DATA_URL,

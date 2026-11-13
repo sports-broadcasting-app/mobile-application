@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { Standing, Team } from '../types/superliga';
+import { getTeamName } from '../utils/teamName';
 import { TeamCircle } from './TeamCircle';
 import { spacing, typography } from '../constants/designTokens';
 
@@ -60,7 +61,7 @@ export function StandingsList({
                 numberOfLines={1}
                 style={[styles.teamCode, { color: colors.textPrimary }]}
               >
-                {team.code}
+                {getTeamName(team.name)}
               </Text>
             </View>
             {[

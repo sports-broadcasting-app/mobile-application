@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "where-to-watch",
+    "name": "Onde Passa",
     "slug": "where-to-watch",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,15 +8,10 @@
     "scheme": "where-to-watch",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.diego-serrat.wheretowatch",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      },
-      "icon": {
-        "light": "./assets/icon-ios-light.png",
-        "dark": "./assets/icon-ios-dark.png",
-        "tinted": "./assets/icon-ios-tinted.png"
       }
     },
     "android": {
@@ -53,8 +48,23 @@
         "expo-splash-screen",
         {
           "image": "./assets/splash-icon.png",
+          "imageWidth": 240,
           "resizeMode": "contain",
           "backgroundColor": "#0f172a"
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "iosAppId": "ca-app-pub-6788179394340056~1235566675",
+          "androidAppId": "ca-app-pub-6788179394340056~2613207469",
+          "skAdNetworkItems": ["cstr6suwn9.skadnetwork"]
+        }
+      ],
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "Usamos esse identificador para mostrar anúncios mais relevantes para você."
         }
       ]
     ]

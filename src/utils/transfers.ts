@@ -1,5 +1,6 @@
-import { Transfer } from '../types/superliga';
+import { Team, Transfer } from '../types/superliga';
 import { normalizeForSearch } from './search';
+import { teamSearchText } from './teamName';
 
 export type TransferDirection = 'in' | 'out';
 
@@ -28,6 +29,30 @@ export function splitByFavorite(
   return { mine, others };
 }
 
+/** A team's arrivals and departures, keeping order. */
+export function splitByTeam(
+  transfers: Transfer[],
+  teamId: string,
+): { arrivals: Transfer[]; departures: Transfer[] } {
+  const arrivals: Transfer[] = [];
+  const departures: Transfer[] = [];
+  for (const transfer of transfers) {
+    const direction = getFavoriteDirection(transfer, teamId);
+    if (direction === 'in') arrivals.push(transfer);
+    else if (direction === 'out') departures.push(transfer);
+  }
+  return { arrivals, departures };
+}
+
+/** Superliga teams whose name or code contains the query. */
+export function findTeams(teams: Team[], query: string): Team[] {
+  const term = normalizeForSearch(query);
+  if (!term) return [];
+  return teams.filter((team) =>
+    normalizeForSearch(teamSearchText(team.name, team.code)).includes(term),
+  );
+}
+
 export function filterTransfers(
   transfers: Transfer[],
   query: string,
@@ -39,8 +64,8 @@ export function filterTransfers(
       [
         transfer.athleteName,
         transfer.position ?? '',
-        transfer.from.name,
-        transfer.to.name,
+        teamSearchText(transfer.from.name),
+        teamSearchText(transfer.to.name),
       ].join(' '),
     ).includes(term),
   );

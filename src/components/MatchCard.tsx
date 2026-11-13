@@ -4,6 +4,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import { Match, Team } from '../types/superliga';
 import { formatMatchDate, formatTime } from '../utils/date';
+import { getTeamName } from '../utils/teamName';
 import { BroadcasterPill } from './BroadcasterPill';
 import { TeamCircle } from './TeamCircle';
 import {
@@ -35,7 +36,7 @@ function TeamRow({ team, sets }: { team: Team; sets: number | null }) {
         style={[styles.teamName, { color: colors.textPrimary }]}
         numberOfLines={1}
       >
-        {team.name}
+        {getTeamName(team.name)}
       </Text>
       {sets !== null && (
         <Text style={[styles.sets, { color: colors.textPrimary }]}>{sets}</Text>

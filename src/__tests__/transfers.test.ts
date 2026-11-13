@@ -1,6 +1,8 @@
-import { transfers } from '../test-fixtures';
+import { awayTeam, homeTeam, transfers } from '../test-fixtures';
 import {
   filterTransfers,
+  findTeams,
+  splitByTeam,
   formatTransferDate,
   getFavoriteDirection,
   getSourceName,
@@ -32,6 +34,20 @@ describe('transfers', () => {
     expect(filterTransfers(transfers, 'vôlei renata')).toHaveLength(2);
     expect(filterTransfers(transfers, 'PONTEIRA')).toHaveLength(1);
     expect(filterTransfers(transfers, '  ')).toHaveLength(3);
+  });
+
+  it('splits a team into arrivals and departures', () => {
+    const { arrivals, departures } = splitByTeam(transfers, '2');
+    expect(arrivals.map((t) => t.id)).toEqual(['t2']);
+    expect(departures.map((t) => t.id)).toEqual(['t1']);
+  });
+
+  it('finds teams by name or code, ignoring accents', () => {
+    expect(findTeams([homeTeam, awayTeam], 'vôlei').map((t) => t.id)).toEqual([
+      '2',
+    ]);
+    expect(findTeams([homeTeam, awayTeam], 'sad')).toEqual([homeTeam]);
+    expect(findTeams([homeTeam, awayTeam], '')).toEqual([]);
   });
 
   it('names the source by its site', () => {
