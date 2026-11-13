@@ -13,9 +13,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getTeams, getUpcomingFavoriteMatches } from '../data/database';
 import {
   getNotificationPermission,
+  hasExactAlarms,
   NotificationPermission,
   NOTIFICATIONS_SUPPORTED,
   replaceScheduledReminders,
+  requestExactAlarms as requestExactAlarmsPermission,
   requestNotificationPermission,
 } from '../services/notifications';
 import {
@@ -37,12 +39,21 @@ interface NotificationsContextValue {
    * and resolves to false when it was refused.
    */
   setEnabled: (enabled: boolean) => Promise<boolean>;
+  /**
+   * Whether reminders fire on time. Android 14+ needs the user to allow
+   * "Alarms & reminders"; without it they may arrive up to an hour late.
+   */
+  exactAlarms: boolean;
+  /** Opens the system screen to allow exact alarms; resolves on return. */
+  requestExactAlarms: () => Promise<boolean>;
 }
 
 const NotificationsContext = createContext<NotificationsContextValue>({
   supported: false,
   enabled: false,
   setEnabled: async () => false,
+  exactAlarms: true,
+  requestExactAlarms: async () => true,
 });
 
 /**
@@ -56,6 +67,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [preference, setPreference] = useState<boolean | null>(null);
   const [permission, setPermission] =
     useState<NotificationPermission>('undetermined');
+  const [exactAlarms, setExactAlarms] = useState(true);
   const queue = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
@@ -67,6 +79,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     const readPermission = () => {
       getNotificationPermission()
         .then(setPermission)
+        .catch(() => {});
+      hasExactAlarms()
+        .then(setExactAlarms)
         .catch(() => {});
     };
     readPermission();
@@ -110,7 +125,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [preference, enabled, favorites, lastSyncAt]);
+    // exactAlarms: alarms set while it was off stay inexact until replaced.
+  }, [preference, enabled, exactAlarms, favorites, lastSyncAt]);
 
   const setEnabled = useCallback(async (next: boolean) => {
     if (!next) {
@@ -129,9 +145,21 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     return true;
   }, []);
 
+  const requestExactAlarms = useCallback(async () => {
+    const granted = await requestExactAlarmsPermission();
+    setExactAlarms(granted);
+    return granted;
+  }, []);
+
   const value = useMemo(
-    () => ({ supported: NOTIFICATIONS_SUPPORTED, enabled, setEnabled }),
-    [enabled, setEnabled],
+    () => ({
+      supported: NOTIFICATIONS_SUPPORTED,
+      enabled,
+      setEnabled,
+      exactAlarms,
+      requestExactAlarms,
+    }),
+    [enabled, setEnabled, exactAlarms, requestExactAlarms],
   );
 
   return (

@@ -14,6 +14,7 @@ import { useNotifications } from '../contexts/NotificationsContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTeamsById } from '../hooks/useSuperliga';
 import { getTeamName } from '../utils/teamName';
+import { promptExactAlarms } from '../utils/exactAlarmPrompt';
 import { REMINDER_LEAD_MINUTES } from '../utils/reminders';
 import { radius, spacing, typography } from '../constants/designTokens';
 
@@ -33,7 +34,8 @@ interface OnboardingScreenProps {
 export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
   const { colors } = useTheme();
   const { favorites } = useFavorites();
-  const { supported, setEnabled } = useNotifications();
+  const { supported, setEnabled, exactAlarms, requestExactAlarms } =
+    useNotifications();
   const teamsById = useTeamsById();
   const [step, setStep] = useState<Step>('teams');
   const [busy, setBusy] = useState(false);
@@ -53,7 +55,8 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
   const enableReminders = async () => {
     setBusy(true);
     try {
-      await setEnabled(true);
+      const granted = await setEnabled(true);
+      if (granted && !exactAlarms) await promptExactAlarms(requestExactAlarms);
     } finally {
       setBusy(false);
       onFinish();

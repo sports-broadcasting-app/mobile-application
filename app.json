@@ -22,7 +22,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.diego_serrat.wheretowatch"
+      "package": "com.diego_serrat.wheretowatch",
+      "permissions": ["android.permission.SCHEDULE_EXACT_ALARM"]
     },
     "updates": {
       "url": "https://u.expo.dev/d6b5c58b-a580-4329-8332-30a9f2767eaf"

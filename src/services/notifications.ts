@@ -51,6 +51,20 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   return toPermission(await Notifications.requestPermissionsAsync());
 }
 
+/**
+ * Android 12+ delays inexact alarms by up to an hour, which would warn after
+ * kickoff. Exact alarms need SCHEDULE_EXACT_ALARM, off by default from
+ * Android 14. Always true on iOS.
+ */
+export async function hasExactAlarms(): Promise<boolean> {
+  return (await Notifications.getExactAlarmPermissionsAsync()).granted;
+}
+
+/** Opens the "Alarms & reminders" system screen; resolves on return. */
+export async function requestExactAlarms(): Promise<boolean> {
+  return (await Notifications.requestExactAlarmPermissionsAsync()).granted;
+}
+
 /** The app schedules nothing else, so the whole pending list is replaced. */
 export async function replaceScheduledReminders(
   reminders: Reminder[],

@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { Alert, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fireEvent, render, screen, waitFor } from '../test-utils';
 import { OnboardingGate } from '../components/OnboardingGate';
@@ -20,6 +20,7 @@ jest.mock('../data/database', () => ({
 }));
 
 const setEnabled = jest.fn(async () => true);
+const requestExactAlarms = jest.fn(async () => true);
 
 function renderGate() {
   render(
@@ -38,6 +39,8 @@ beforeEach(() => {
     supported: true,
     enabled: false,
     setEnabled,
+    exactAlarms: true,
+    requestExactAlarms,
   });
 });
 
@@ -83,5 +86,32 @@ describe('Onboarding', () => {
     fireEvent.press(await screen.findByTestId('onboarding-skip-reminders'));
     expect(await screen.findByText('App')).toBeTruthy();
     expect(setEnabled).not.toHaveBeenCalled();
+  });
+
+  it('asks for exact alarms before finishing where they are blocked', async () => {
+    (getFavorites as jest.Mock).mockResolvedValue({ masculina: '2' });
+    (useNotifications as jest.Mock).mockReturnValue({
+      supported: true,
+      enabled: false,
+      setEnabled,
+      exactAlarms: false,
+      requestExactAlarms,
+    });
+    const alert = jest
+      .spyOn(Alert, 'alert')
+      .mockImplementation((_title, _message, buttons) => {
+        buttons?.find((button) => button.text === 'Permitir')?.onPress?.();
+      });
+    renderGate();
+    fireEvent.press(await screen.findByText('Continuar'));
+    fireEvent.press(await screen.findByTestId('onboarding-enable-reminders'));
+    expect(await screen.findByText('App')).toBeTruthy();
+    expect(alert).toHaveBeenCalledWith(
+      'Avisos na hora certa',
+      expect.any(String),
+      expect.any(Array),
+      expect.any(Object),
+    );
+    expect(requestExactAlarms).toHaveBeenCalled();
   });
 });
