@@ -72,7 +72,8 @@
         "expo-notifications",
         {
           "icon": "./assets/android-icon-monochrome.png",
-          "color": "#16a34a"
+          "color": "#16a34a",
+          "enableRemoteNotifications": false
         }
       ]
     ]
