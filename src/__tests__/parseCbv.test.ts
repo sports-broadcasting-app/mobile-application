@@ -1,10 +1,10 @@
 import {
-  assertValidSnapshot,
   buildCompetition,
   extractFlightPayload,
   parseMatches,
   parseStandings,
 } from '../../scripts/superliga/parseCbv';
+import { assertValidSnapshot } from '../../scripts/validate';
 import { buildSnapshot, scheduledMatch } from '../test-fixtures';
 
 function toHtml(payload: string): string {
@@ -72,7 +72,7 @@ describe('parseCbv', () => {
       id: '10',
       homeTeamId: '1',
       status: 'finished',
-      homeSets: 3,
+      homeScore: 3,
       channels: ['SporTV 2'],
       venue: 'ARENA "A"',
     });
@@ -97,7 +97,7 @@ describe('parseCbv', () => {
     };
     const [match] = parseMatches(JSON.stringify([raw]), 'masculina');
     expect(match.status).toBe('scheduled');
-    expect(match.homeSets).toBeNull();
+    expect(match.homeScore).toBeNull();
     expect(match.setScores).toEqual([]);
   });
 
@@ -131,6 +131,7 @@ describe('parseCbv', () => {
     const competition = buildCompetition(
       'feminina',
       'Superliga Feminina',
+      '2026/27',
       toHtml(JSON.stringify([finishedRaw])),
       toHtml(JSON.stringify([standingRow])),
     );

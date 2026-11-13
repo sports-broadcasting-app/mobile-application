@@ -9,7 +9,7 @@ import {
 import * as Linking from 'expo-linking';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../contexts/ThemeContext';
-import { Match, Team } from '../types/superliga';
+import { Match, Team } from '../types/snapshot';
 import { getChannelUrl } from '../utils/broadcast';
 import { getTeamName } from '../utils/teamName';
 import {

@@ -20,7 +20,7 @@ describe('MatchCard', () => {
         awayTeam={awayTeam}
       />,
     );
-    expect(await screen.findByText('20:30 · Masculina')).toBeTruthy();
+    expect(await screen.findByText('20:30 · Superliga M')).toBeTruthy();
     expect(screen.getByText('Sada Cruzeiro')).toBeTruthy();
     expect(screen.getByText('GE TV')).toBeTruthy();
   });

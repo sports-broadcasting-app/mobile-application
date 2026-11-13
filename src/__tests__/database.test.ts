@@ -74,14 +74,15 @@ describe('database', () => {
     expect(stored.map((transfer) => transfer.id)).toEqual(['t1', 't2', 't3']);
     expect(stored[1]).toEqual(transfers[1]);
     expect(await getTransfers('feminina')).toEqual([]);
-    expect(await countTransfers()).toBe(3);
+    expect(await countTransfers('masculina')).toBe(3);
+    expect(await countTransfers('feminina')).toBe(0);
   });
 
   it('accepts a snapshot without transfers', async () => {
     const snapshot = buildSnapshot([scheduledMatch]);
     delete snapshot.competitions[0].transfers;
     await saveSnapshot(snapshot, 2000);
-    expect(await countTransfers()).toBe(0);
+    expect(await countTransfers('masculina')).toBe(0);
   });
 
   it('stores a single favorite per competition', async () => {

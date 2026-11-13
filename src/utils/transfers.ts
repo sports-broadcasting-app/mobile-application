@@ -1,4 +1,4 @@
-import { Team, Transfer } from '../types/superliga';
+import { Team, Transfer } from '../types/snapshot';
 import { normalizeForSearch } from './search';
 import { teamSearchText } from './teamName';
 

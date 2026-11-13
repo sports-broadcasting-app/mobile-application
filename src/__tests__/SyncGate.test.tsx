@@ -50,7 +50,7 @@ describe('SyncGate', () => {
     fireEvent.press(await screen.findByText('Ver detalhes'));
     expect(alert).toHaveBeenCalledWith(
       'Detalhes do erro',
-      expect.stringMatching(/\(404\)[\s\S]*EXPO_PUBLIC_SUPERLIGA_DATA_URL: /),
+      expect.stringMatching(/\(404\)[\s\S]*EXPO_PUBLIC_DATA_URL: /),
     );
     alert.mockRestore();
   });

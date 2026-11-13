@@ -22,13 +22,14 @@ import {
   useNextMatches,
   useTeamsById,
 } from '../hooks/useSuperliga';
-import { CompetitionSlug, Match } from '../types/superliga';
+import { CompetitionSlug, Match } from '../types/snapshot';
 import {
   addDays,
   formatDay,
   formatRelativeSync,
   getDayBounds,
 } from '../utils/date';
+import { COMPETITION_OPTIONS, getCompetition } from '../constants/competitions';
 import { spacing, typography } from '../constants/designTokens';
 
 type DayOption = '-1' | '0' | '1';
@@ -40,16 +41,10 @@ const DAY_OPTIONS: { value: DayOption; label: string }[] = [
   { value: '1', label: 'Amanhã' },
 ];
 
-const COMPETITION_OPTIONS: { value: CompetitionFilter; label: string }[] = [
+const COMPETITION_FILTERS: { value: CompetitionFilter; label: string }[] = [
   { value: 'todos', label: 'Todos' },
-  { value: 'masculina', label: 'Masculina' },
-  { value: 'feminina', label: 'Feminina' },
+  ...COMPETITION_OPTIONS,
 ];
-
-const COMPETITION_TITLES: Record<CompetitionSlug, string> = {
-  masculina: 'Masculina',
-  feminina: 'Feminina',
-};
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -109,9 +104,7 @@ export default function HomeScreen() {
     >
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          {competition
-            ? `Superliga ${COMPETITION_TITLES[competition]}`
-            : 'Superliga'}
+          {competition ? getCompetition(competition).name : 'Jogos'}
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           {refreshFailed
@@ -128,7 +121,7 @@ export default function HomeScreen() {
         onSelect={setDayOption}
       />
       <SegmentedChips
-        options={COMPETITION_OPTIONS}
+        options={COMPETITION_FILTERS}
         selected={filter}
         onSelect={setFilter}
       />

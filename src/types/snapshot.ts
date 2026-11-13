@@ -1,4 +1,6 @@
-export type CompetitionSlug = 'masculina' | 'feminina';
+export type Sport = 'volei' | 'futebol';
+
+export type CompetitionSlug = 'masculina' | 'feminina' | 'serie-a';
 
 export type MatchStatus = 'scheduled' | 'live' | 'finished' | 'postponed';
 
@@ -24,8 +26,10 @@ export interface Match {
   homeTeamId: string;
   awayTeamId: string;
   status: MatchStatus;
-  homeSets: number | null;
-  awaySets: number | null;
+  /** Sets in volleyball, goals in football. Null until the match starts. */
+  homeScore: number | null;
+  awayScore: number | null;
+  /** Volleyball only; empty in football. */
   setScores: SetScore[];
   channels: string[];
   venue: string | null;
@@ -38,14 +42,15 @@ export interface Standing {
   points: number;
   matches: number;
   wins: number;
+  /** Always 0 in volleyball. */
+  draws: number;
   losses: number;
-  setsWon: number;
-  setsLost: number;
-  pointsWon: number;
-  pointsLost: number;
+  /** Sets in volleyball, goals in football. */
+  scoredFor: number;
+  scoredAgainst: number;
 }
 
-/** A club in a transfer. `teamId` is null for clubs outside the Superliga. */
+/** A club in a transfer. `teamId` is null for clubs outside the competition. */
 export interface TransferClub {
   teamId: string | null;
   name: string;
@@ -66,7 +71,10 @@ export interface Transfer {
 
 export interface CompetitionData {
   slug: CompetitionSlug;
+  sport: Sport;
   name: string;
+  /** "2026/27" for the Superliga, "2026" for the Brasileirão. */
+  season: string;
   teams: Team[];
   matches: Match[];
   standings: Standing[];
@@ -74,9 +82,8 @@ export interface CompetitionData {
   transfers?: Transfer[];
 }
 
-export interface SuperligaSnapshot {
-  version: 1;
+export interface Snapshot {
+  version: 2;
   generatedAt: string;
-  season: string;
   competitions: CompetitionData[];
 }

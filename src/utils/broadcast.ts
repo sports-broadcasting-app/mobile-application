@@ -1,9 +1,16 @@
-const GE_TV_URL = 'https://www.youtube.com/@getv';
-const GLOBOPLAY_URL = 'https://globoplay.globo.com/';
+/** Where each broadcaster's app opens, matched on the channel name. */
+const CHANNEL_URLS: [RegExp, string][] = [
+  [/ge tv/, 'https://www.youtube.com/@getv'],
+  [/caz[eé]/, 'https://www.youtube.com/@CazeTV'],
+  // SporTV, Premiere and TV Globo stream inside Globoplay.
+  [/sportv|globo|premiere/, 'https://globoplay.globo.com/'],
+  [/prime video/, 'https://www.primevideo.com/'],
+  [/disney/, 'https://www.disneyplus.com/'],
+  [/record|playplus/, 'https://www.playplus.com/'],
+  [/paramount/, 'https://www.paramountplus.com/'],
+];
 
 export function getChannelUrl(channel: string): string | null {
   const name = channel.toLowerCase();
-  if (name.includes('ge tv')) return GE_TV_URL;
-  if (name.includes('sportv') || name.includes('globo')) return GLOBOPLAY_URL;
-  return null;
+  return CHANNEL_URLS.find(([pattern]) => pattern.test(name))?.[1] ?? null;
 }
