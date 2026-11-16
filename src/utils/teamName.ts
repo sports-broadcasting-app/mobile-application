@@ -1,6 +1,9 @@
 import { normalizeForSearch } from './search';
 
-/** CBV names carry sponsors and come in capitals; fans know the short ones. */
+/**
+ * CBV names carry sponsors and come in capitals, and NFL names carry the
+ * city; fans know the short ones.
+ */
 const SHORT_NAMES: Record<string, string> = {
   // Masculina
   'sada cruzeiro volei': 'Cruzeiro',
@@ -28,6 +31,39 @@ const SHORT_NAMES: Record<string, string> = {
   'batavo mackenzie': 'Mackenzie',
   'paulistano barueri': 'Barueri',
   'brasilia volei / brb': 'Brasília',
+  // NFL: ge writes the city and the nickname; fans use the nickname.
+  'arizona cardinals': 'Cardinals',
+  'atlanta falcons': 'Falcons',
+  'baltimore ravens': 'Ravens',
+  'buffalo bills': 'Bills',
+  'carolina panthers': 'Panthers',
+  'chicago bears': 'Bears',
+  'cincinnati bengals': 'Bengals',
+  'cleveland browns': 'Browns',
+  'dallas cowboys': 'Cowboys',
+  'denver broncos': 'Broncos',
+  'detroit lions': 'Lions',
+  'green bay packers': 'Packers',
+  'houston texans': 'Texans',
+  'indianapolis colts': 'Colts',
+  'jacksonville jaguars': 'Jaguars',
+  'kansas city chiefs': 'Chiefs',
+  'las vegas raiders': 'Raiders',
+  'los angeles chargers': 'Chargers',
+  'los angeles rams': 'Rams',
+  'miami dolphins': 'Dolphins',
+  'minnesota vikings': 'Vikings',
+  'new england patriots': 'Patriots',
+  'new orleans saints': 'Saints',
+  'new york giants': 'Giants',
+  'new york jets': 'Jets',
+  'philadelphia eagles': 'Eagles',
+  'pittsburgh steelers': 'Steelers',
+  'san francisco 49ers': '49ers',
+  'seattle seahawks': 'Seahawks',
+  'tampa bay buccaneers': 'Buccaneers',
+  'tennessee titans': 'Titans',
+  'washington commanders': 'Commanders',
 };
 
 const LOWERCASE_WORDS = new Set(['de', 'da', 'do', 'das', 'dos', 'e']);

@@ -1,6 +1,6 @@
-export type Sport = 'volei' | 'futebol';
+export type Sport = 'volei' | 'futebol' | 'futebol-americano';
 
-export type CompetitionSlug = 'masculina' | 'feminina' | 'serie-a';
+export type CompetitionSlug = 'masculina' | 'feminina' | 'serie-a' | 'nfl';
 
 export type MatchStatus = 'scheduled' | 'live' | 'finished' | 'postponed';
 
@@ -45,9 +45,14 @@ export interface Standing {
   /** Always 0 in volleyball. */
   draws: number;
   losses: number;
-  /** Sets in volleyball, goals in football. */
+  /** Sets in volleyball, goals in football, points in American football. */
   scoredFor: number;
   scoredAgainst: number;
+  /**
+   * The division the table is split into ("AFC Leste"); `position` then
+   * counts within it. Absent when the competition has a single table.
+   */
+  group?: string;
 }
 
 /** A club in a transfer. `teamId` is null for clubs outside the competition. */

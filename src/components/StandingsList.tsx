@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { Sport, Standing, Team } from '../types/snapshot';
@@ -13,6 +14,22 @@ interface StandingsListProps {
   isFavorite: (teamId: string) => boolean;
 }
 
+/**
+ * The rows split by `group`, in the order they come. A competition with a
+ * single table gives one unnamed group.
+ */
+export function groupStandings(
+  standings: Standing[],
+): { name: string | undefined; rows: Standing[] }[] {
+  const groups: { name: string | undefined; rows: Standing[] }[] = [];
+  for (const standing of standings) {
+    const last = groups[groups.length - 1];
+    if (last && last.name === standing.group) last.rows.push(standing);
+    else groups.push({ name: standing.group, rows: [standing] });
+  }
+  return groups;
+}
+
 export function StandingsList({
   sport,
   standings,
@@ -21,6 +38,49 @@ export function StandingsList({
 }: StandingsListProps) {
   const { colors } = useTheme();
   const columns = STANDINGS_COLUMNS[sport];
+
+  const renderRow = (standing: Standing) => {
+    const team = teamsById.get(standing.teamId);
+    if (!team) return null;
+    const favorite = isFavorite(team.id);
+
+    return (
+      <View
+        key={team.id}
+        testID={`standing-row-${team.id}`}
+        style={[
+          styles.row,
+          { borderBottomColor: colors.borderLight },
+          favorite && { backgroundColor: colors.broadcastBadgeBg },
+        ]}
+      >
+        <Text style={[styles.position, { color: colors.textSecondary }]}>
+          {standing.position}
+        </Text>
+        <View style={styles.team}>
+          <TeamCircle team={team} size={24} />
+          <Text
+            numberOfLines={1}
+            style={[styles.teamCode, { color: colors.textPrimary }]}
+          >
+            {getTeamName(team.name)}
+          </Text>
+        </View>
+        {columns.map(({ code, value }, index) => (
+          <Text
+            key={code}
+            style={[
+              styles.column,
+              { color: colors.textPrimary },
+              index === 0 && styles.points,
+            ]}
+          >
+            {value(standing)}
+          </Text>
+        ))}
+      </View>
+    );
+  };
 
   return (
     <View>
@@ -39,48 +99,25 @@ export function StandingsList({
         ))}
       </View>
 
-      {standings.map((standing) => {
-        const team = teamsById.get(standing.teamId);
-        if (!team) return null;
-        const favorite = isFavorite(team.id);
-
-        return (
-          <View
-            key={team.id}
-            testID={`standing-row-${team.id}`}
-            style={[
-              styles.row,
-              { borderBottomColor: colors.borderLight },
-              favorite && { backgroundColor: colors.broadcastBadgeBg },
-            ]}
-          >
-            <Text style={[styles.position, { color: colors.textSecondary }]}>
-              {standing.position}
+      {groupStandings(standings).map(({ name, rows }, index) => (
+        <Fragment key={name ?? index}>
+          {name !== undefined && (
+            <Text
+              testID={`standing-group-${name}`}
+              style={[
+                styles.group,
+                {
+                  backgroundColor: colors.surfaceAlt,
+                  color: colors.sectionHeaderText,
+                },
+              ]}
+            >
+              {name}
             </Text>
-            <View style={styles.team}>
-              <TeamCircle team={team} size={24} />
-              <Text
-                numberOfLines={1}
-                style={[styles.teamCode, { color: colors.textPrimary }]}
-              >
-                {getTeamName(team.name)}
-              </Text>
-            </View>
-            {columns.map(({ code, value }, index) => (
-              <Text
-                key={code}
-                style={[
-                  styles.column,
-                  { color: colors.textPrimary },
-                  index === 0 && styles.points,
-                ]}
-              >
-                {value(standing)}
-              </Text>
-            ))}
-          </View>
-        );
-      })}
+          )}
+          {rows.map(renderRow)}
+        </Fragment>
+      ))}
     </View>
   );
 }
@@ -92,6 +129,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
+  },
+  group: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    textTransform: 'uppercase',
   },
   position: {
     fontSize: typography.size.sm,

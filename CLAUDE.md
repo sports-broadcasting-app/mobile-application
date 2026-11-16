@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A React Native (Expo) mobile application that shows where Superliga volleyball matches (men's and women's) and Brasileirão Série A football matches are broadcast, with day matches and standings. There is no login and no backend: the app downloads a static JSON on first run and keeps everything on the device in SQLite.
+A React Native (Expo) mobile application that shows where Superliga volleyball matches (men's and women's), Brasileirão Série A football matches and NFL games are broadcast, with day matches and standings. There is no login and no backend: the app downloads a static JSON on first run and keeps everything on the device in SQLite.
 
 ## Tech Stack
 
@@ -39,6 +39,7 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 ├── scripts/collect.ts          # Collector entry point: writes onde-passa.json and the legacy superliga.json
 ├── scripts/superliga/          # CBV parser for both Superligas, curated transfers
 ├── scripts/brasileirao/        # ge parser for the Brasileirão Série A
+├── scripts/nfl/                # ge parser for the NFL (standings page + matches GraphQL)
 └── .github/workflows/          # Scheduled collector, publishes to GitHub Pages
 ```
 
@@ -81,10 +82,11 @@ GitHub Action (every 2h) → reads cbv.com.br and ge.globo.com → validates →
 App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens read only SQLite
 ```
 
-- **Competitions**: `masculina` and `feminina` (volleyball, CBV) and `serie-a` (football, ge). `src/constants/competitions.ts` is the single list: slug, sport, names and the standings columns of each sport. The app ignores competitions it does not know, so a sport can be added to the file before the app update ships.
-- **Scores**: `homeScore`/`awayScore` are sets in volleyball and goals in football; `setScores` is empty in football. `Standing.scoredFor`/`scoredAgainst` follow the same rule, and `draws` is always 0 in volleyball.
+- **Competitions**: `masculina` and `feminina` (volleyball, CBV), `serie-a` (football, ge) and `nfl` (American football, ge). `src/constants/competitions.ts` is the single list: slug, sport, names and the standings columns of each sport. The app ignores competitions it does not know, so a sport can be added to the file before the app update ships.
+- **Scores**: `homeScore`/`awayScore` are sets in volleyball, goals in football and points in the NFL; `setScores` is empty outside volleyball. `Standing.scoredFor`/`scoredAgainst` follow the same rule, and `draws` is always 0 in volleyball. `Standing.group` names the NFL division ("AFC Leste"), `position` counts within it, and `points` is 0; `StandingsList` renders one section per group.
 - **Legacy file**: the first release reads `superliga.json` (version 1, Superligas only). `scripts/legacy.ts` keeps publishing it from the new snapshot until those installs are gone.
 - **Brasileirão source**: the ge championship page names the public table service (`api.globoesporte.globo.com/tabela/...`) the page itself calls; rounds and standings come from there, and the broadcasters from each match page (`liveWatchSources`), fetched only for matches up to 8 days ahead. ge gives Brasília wall-clock times; `toInstant` adds the offset.
+- **NFL source**: the ge standings page (`ge.globo.com/futebol-americano/nfl/classificacao/`) embeds a `tabela-context` JSON with the season phases and the table by division; each week comes from the GraphQL service the page itself calls (`geql.globo.com/graphql`, `GetMultisportMatchesByPhase`), already with the Brazilian broadcasters per game, so no match pages and no manual curation. Rounds are "Semana n"; playoff phases are asked for only once the season reaches them (the service errors on future ones). ge's odd codes (`KCC`, `SF4`) are mapped to the league ones.
 
 - **First run**: `SyncGate` blocks with a loader; on failure it shows a retry. Then `OnboardingGate` shows `OnboardingScreen` once (`@onboarding_done` in AsyncStorage): pick favorite teams, then opt in to reminders.
 - **Match reminders**: local notifications only (`expo-notifications`, no push server). `NotificationsContext` rebuilds the whole pending list 30 min before each scheduled match of the favorites whenever favorites, data or the switch change (max 60, iOS caps at 64). On only when the in-app choice (`@match_reminders`) and the system permission are both on. `NotificationResponder` opens `/match/[id]` on tap. Android declares `SCHEDULE_EXACT_ALARM`: without it Android 12+ may fire a reminder up to 1 h late (after kickoff); Android 14+ leaves it off, so turning reminders on explains it and opens "Alarmes e lembretes", and Configuracoes keeps a notice while it is off. Web has no reminders (`notifications.web.ts`).
@@ -98,6 +100,7 @@ App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens 
 node scripts/collect.ts public                 # live collection: public/onde-passa.json + public/superliga.json
 node scripts/collect.ts out <dir-with-fixtures> # offline: {slug}-agenda.html, {slug}-classificacao.html (CBV),
                                                # serie-a-tabela.html, serie-a-classificacao.json, serie-a-rodada-{n}.json, serie-a-jogo-{id}.html (ge)
+                                               # nfl-classificacao.html, nfl-{phase-slug}-rodada-{n}.json (ge)
 ```
 
 ## Commands

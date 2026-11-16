@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Snapshot } from '../src/types/snapshot';
 import { collectSerieA } from './brasileirao/collect.ts';
+import { collectNfl } from './nfl/collect.ts';
 import { toLegacySnapshot } from './legacy.ts';
 import { collectSuperliga } from './superliga/collect.ts';
 import { assertValidSnapshot } from './validate.ts';
@@ -21,6 +22,7 @@ async function main(): Promise<void> {
   const competitions = [
     ...(await collectSuperliga(fixturesDir)),
     await collectSerieA(fixturesDir),
+    await collectNfl(fixturesDir),
   ];
 
   const snapshot: Snapshot = {
