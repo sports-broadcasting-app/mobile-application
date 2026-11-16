@@ -2,7 +2,7 @@
   "expo": {
     "name": "Onde Passa",
     "slug": "where-to-watch",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "where-to-watch",
@@ -22,7 +22,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.diego_serrat.wheretowatch"
+      "package": "com.diego_serrat.wheretowatch",
+      "permissions": ["android.permission.SCHEDULE_EXACT_ALARM"]
     },
     "updates": {
       "url": "https://u.expo.dev/d6b5c58b-a580-4329-8332-30a9f2767eaf"
@@ -71,7 +72,8 @@
         "expo-notifications",
         {
           "icon": "./assets/android-icon-monochrome.png",
-          "color": "#16a34a"
+          "color": "#16a34a",
+          "enableRemoteNotifications": false
         }
       ]
     ]

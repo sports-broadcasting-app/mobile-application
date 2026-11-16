@@ -13,7 +13,9 @@ import {
 } from '../data/database';
 import {
   getNotificationPermission,
+  hasExactAlarms,
   replaceScheduledReminders,
+  requestExactAlarms,
   requestNotificationPermission,
 } from '../services/notifications';
 import { awayTeam, homeTeam, scheduledMatch } from '../test-fixtures';
@@ -33,6 +35,8 @@ jest.mock('../services/notifications', () => ({
   getNotificationPermission: jest.fn(),
   requestNotificationPermission: jest.fn(),
   replaceScheduledReminders: jest.fn(async () => {}),
+  hasExactAlarms: jest.fn(),
+  requestExactAlarms: jest.fn(),
 }));
 
 const wrapper = ({ children }: { children: ReactNode }) => (
@@ -59,6 +63,8 @@ beforeEach(() => {
   (getUpcomingFavoriteMatches as jest.Mock).mockResolvedValue([upcoming]);
   (getNotificationPermission as jest.Mock).mockResolvedValue('undetermined');
   (requestNotificationPermission as jest.Mock).mockResolvedValue('granted');
+  (hasExactAlarms as jest.Mock).mockResolvedValue(true);
+  (requestExactAlarms as jest.Mock).mockResolvedValue(true);
 });
 
 describe('NotificationsContext', () => {
@@ -131,5 +137,28 @@ describe('NotificationsContext', () => {
     await waitFor(() => expect(replaceScheduledReminders).toHaveBeenCalled());
     expect(result.current.enabled).toBe(false);
     expect(lastScheduled()).toEqual([]);
+  });
+
+  it('reschedules once exact alarms are allowed', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('on');
+    (getNotificationPermission as jest.Mock).mockResolvedValue('granted');
+    (hasExactAlarms as jest.Mock).mockResolvedValue(false);
+    const { result } = renderHook(() => useNotifications(), { wrapper });
+    await waitFor(() => expect(result.current.exactAlarms).toBe(false));
+    await waitFor(() => expect(lastScheduled()).toHaveLength(1));
+    const runs = (replaceScheduledReminders as jest.Mock).mock.calls.length;
+
+    let granted = false;
+    await act(async () => {
+      granted = await result.current.requestExactAlarms();
+    });
+    expect(granted).toBe(true);
+    expect(result.current.exactAlarms).toBe(true);
+    await waitFor(() =>
+      expect(
+        (replaceScheduledReminders as jest.Mock).mock.calls.length,
+      ).toBeGreaterThan(runs),
+    );
+    expect(lastScheduled()).toHaveLength(1);
   });
 });

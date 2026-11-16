@@ -14,6 +14,13 @@ describe('getChannelUrl', () => {
     expect(getChannelUrl('Record')).toContain('playplus');
   });
 
+  it('maps the NFL channels', () => {
+    expect(getChannelUrl('Disney+')).toContain('disneyplus.com');
+    expect(getChannelUrl('ESPN')).toContain('disneyplus.com');
+    expect(getChannelUrl('Netflix')).toContain('netflix.com');
+    expect(getChannelUrl('NFL Game Pass')).toContain('dazn.com');
+  });
+
   it('has no link for an unknown channel', () => {
     expect(getChannelUrl('Canal X')).toBeNull();
   });

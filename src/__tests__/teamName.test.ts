@@ -7,6 +7,11 @@ describe('getTeamName', () => {
     expect(getTeamName('SANCOR SEGUROS VOLEI')).toBe('Londrina');
   });
 
+  it('drops the city of an NFL club', () => {
+    expect(getTeamName('Kansas City Chiefs')).toBe('Chiefs');
+    expect(getTeamName('San Francisco 49ers')).toBe('49ers');
+  });
+
   it('matches the CBV text despite accents and double spaces', () => {
     expect(getTeamName('PAULISTANO  BARUERI')).toBe('Barueri');
     expect(getTeamName('Brasília Vôlei / BRB')).toBe('Brasília');

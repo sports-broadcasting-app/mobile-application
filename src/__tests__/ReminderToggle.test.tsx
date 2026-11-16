@@ -23,12 +23,19 @@ jest.mock('../data/database', () => ({
 }));
 
 const setEnabled = jest.fn();
+const requestExactAlarms = jest.fn();
 
-function mockNotifications(enabled: boolean, supported = true) {
+function mockNotifications(
+  enabled: boolean,
+  supported = true,
+  exactAlarms = true,
+) {
   (useNotifications as jest.Mock).mockReturnValue({
     supported,
     enabled,
     setEnabled,
+    exactAlarms,
+    requestExactAlarms,
   });
 }
 
@@ -36,6 +43,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   (getFavorites as jest.Mock).mockResolvedValue({ masculina: '1' });
   setEnabled.mockResolvedValue(true);
+  requestExactAlarms.mockResolvedValue(true);
 });
 
 describe('ReminderToggle', () => {
@@ -88,5 +96,49 @@ describe('ReminderToggle', () => {
     mockNotifications(false, false);
     screen.rerender(<SettingsScreen />);
     expect(screen.queryByTestId('reminder-switch')).toBeNull();
+  });
+
+  it('explains exact alarms after turning on where they are blocked', async () => {
+    mockNotifications(false, true, false);
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    render(<ReminderToggle />);
+
+    fireEvent(
+      await screen.findByTestId('reminder-switch'),
+      'valueChange',
+      true,
+    );
+    await waitFor(() =>
+      expect(alert).toHaveBeenCalledWith(
+        'Avisos na hora certa',
+        expect.stringContaining('Alarmes e lembretes'),
+        expect.any(Array),
+        expect.any(Object),
+      ),
+    );
+    const buttons = alert.mock.calls[0][2] ?? [];
+    buttons.find((button) => button.text === 'Permitir')?.onPress?.();
+    expect(requestExactAlarms).toHaveBeenCalled();
+  });
+
+  it('does not ask for exact alarms where they are already allowed', async () => {
+    mockNotifications(false);
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    render(<ReminderToggle />);
+    fireEvent(
+      await screen.findByTestId('reminder-switch'),
+      'valueChange',
+      true,
+    );
+    await waitFor(() => expect(setEnabled).toHaveBeenCalledWith(true));
+    expect(alert).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('exact-alarms-notice')).toBeNull();
+  });
+
+  it('warns that reminders may be late while exact alarms are off', async () => {
+    mockNotifications(true, true, false);
+    render(<ReminderToggle />);
+    fireEvent.press(await screen.findByTestId('exact-alarms-notice'));
+    expect(requestExactAlarms).toHaveBeenCalled();
   });
 });

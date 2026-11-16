@@ -15,6 +15,14 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   return 'denied';
 }
 
+export async function hasExactAlarms(): Promise<boolean> {
+  return true;
+}
+
+export async function requestExactAlarms(): Promise<boolean> {
+  return true;
+}
+
 export async function replaceScheduledReminders(
   _reminders: Reminder[],
 ): Promise<void> {}

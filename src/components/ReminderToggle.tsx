@@ -1,8 +1,16 @@
-import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
+import {
+  Alert,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import * as Linking from 'expo-linking';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useNotifications } from '../contexts/NotificationsContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { promptExactAlarms } from '../utils/exactAlarmPrompt';
 import { REMINDER_LEAD_MINUTES } from '../utils/reminders';
 import { spacing, typography } from '../constants/designTokens';
 
@@ -10,12 +18,16 @@ import { spacing, typography } from '../constants/designTokens';
 export function ReminderToggle() {
   const { colors } = useTheme();
   const { favorites } = useFavorites();
-  const { enabled, setEnabled } = useNotifications();
+  const { enabled, setEnabled, exactAlarms, requestExactAlarms } =
+    useNotifications();
   const hasFavorite = Object.keys(favorites).length > 0;
 
   const onChange = async (next: boolean) => {
     const done = await setEnabled(next);
-    if (done) return;
+    if (done) {
+      if (next && !exactAlarms) await promptExactAlarms(requestExactAlarms);
+      return;
+    }
     Alert.alert(
       'Notificações bloqueadas',
       'Para receber os avisos, libere as notificações do Onde Passa nos ajustes do aparelho.',
@@ -32,24 +44,44 @@ export function ReminderToggle() {
   };
 
   return (
-    <View style={styles.row}>
-      <View style={styles.text}>
-        <Text style={[styles.label, { color: colors.textPrimary }]}>
-          Avisar antes dos jogos
-        </Text>
-        <Text style={[styles.hint, { color: colors.textSecondary }]}>
-          {hasFavorite
-            ? `${REMINDER_LEAD_MINUTES} minutos antes dos jogos dos seus times, com o canal que transmite`
-            : 'Escolha um time favorito abaixo para receber avisos'}
-        </Text>
+    <View>
+      <View style={styles.row}>
+        <View style={styles.text}>
+          <Text style={[styles.label, { color: colors.textPrimary }]}>
+            Avisar antes dos jogos
+          </Text>
+          <Text style={[styles.hint, { color: colors.textSecondary }]}>
+            {hasFavorite
+              ? `${REMINDER_LEAD_MINUTES} minutos antes dos jogos dos seus times, com o canal que transmite`
+              : 'Escolha um time favorito abaixo para receber avisos'}
+          </Text>
+        </View>
+        <Switch
+          accessibilityLabel="Avisar antes dos jogos"
+          testID="reminder-switch"
+          value={enabled}
+          onValueChange={onChange}
+          trackColor={{ true: colors.primary }}
+        />
       </View>
-      <Switch
-        accessibilityLabel="Avisar antes dos jogos"
-        testID="reminder-switch"
-        value={enabled}
-        onValueChange={onChange}
-        trackColor={{ true: colors.primary }}
-      />
+
+      {enabled && !exactAlarms && (
+        <TouchableOpacity
+          accessibilityRole="button"
+          testID="exact-alarms-notice"
+          style={styles.notice}
+          onPress={() => {
+            requestExactAlarms().catch(() => {});
+          }}
+        >
+          <Text style={[styles.hint, { color: colors.textSecondary }]}>
+            Os avisos podem atrasar.{' '}
+            <Text style={[styles.link, { color: colors.primary }]}>
+              Permitir alarmes e lembretes
+            </Text>
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -72,5 +104,12 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: typography.size.sm,
+  },
+  notice: {
+    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
+  },
+  link: {
+    fontWeight: typography.weight.semibold,
   },
 });

@@ -20,7 +20,20 @@ const CHANNEL_NAMES: Record<string, string> = {
   sportv: 'SporTV',
   globo: 'TV Globo',
   'prime vídeo': 'Prime Video',
+  'ge tv': 'GE TV',
 };
+
+/** Broadcaster names as the app shows them, promotions dropped, no repeats. */
+export function toChannels(names: unknown[]): string[] {
+  const channels: string[] = [];
+  for (const raw of names) {
+    const name = toText(raw)?.trim();
+    if (!name || NOT_A_BROADCASTER.has(name.toLowerCase())) continue;
+    const channel = CHANNEL_NAMES[name.toLowerCase()] ?? name;
+    if (!channels.includes(channel)) channels.push(channel);
+  }
+  return channels;
+}
 
 /** What the collector needs from the championship page. */
 export interface TablePage {
@@ -239,13 +252,5 @@ export function parseStandings(json: string): {
 export function parseChannels(html: string): string[] {
   const sources = readJsonAfter(html, '"liveWatchSources":');
   if (!Array.isArray(sources)) return [];
-
-  const channels: string[] = [];
-  for (const source of sources as RawObject[]) {
-    const name = toText(source.name)?.trim();
-    if (!name || NOT_A_BROADCASTER.has(name.toLowerCase())) continue;
-    const channel = CHANNEL_NAMES[name.toLowerCase()] ?? name;
-    if (!channels.includes(channel)) channels.push(channel);
-  }
-  return channels;
+  return toChannels((sources as RawObject[]).map((source) => source.name));
 }

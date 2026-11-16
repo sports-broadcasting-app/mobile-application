@@ -29,6 +29,12 @@ export const COMPETITIONS: CompetitionInfo[] = [
     name: 'Brasileirão Série A',
     label: 'Brasileirão',
   },
+  {
+    slug: 'nfl',
+    sport: 'futebol-americano',
+    name: 'NFL',
+    label: 'NFL',
+  },
 ];
 
 const BY_SLUG = new Map(COMPETITIONS.map((info) => [info.slug, info]));
@@ -74,6 +80,18 @@ export const STANDINGS_COLUMNS: Record<Sport, StandingsColumn[]> = {
     {
       code: 'SG',
       label: 'Saldo de gols',
+      value: (s) => s.scoredFor - s.scoredAgainst,
+    },
+  ],
+  'futebol-americano': [
+    { code: 'V', label: 'Vitórias', value: (s) => s.wins },
+    { code: 'D', label: 'Derrotas', value: (s) => s.losses },
+    { code: 'E', label: 'Empates', value: (s) => s.draws },
+    { code: 'PF', label: 'Pontos a favor', value: (s) => s.scoredFor },
+    { code: 'PC', label: 'Pontos contra', value: (s) => s.scoredAgainst },
+    {
+      code: 'DIF',
+      label: 'Diferença de pontos',
       value: (s) => s.scoredFor - s.scoredAgainst,
     },
   ],
