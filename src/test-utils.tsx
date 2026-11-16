@@ -3,6 +3,7 @@ import { render, RenderOptions } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
+import { CompetitionProvider } from './contexts/CompetitionContext';
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -21,7 +22,9 @@ function AllProviders({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <FavoritesProvider>{children}</FavoritesProvider>
+        <FavoritesProvider>
+          <CompetitionProvider>{children}</CompetitionProvider>
+        </FavoritesProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

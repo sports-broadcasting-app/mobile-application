@@ -3,14 +3,20 @@ import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
 import { FavoritesProvider } from '../src/contexts/FavoritesContext';
+import { CompetitionProvider } from '../src/contexts/CompetitionContext';
 import { SyncProvider } from '../src/contexts/SyncContext';
+import { NotificationsProvider } from '../src/contexts/NotificationsContext';
 import { AdsProvider } from '../src/contexts/AdsContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { SyncGate } from '../src/components/SyncGate';
 import { AnimatedSplash } from '../src/components/AnimatedSplash';
+import { OnboardingGate } from '../src/components/OnboardingGate';
+import { NotificationResponder } from '../src/components/NotificationResponder';
+import { configureNotifications } from '../src/services/notifications';
 
 // AnimatedSplash hides the native splash once it can take over seamlessly.
 SplashScreen.preventAutoHideAsync().catch(() => {});
+configureNotifications();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,9 +58,16 @@ export default function RootLayout() {
             <QueryClientProvider client={queryClient}>
               <SyncProvider>
                 <FavoritesProvider>
-                  <SyncGate>
-                    <RootStack />
-                  </SyncGate>
+                  <NotificationsProvider>
+                    <CompetitionProvider>
+                      <SyncGate>
+                        <OnboardingGate>
+                          <RootStack />
+                          <NotificationResponder />
+                        </OnboardingGate>
+                      </SyncGate>
+                    </CompetitionProvider>
+                  </NotificationsProvider>
                 </FavoritesProvider>
               </SyncProvider>
             </QueryClientProvider>

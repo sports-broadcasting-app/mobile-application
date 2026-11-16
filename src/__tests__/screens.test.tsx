@@ -135,7 +135,7 @@ describe('HomeScreen', () => {
     (getNextMatches as jest.Mock).mockResolvedValue([scheduledMatch]);
     render(<HomeScreen />);
     expect(await screen.findByText('Próximos jogos')).toBeTruthy();
-    expect(await screen.findByTestId('match-card-100')).toBeTruthy();
+    expect(await screen.findByTestId('match-row-100')).toBeTruthy();
   });
 
   it('tells when the data is not fresh', async () => {

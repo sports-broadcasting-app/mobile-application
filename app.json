@@ -66,6 +66,13 @@
         {
           "userTrackingPermission": "Usamos esse identificador para mostrar anúncios mais relevantes para você."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#16a34a"
+        }
       ]
     ]
   }
