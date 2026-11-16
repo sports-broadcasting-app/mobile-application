@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomSheet } from './BottomSheet';
+import { SportIcon } from './SportIcon';
 import { useCompetition } from '../contexts/CompetitionContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -66,14 +67,14 @@ export function CompetitionsSheet({
       }
     >
       <ScrollView>
-        {SPORTS.map(({ sport, name, icon }) => {
+        {SPORTS.map(({ sport, name }) => {
           const items = COMPETITIONS.filter((info) => info.sport === sport);
           if (items.length === 0) return null;
           return (
             <View key={sport}>
               <View style={styles.group}>
-                <MaterialCommunityIcons
-                  name={icon}
+                <SportIcon
+                  sport={sport}
                   size={iconSize.sm}
                   color={colors.sectionHeaderText}
                 />
@@ -114,8 +115,8 @@ export function CompetitionsSheet({
                         { backgroundColor: colors.surfaceAlt },
                       ]}
                     >
-                      <MaterialCommunityIcons
-                        name={icon}
+                      <SportIcon
+                        sport={sport}
                         size={iconSize.md}
                         color={colors.textSecondary}
                       />

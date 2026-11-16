@@ -37,14 +37,12 @@ export const COMPETITIONS: CompetitionInfo[] = [
   },
 ];
 
-/** Sport names and MaterialCommunityIcons glyphs, in the order they group. */
-export const SPORTS: { sport: Sport; name: string; icon: SportIcon }[] = [
-  { sport: 'futebol', name: 'Futebol', icon: 'soccer' },
-  { sport: 'futebol-americano', name: 'Futebol americano', icon: 'football' },
-  { sport: 'volei', name: 'Vôlei', icon: 'volleyball' },
+/** Sport names, in the order the pickers group them. Icons: SportIcon. */
+export const SPORTS: { sport: Sport; name: string }[] = [
+  { sport: 'futebol', name: 'Futebol' },
+  { sport: 'futebol-americano', name: 'Futebol americano' },
+  { sport: 'volei', name: 'Vôlei' },
 ];
-
-export type SportIcon = 'soccer' | 'football' | 'volleyball';
 
 export function getSport(sport: Sport) {
   return SPORTS.find((entry) => entry.sport === sport) ?? SPORTS[0];

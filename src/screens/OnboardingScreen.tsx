@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SportIcon } from '../components/SportIcon';
 import { useCompetition } from '../contexts/CompetitionContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { CompetitionSlug } from '../types/snapshot';
@@ -92,10 +93,12 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
                     },
                   ]}
                 >
-                  <MaterialCommunityIcons
-                    name={sport.icon}
-                    size={iconSize.md}
+                  <SportIcon
+                    sport={info.sport}
+                    size={iconSize.lg}
                     color={on ? colors.textOnPrimary : colors.textSecondary}
+                    filled={on}
+                    knockoutColor={colors.primary}
                   />
                 </View>
                 <Text style={[styles.tileName, { color: colors.textPrimary }]}>
