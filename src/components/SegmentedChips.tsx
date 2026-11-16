@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -19,6 +20,8 @@ interface SegmentedChipsProps<T extends string> {
   onSelect: (value: T) => void;
   /** Scrolls sideways instead of wrapping, for rows that keep growing. */
   scrollable?: boolean;
+  /** Shown after the chips, such as a button that edits the options. */
+  trailing?: ReactNode;
 }
 
 const CHIP_HEIGHT = 36;
@@ -32,6 +35,7 @@ export function SegmentedChips<T extends string>({
   selected,
   onSelect,
   scrollable = false,
+  trailing,
 }: SegmentedChipsProps<T>) {
   const { colors } = useTheme();
 
@@ -82,13 +86,22 @@ export function SegmentedChips<T extends string>({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        // A ScrollView grows by default: in a column it took the free height
+        // and pushed a short list to the middle of the screen.
+        style={styles.scroll}
         contentContainerStyle={styles.scrollRow}
       >
         {chips}
+        {trailing}
       </ScrollView>
     );
   }
-  return <View style={styles.row}>{chips}</View>;
+  return (
+    <View style={styles.row}>
+      {chips}
+      {trailing}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -98,6 +111,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
+  },
+  scroll: {
+    flexGrow: 0,
   },
   scrollRow: {
     flexDirection: 'row',

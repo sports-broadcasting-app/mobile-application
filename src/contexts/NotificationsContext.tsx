@@ -10,7 +10,12 @@ import {
 } from 'react';
 import { AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getTeams, getUpcomingFavoriteMatches } from '../data/database';
+import {
+  Favorites,
+  getTeams,
+  getUpcomingFavoriteMatches,
+} from '../data/database';
+import { CompetitionSlug } from '../types/snapshot';
 import {
   getNotificationPermission,
   hasExactAlarms,
@@ -25,6 +30,7 @@ import {
   MAX_REMINDERS,
   REMINDER_LEAD_MS,
 } from '../utils/reminders';
+import { useCompetition } from './CompetitionContext';
 import { useFavorites } from './FavoritesContext';
 import { useSync } from './SyncContext';
 
@@ -62,8 +68,19 @@ const NotificationsContext = createContext<NotificationsContextValue>({
  * match moved by the source moves its reminder too.
  */
 export function NotificationsProvider({ children }: { children: ReactNode }) {
-  const { favorites } = useFavorites();
+  const { favorites: allFavorites } = useFavorites();
+  const { followed } = useCompetition();
   const { lastSyncAt } = useSync();
+  // Only competitions the user follows get reminders.
+  const favorites = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(allFavorites).filter(([slug]) =>
+          followed.includes(slug as CompetitionSlug),
+        ),
+      ) as Favorites,
+    [allFavorites, followed],
+  );
   const [preference, setPreference] = useState<boolean | null>(null);
   const [permission, setPermission] =
     useState<NotificationPermission>('undetermined');

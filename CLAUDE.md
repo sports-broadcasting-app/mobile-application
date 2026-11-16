@@ -47,9 +47,11 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 
 ```
 Bottom Tabs:
-  Jogos (/)                    → Ontem/Hoje/Amanha, competition filter, next matches on empty days
-  Classificacao (/classificacao) → standings per competition (columns depend on the sport)
-  Configuracoes (/configuracoes) → match reminders switch, one favorite team per competition, theme switch
+  Jogos (/)                    → Ontem/Hoje/Amanha, filter by followed competition + "Editar" (Suas competições sheet);
+                                 "Todos" groups the day: Seus times first, then one section per competition;
+                                 a day with fewer than 3 games is filled with the next ones
+  Classificacao (/classificacao) → standings per followed competition (columns depend on the sport)
+  Configuracoes (/configuracoes) → reminders switch; Competições e times (follow switch + team sheet per competition); theme
 
 Stack over tabs:
   MatchDetailScreen (/match/[id]) → score, sets, channel links
@@ -88,7 +90,8 @@ App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens 
 - **Brasileirão source**: the ge championship page names the public table service (`api.globoesporte.globo.com/tabela/...`) the page itself calls; rounds and standings come from there, and the broadcasters from each match page (`liveWatchSources`), fetched only for matches up to 8 days ahead. ge gives Brasília wall-clock times; `toInstant` adds the offset.
 - **NFL source**: the ge standings page (`ge.globo.com/futebol-americano/nfl/classificacao/`) embeds a `tabela-context` JSON with the season phases and the table by division; each week comes from the GraphQL service the page itself calls (`geql.globo.com/graphql`, `GetMultisportMatchesByPhase`), already with the Brazilian broadcasters per game, so no match pages and no manual curation. Rounds are "Semana n"; playoff phases are asked for only once the season reaches them (the service errors on future ones). ge's odd codes (`KCC`, `SF4`) are mapped to the league ones.
 
-- **First run**: `SyncGate` blocks with a loader; on failure it shows a retry. Then `OnboardingGate` shows `OnboardingScreen` once (`@onboarding_done` in AsyncStorage): pick favorite teams, then opt in to reminders.
+- **First run**: `SyncGate` blocks with a loader; on failure it shows a retry. Then `OnboardingGate` shows `OnboardingScreen` once (`@onboarding_done` in AsyncStorage): pick the competitions to follow (at least one).
+- **Followed competitions**: `CompetitionContext.followed`, stored as `@followed_competitions`; nothing stored (installs from before) means all. Filters, standings, the Home and reminders only use followed ones; the last one cannot be unfollowed. Favorite teams are picked in Configurações (`TeamSheet`); the first pick offers the reminders once (`@reminders_offered`).
 - **Match reminders**: local notifications only (`expo-notifications`, no push server). `NotificationsContext` rebuilds the whole pending list 30 min before each scheduled match of the favorites whenever favorites, data or the switch change (max 60, iOS caps at 64). On only when the in-app choice (`@match_reminders`) and the system permission are both on. `NotificationResponder` opens `/match/[id]` on tap. Android declares `SCHEDULE_EXACT_ALARM`: without it Android 12+ may fire a reminder up to 1 h late (after kickoff); Android 14+ leaves it off, so turning reminders on explains it and opens "Alarmes e lembretes", and Configuracoes keeps a notice while it is off. Web has no reminders (`notifications.web.ts`).
 - **Later runs**: opens from SQLite and refreshes in the background when data is older than 6h (15min on match days).
 - **Offline**: keeps local data and says so on the Home header.

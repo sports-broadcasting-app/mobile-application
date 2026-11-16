@@ -1,26 +1,17 @@
-import { Alert, Text } from 'react-native';
+import { Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fireEvent, render, screen, waitFor } from '../test-utils';
 import { OnboardingGate } from '../components/OnboardingGate';
-import { useNotifications } from '../contexts/NotificationsContext';
-import { getFavorites, getTeams, saveFavorite } from '../data/database';
-import { awayTeam, homeTeam } from '../test-fixtures';
 
 jest.mock('../contexts/SyncContext', () => ({
   useSync: () => ({ lastSyncAt: 1000 }),
 }));
-jest.mock('../contexts/NotificationsContext', () => ({
-  useNotifications: jest.fn(),
-}));
 jest.mock('../data/database', () => ({
-  getFavorites: jest.fn(),
-  getTeams: jest.fn(),
+  getFavorites: jest.fn(async () => ({})),
+  getTeams: jest.fn(async () => []),
   saveFavorite: jest.fn(async () => {}),
   deleteFavorite: jest.fn(async () => {}),
 }));
-
-const setEnabled = jest.fn(async () => true);
-const requestExactAlarms = jest.fn(async () => true);
 
 function renderGate() {
   render(
@@ -33,85 +24,47 @@ function renderGate() {
 beforeEach(() => {
   jest.clearAllMocks();
   (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
-  (getFavorites as jest.Mock).mockResolvedValue({});
-  (getTeams as jest.Mock).mockResolvedValue([homeTeam, awayTeam]);
-  (useNotifications as jest.Mock).mockReturnValue({
-    supported: true,
-    enabled: false,
-    setEnabled,
-    exactAlarms: true,
-    requestExactAlarms,
-  });
 });
 
 describe('Onboarding', () => {
   it('goes straight to the app once it was done', async () => {
-    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('true');
+    (AsyncStorage.getItem as jest.Mock).mockImplementation(async (key) =>
+      key === '@onboarding_done' ? 'true' : null,
+    );
     renderGate();
     expect(await screen.findByText('App')).toBeTruthy();
-    expect(screen.queryByText('Bem-vindo ao Onde Passa')).toBeNull();
+    expect(screen.queryByText('O que você acompanha?')).toBeNull();
   });
 
-  it('can be skipped without picking a team', async () => {
+  it('asks for at least one competition', async () => {
     renderGate();
-    fireEvent.press(await screen.findByText('Pular por enquanto'));
-    expect(await screen.findByText('App')).toBeTruthy();
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-      '@onboarding_done',
-      'true',
-    );
-    expect(setEnabled).not.toHaveBeenCalled();
+    const start = await screen.findByTestId('onboarding-start');
+    expect(start).toHaveTextContent('Escolha pelo menos uma');
+    fireEvent.press(start);
+    expect(screen.queryByText('App')).toBeNull();
+    expect(AsyncStorage.setItem).not.toHaveBeenCalled();
   });
 
-  it('picks a team, then turns the reminders on', async () => {
+  it('follows the chosen competitions and opens the app', async () => {
     renderGate();
-    fireEvent.press(await screen.findByTestId('team-option-1'));
-    await waitFor(() =>
-      expect(saveFavorite).toHaveBeenCalledWith('masculina', '1'),
-    );
-    fireEvent.press(await screen.findByText('Continuar'));
-
+    fireEvent.press(await screen.findByTestId('onboarding-nfl'));
+    fireEvent.press(screen.getByTestId('onboarding-serie-a'));
     expect(
-      await screen.findByText(/30 minutos antes dos jogos de Sada Cruzeiro/),
-    ).toBeTruthy();
-    fireEvent.press(screen.getByTestId('onboarding-enable-reminders'));
-    await waitFor(() => expect(setEnabled).toHaveBeenCalledWith(true));
-    expect(await screen.findByText('App')).toBeTruthy();
-  });
+      screen.getByTestId('onboarding-nfl').props.accessibilityState.checked,
+    ).toBe(true);
 
-  it('lets the user decline the reminders', async () => {
-    (getFavorites as jest.Mock).mockResolvedValue({ masculina: '2' });
-    renderGate();
-    fireEvent.press(await screen.findByText('Continuar'));
-    fireEvent.press(await screen.findByTestId('onboarding-skip-reminders'));
+    fireEvent.press(screen.getByTestId('onboarding-start'));
     expect(await screen.findByText('App')).toBeTruthy();
-    expect(setEnabled).not.toHaveBeenCalled();
-  });
-
-  it('asks for exact alarms before finishing where they are blocked', async () => {
-    (getFavorites as jest.Mock).mockResolvedValue({ masculina: '2' });
-    (useNotifications as jest.Mock).mockReturnValue({
-      supported: true,
-      enabled: false,
-      setEnabled,
-      exactAlarms: false,
-      requestExactAlarms,
-    });
-    const alert = jest
-      .spyOn(Alert, 'alert')
-      .mockImplementation((_title, _message, buttons) => {
-        buttons?.find((button) => button.text === 'Permitir')?.onPress?.();
-      });
-    renderGate();
-    fireEvent.press(await screen.findByText('Continuar'));
-    fireEvent.press(await screen.findByTestId('onboarding-enable-reminders'));
-    expect(await screen.findByText('App')).toBeTruthy();
-    expect(alert).toHaveBeenCalledWith(
-      'Avisos na hora certa',
-      expect.any(String),
-      expect.any(Array),
-      expect.any(Object),
+    // Stored in the app's order, not the tapping order.
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+      '@followed_competitions',
+      JSON.stringify(['serie-a', 'nfl']),
     );
-    expect(requestExactAlarms).toHaveBeenCalled();
+    await waitFor(() =>
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        '@onboarding_done',
+        'true',
+      ),
+    );
   });
 });

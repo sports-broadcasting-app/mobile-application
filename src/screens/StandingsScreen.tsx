@@ -38,7 +38,7 @@ export default function StandingsScreen() {
   const { refreshing, refresh } = useSync();
   const { isFavorite } = useFavorites();
   const teamsById = useTeamsById();
-  const { competition, setCompetition } = useCompetition();
+  const { competition, setCompetition, followed } = useCompetition();
   const { data: standings } = useStandings(competition);
   const hasTransfers = useHasTransfers(competition);
   const router = useRouter();
@@ -55,7 +55,9 @@ export default function StandingsScreen() {
         </Text>
       </View>
       <SegmentedChips
-        options={COMPETITION_OPTIONS}
+        options={COMPETITION_OPTIONS.filter((option) =>
+          followed.includes(option.value),
+        )}
         selected={competition}
         onSelect={setCompetition}
         scrollable

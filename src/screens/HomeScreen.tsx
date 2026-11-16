@@ -1,20 +1,25 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AdBanner } from '../components/AdBanner';
-import { FavoritePill } from '../components/FavoritePill';
+import { CompetitionsSheet } from '../components/CompetitionsSheet';
 import { MatchCard } from '../components/MatchCard';
 import { MatchRow } from '../components/MatchRow';
 import { WatchSheet } from '../components/WatchSheet';
 import { SegmentedChips } from '../components/SegmentedChips';
-import { useCompetition } from '../contexts/CompetitionContext';
+import {
+  CompetitionFilter,
+  useCompetition,
+} from '../contexts/CompetitionContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useSync } from '../contexts/SyncContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -24,7 +29,7 @@ import {
   useNextMatches,
   useTeamsById,
 } from '../hooks/useSuperliga';
-import { CompetitionSlug, Match } from '../types/snapshot';
+import { Match } from '../types/snapshot';
 import {
   addDays,
   formatDay,
@@ -32,7 +37,12 @@ import {
   getDayBounds,
 } from '../utils/date';
 import { COMPETITION_OPTIONS, getCompetition } from '../constants/competitions';
-import { radius, spacing, typography } from '../constants/designTokens';
+import {
+  iconSize,
+  radius,
+  spacing,
+  typography,
+} from '../constants/designTokens';
 
 type DayOption = '-1' | '0' | '1';
 
@@ -42,51 +52,95 @@ const DAY_OPTIONS: { value: DayOption; label: string }[] = [
   { value: '1', label: 'Amanhã' },
 ];
 
-const COMPETITION_FILTERS: {
-  value: 'todos' | CompetitionSlug;
-  label: string;
-}[] = [{ value: 'todos', label: 'Todos' }, ...COMPETITION_OPTIONS];
+/** Below this many games a day looks empty: the next ones fill it. */
+const FEW_MATCHES = 3;
+
+interface Section {
+  key: string;
+  title: string;
+  count?: number;
+  favorite?: boolean;
+  matches: Match[];
+}
+
+function plural(count: number): string {
+  return count === 1 ? '1 jogo' : `${count} jogos`;
+}
 
 export default function HomeScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const { lastSyncAt, refreshing, refreshFailed, refresh } = useSync();
-  const { favorites, isFavorite } = useFavorites();
+  const { favorites } = useFavorites();
   const teamsById = useTeamsById();
   const [dayOption, setDayOption] = useState<DayOption>('0');
-  const { filter, setFilter } = useCompetition();
+  const { filter, setFilter, followed } = useCompetition();
+  const [editing, setEditing] = useState(false);
   // Match whose "where to watch" sheet is open; null keeps it closed.
   const [selected, setSelected] = useState<Match | null>(null);
 
   const day = addDays(new Date(), Number(dayOption));
   const competition = filter === 'todos' ? undefined : filter;
+  const scope = useMemo(
+    () => (competition ? [competition] : followed),
+    [competition, followed],
+  );
   const { data: dayMatches } = useDayMatches(day);
+
+  // A favorite counts in its own competition only.
+  const isFavoriteMatch = useCallback(
+    (match: Match) => {
+      const teamId = favorites[match.competition];
+      return teamId === match.homeTeamId || teamId === match.awayTeamId;
+    },
+    [favorites],
+  );
+  const isFavoriteTeam = useCallback(
+    (teamId: string) => Object.values(favorites).includes(teamId),
+    [favorites],
+  );
 
   const matches = useMemo(
     () =>
       sortForDisplay(
-        (dayMatches ?? []).filter(
-          (match) => !competition || match.competition === competition,
-        ),
-        isFavorite,
+        (dayMatches ?? []).filter((match) => scope.includes(match.competition)),
+        isFavoriteTeam,
       ),
-    [dayMatches, competition, isFavorite],
+    [dayMatches, scope, isFavoriteTeam],
   );
+
+  // "Todos": your teams first, then one section per competition.
+  const sections = useMemo((): Section[] => {
+    if (competition) return [{ key: 'all', title: '', matches }];
+    const mine = matches.filter(isFavoriteMatch);
+    const groups: Section[] = followed
+      .map((slug) => {
+        const list = matches.filter(
+          (match) => match.competition === slug && !isFavoriteMatch(match),
+        );
+        return {
+          key: slug,
+          title: getCompetition(slug).name,
+          count: list.length,
+          matches: list,
+        };
+      })
+      .filter((section) => section.matches.length > 0);
+    return mine.length > 0
+      ? [
+          { key: 'mine', title: 'Seus times', favorite: true, matches: mine },
+          ...groups,
+        ]
+      : groups;
+  }, [competition, matches, followed, isFavoriteMatch]);
 
   const isEmpty = dayMatches !== undefined && matches.length === 0;
+  const showNext = dayMatches !== undefined && matches.length < FEW_MATCHES;
   const { data: nextMatches } = useNextMatches(
     getDayBounds(day).end,
-    competition,
-    isEmpty,
+    scope,
+    showNext,
   );
-
-  // The favorite of the selected competition, else the first one chosen.
-  const favoriteTeamId = competition
-    ? favorites[competition]
-    : Object.values(favorites)[0];
-  const favoriteTeam = favoriteTeamId
-    ? teamsById.get(favoriteTeamId)
-    : undefined;
 
   const renderMatch = (match: Match) => {
     const homeTeam = teamsById.get(match.homeTeamId);
@@ -99,7 +153,12 @@ export default function HomeScreen() {
         match={match}
         homeTeam={homeTeam}
         awayTeam={awayTeam}
-        favorite={isFavorite(match.homeTeamId) || isFavorite(match.awayTeamId)}
+        favorite={isFavoriteMatch(match)}
+        // Section headers and the title already name the competition,
+        // except in "Seus times", which mixes them.
+        showCompetition={
+          !competition && sections.length > 0 && isFavoriteMatch(match)
+        }
         onPress={() => setSelected(match)}
       />
     );
@@ -117,11 +176,19 @@ export default function HomeScreen() {
         match={match}
         homeTeam={homeTeam}
         awayTeam={awayTeam}
-        favorite={isFavorite(match.homeTeamId) || isFavorite(match.awayTeamId)}
+        favorite={isFavoriteMatch(match)}
         onPress={() => setSelected(match)}
       />
     );
   };
+
+  const filters: { value: CompetitionFilter; label: string }[] = [
+    { value: 'todos', label: 'Todos' },
+    ...COMPETITION_OPTIONS.filter((option) => followed.includes(option.value)),
+  ];
+  const nextTitle = competition
+    ? `Próximos jogos · ${getCompetition(competition).label}`
+    : 'Próximos jogos';
 
   return (
     <SafeAreaView
@@ -129,25 +196,19 @@ export default function HomeScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <View style={styles.header}>
-        <View style={styles.headerText}>
-          <Text
-            numberOfLines={1}
-            style={[styles.title, { color: colors.textPrimary }]}
-          >
-            {competition ? getCompetition(competition).name : 'Jogos'}
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            {refreshFailed
-              ? 'Sem conexão: mostrando dados salvos'
-              : lastSyncAt !== null
-                ? formatRelativeSync(lastSyncAt, Date.now())
-                : ''}
-          </Text>
-        </View>
-        <FavoritePill
-          team={favoriteTeam}
-          onPress={() => router.push('/configuracoes')}
-        />
+        <Text
+          numberOfLines={1}
+          style={[styles.title, { color: colors.textPrimary }]}
+        >
+          {competition ? getCompetition(competition).name : 'Jogos'}
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          {refreshFailed
+            ? 'Sem conexão: mostrando dados salvos'
+            : lastSyncAt !== null
+              ? formatRelativeSync(lastSyncAt, Date.now())
+              : ''}
+        </Text>
       </View>
 
       <SegmentedChips
@@ -156,10 +217,29 @@ export default function HomeScreen() {
         onSelect={setDayOption}
       />
       <SegmentedChips
-        options={COMPETITION_FILTERS}
+        options={filters}
         selected={filter}
         onSelect={setFilter}
         scrollable
+        trailing={
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Editar competições"
+            testID="edit-competitions"
+            hitSlop={{ top: 4, bottom: 4 }}
+            style={[styles.editChip, { borderColor: colors.primary }]}
+            onPress={() => setEditing(true)}
+          >
+            <MaterialCommunityIcons
+              name="tune-variant"
+              size={iconSize.sm}
+              color={colors.primary}
+            />
+            <Text style={[styles.editText, { color: colors.primary }]}>
+              Editar
+            </Text>
+          </TouchableOpacity>
+        }
       />
 
       <ScrollView
@@ -173,24 +253,64 @@ export default function HomeScreen() {
           />
         }
       >
-        <Text style={[styles.dayLabel, { color: colors.sectionHeaderText }]}>
+        <Text style={[styles.dayLabel, { color: colors.textPrimary }]}>
           {formatDay(day)}
         </Text>
 
-        {matches.map(renderMatch)}
+        {sections.map((section) => (
+          <View key={section.key}>
+            {section.title !== '' && (
+              <View
+                style={styles.sectionHeader}
+                testID={`section-${section.key}`}
+              >
+                {section.favorite && (
+                  <MaterialCommunityIcons
+                    name="star"
+                    size={iconSize.sm}
+                    color={colors.primary}
+                  />
+                )}
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { color: colors.sectionHeaderText },
+                  ]}
+                >
+                  {section.title}
+                </Text>
+                {section.count !== undefined && (
+                  <Text
+                    style={[
+                      styles.sectionCount,
+                      { color: colors.textTertiary },
+                    ]}
+                  >
+                    · {plural(section.count)}
+                  </Text>
+                )}
+              </View>
+            )}
+            {section.matches.map(renderMatch)}
+          </View>
+        ))}
 
         {isEmpty && (
+          <Text style={[styles.empty, { color: colors.textSecondary }]}>
+            Nenhum jogo neste dia
+          </Text>
+        )}
+        {showNext && (nextMatches ?? []).length > 0 && (
           <>
-            <Text style={[styles.empty, { color: colors.textSecondary }]}>
-              Nenhum jogo neste dia
+            <Text
+              style={[
+                styles.sectionHeader,
+                styles.sectionTitle,
+                { color: colors.sectionHeaderText },
+              ]}
+            >
+              {nextTitle}
             </Text>
-            {(nextMatches ?? []).length > 0 && (
-              <Text
-                style={[styles.dayLabel, { color: colors.sectionHeaderText }]}
-              >
-                Próximos jogos
-              </Text>
-            )}
             <View
               style={[styles.nextList, { backgroundColor: colors.surface }]}
             >
@@ -212,6 +332,7 @@ export default function HomeScreen() {
           router.push(`/match/${match.id}`);
         }}
       />
+      <CompetitionsSheet visible={editing} onClose={() => setEditing(false)} />
     </SafeAreaView>
   );
 }
@@ -221,14 +342,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    alignItems: 'flex-end',
-    flexDirection: 'row',
-    gap: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
-  },
-  headerText: {
-    flex: 1,
   },
   title: {
     fontSize: typography.size.title + 4,
@@ -248,6 +363,37 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
+  },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    paddingBottom: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+  },
+  sectionTitle: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.bold,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+  },
+  sectionCount: {
+    fontSize: typography.size.sm,
+  },
+  editChip: {
+    alignItems: 'center',
+    borderRadius: radius.pill,
+    borderStyle: 'dashed',
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    height: 36,
+    paddingHorizontal: spacing.md,
+  },
+  editText: {
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.semibold,
   },
   nextList: {
     borderRadius: radius.lg,

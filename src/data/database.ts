@@ -194,18 +194,30 @@ export async function getMatchesBetween(
   return parseRows<Match>(rows);
 }
 
+/**
+ * The next matches from `fromMs` on, soonest first. `competitions` limits
+ * them to one competition or to a list (an empty list gives none).
+ */
 export async function getNextMatches(
   fromMs: number,
   limit: number,
-  competition?: CompetitionSlug,
+  competitions?: CompetitionSlug | CompetitionSlug[],
 ): Promise<Match[]> {
+  const list =
+    competitions === undefined
+      ? null
+      : Array.isArray(competitions)
+        ? competitions
+        : [competitions];
+  if (list && list.length === 0) return [];
+
   const db = await getDb();
-  const rows = competition
+  const rows = list
     ? await db.getAllAsync<{ payload: string }>(
         `SELECT payload FROM matches
-          WHERE startsAtMs >= ? AND competition = ?
+          WHERE startsAtMs >= ? AND competition IN (${list.map(() => '?').join(', ')})
           ORDER BY startsAtMs ASC LIMIT ?`,
-        [fromMs, competition, limit],
+        [fromMs, ...list, limit],
       )
     : await db.getAllAsync<{ payload: string }>(
         `SELECT payload FROM matches

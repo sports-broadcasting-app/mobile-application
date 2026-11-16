@@ -8,166 +8,158 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TeamPicker } from '../components/TeamPicker';
-import { useFavorites } from '../contexts/FavoritesContext';
-import { useNotifications } from '../contexts/NotificationsContext';
+import { useCompetition } from '../contexts/CompetitionContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { useTeamsById } from '../hooks/useSuperliga';
-import { getTeamName } from '../utils/teamName';
-import { promptExactAlarms } from '../utils/exactAlarmPrompt';
-import { REMINDER_LEAD_MINUTES } from '../utils/reminders';
-import { radius, spacing, typography } from '../constants/designTokens';
-
-type Step = 'teams' | 'reminders';
-
-/** "Flamengo", "Flamengo e Minas", "Flamengo, Minas e Cruzeiro". */
-function joinNames(names: string[]): string {
-  if (names.length <= 1) return names.join('');
-  return `${names.slice(0, -1).join(', ')} e ${names[names.length - 1]}`;
-}
+import { CompetitionSlug } from '../types/snapshot';
+import { COMPETITIONS, getSport } from '../constants/competitions';
+import {
+  iconSize,
+  radius,
+  spacing,
+  typography,
+} from '../constants/designTokens';
 
 interface OnboardingScreenProps {
   onFinish: () => void;
 }
 
-/** First run: pick the favorite teams, then opt in to the match reminders. */
+/**
+ * First run: the competitions to follow. Teams and reminders live in the
+ * settings, where the first team chosen offers the reminders.
+ */
 export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
   const { colors } = useTheme();
-  const { favorites } = useFavorites();
-  const { supported, setEnabled, exactAlarms, requestExactAlarms } =
-    useNotifications();
-  const teamsById = useTeamsById();
-  const [step, setStep] = useState<Step>('teams');
-  const [busy, setBusy] = useState(false);
+  const { setFollowed } = useCompetition();
+  const [picked, setPicked] = useState<CompetitionSlug[]>([]);
 
-  const favoriteNames = Object.values(favorites)
-    .map((id) => (id ? teamsById.get(id) : undefined))
-    .filter((team) => team !== undefined)
-    .map((team) => getTeamName(team.name));
-  const hasFavorite = favoriteNames.length > 0;
-
-  const continueFromTeams = () => {
-    // Reminders follow the favorites: without one there is nothing to offer.
-    if (hasFavorite && supported) setStep('reminders');
-    else onFinish();
-  };
-
-  const enableReminders = async () => {
-    setBusy(true);
-    try {
-      const granted = await setEnabled(true);
-      if (granted && !exactAlarms) await promptExactAlarms(requestExactAlarms);
-    } finally {
-      setBusy(false);
-      onFinish();
-    }
-  };
-
-  if (step === 'reminders') {
-    return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
-        <View style={styles.reminders}>
-          <View
-            style={[styles.iconCircle, { backgroundColor: colors.surfaceAlt }]}
-          >
-            <MaterialCommunityIcons
-              name="bell-ring-outline"
-              size={56}
-              color={colors.primary}
-            />
-          </View>
-          <Text
-            style={[
-              styles.title,
-              styles.centered,
-              { color: colors.textPrimary },
-            ]}
-          >
-            Não perca o jogo do seu time
-          </Text>
-          <Text
-            style={[
-              styles.text,
-              styles.centered,
-              { color: colors.textSecondary },
-            ]}
-          >
-            {`Avisamos ${REMINDER_LEAD_MINUTES} minutos antes dos jogos de ${joinNames(favoriteNames)}, com o canal que vai transmitir. Dá para desligar quando quiser em Configurações.`}
-          </Text>
-        </View>
-        <View style={styles.footer}>
-          <TouchableOpacity
-            accessibilityRole="button"
-            disabled={busy}
-            testID="onboarding-enable-reminders"
-            style={[styles.primaryButton, { backgroundColor: colors.primary }]}
-            onPress={enableReminders}
-          >
-            <Text
-              style={[
-                styles.primaryButtonText,
-                { color: colors.textOnPrimary },
-              ]}
-            >
-              Ativar avisos
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            accessibilityRole="button"
-            disabled={busy}
-            testID="onboarding-skip-reminders"
-            style={styles.secondaryButton}
-            onPress={onFinish}
-          >
-            <Text
-              style={[styles.secondaryButtonText, { color: colors.primary }]}
-            >
-              Agora não
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+  const toggle = (slug: CompetitionSlug) => {
+    setPicked((current) =>
+      current.includes(slug)
+        ? current.filter((item) => item !== slug)
+        : [...current, slug],
     );
-  }
+  };
+
+  const start = () => {
+    if (picked.length === 0) return;
+    setFollowed(picked);
+    onFinish();
+  };
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>
-            Bem-vindo ao Onde Passa
-          </Text>
-          <Text style={[styles.text, { color: colors.textSecondary }]}>
-            Escolha seus times. Os jogos deles aparecem primeiro e você sabe
-            onde assistir a cada um.
-          </Text>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={[styles.eyebrow, { color: colors.primary }]}>
+          Bem-vindo ao Onde Passa
+        </Text>
+        <Text
+          accessibilityRole="header"
+          style={[styles.title, { color: colors.textPrimary }]}
+        >
+          O que você acompanha?
+        </Text>
+        <Text style={[styles.text, { color: colors.textSecondary }]}>
+          Escolha as competições que quer ver nos jogos e na classificação.
+        </Text>
+
+        <View style={styles.grid}>
+          {COMPETITIONS.map((info) => {
+            const on = picked.includes(info.slug);
+            const sport = getSport(info.sport);
+            return (
+              <TouchableOpacity
+                key={info.slug}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: on }}
+                accessibilityLabel={`${info.name}, ${sport.name}`}
+                testID={`onboarding-${info.slug}`}
+                style={[
+                  styles.tile,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: on ? colors.primary : colors.chipBorder,
+                  },
+                ]}
+                onPress={() => toggle(info.slug)}
+              >
+                <View
+                  style={[
+                    styles.tileIcon,
+                    {
+                      backgroundColor: on ? colors.primary : colors.surfaceAlt,
+                    },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={sport.icon}
+                    size={iconSize.md}
+                    color={on ? colors.textOnPrimary : colors.textSecondary}
+                  />
+                </View>
+                <Text style={[styles.tileName, { color: colors.textPrimary }]}>
+                  {info.name}
+                </Text>
+                <Text
+                  style={[styles.tileSport, { color: colors.textSecondary }]}
+                >
+                  {sport.name}
+                </Text>
+                <View
+                  style={[
+                    styles.tick,
+                    on
+                      ? { backgroundColor: colors.primary }
+                      : [styles.unchecked, { borderColor: colors.chipBorder }],
+                  ]}
+                >
+                  {on ? (
+                    <MaterialCommunityIcons
+                      name="check"
+                      size={iconSize.sm - 2}
+                      color={colors.textOnPrimary}
+                    />
+                  ) : null}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
-        <TeamPicker />
+
+        <Text style={[styles.note, { color: colors.textTertiary }]}>
+          Dá para mudar quando quiser. Seu time favorito e os avisos ficam em
+          Configurações.
+        </Text>
       </ScrollView>
-      <View
-        style={[
-          styles.footer,
-          styles.footerDivider,
-          { borderTopColor: colors.border },
-        ]}
-      >
+
+      <View style={styles.footer}>
         <TouchableOpacity
           accessibilityRole="button"
-          testID="onboarding-continue"
-          style={[styles.primaryButton, { backgroundColor: colors.primary }]}
-          onPress={continueFromTeams}
+          accessibilityState={{ disabled: picked.length === 0 }}
+          disabled={picked.length === 0}
+          testID="onboarding-start"
+          style={[
+            styles.button,
+            {
+              backgroundColor:
+                picked.length === 0 ? colors.surfaceAlt : colors.primary,
+            },
+          ]}
+          onPress={start}
         >
           <Text
-            style={[styles.primaryButtonText, { color: colors.textOnPrimary }]}
+            style={[
+              styles.buttonText,
+              {
+                color:
+                  picked.length === 0
+                    ? colors.textSecondary
+                    : colors.textOnPrimary,
+              },
+            ]}
           >
-            {hasFavorite ? 'Continuar' : 'Pular por enquanto'}
+            {picked.length === 0 ? 'Escolha pelo menos uma' : 'Começar'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -176,67 +168,85 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
 }
 
 const styles = StyleSheet.create({
+  unchecked: {
+    borderWidth: 2,
+  },
   container: {
     flex: 1,
   },
   content: {
-    paddingBottom: spacing.xl,
+    padding: spacing.xl,
   },
-  header: {
-    gap: spacing.sm,
-    paddingBottom: spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
+  eyebrow: {
+    fontSize: typography.size.body,
+    fontWeight: typography.weight.semibold,
   },
   title: {
     fontSize: typography.size.title,
     fontWeight: typography.weight.heavy,
     letterSpacing: -0.5,
+    marginTop: spacing.sm,
   },
   text: {
     fontSize: typography.size.md,
     lineHeight: 22,
+    marginTop: spacing.sm,
   },
-  centered: {
-    textAlign: 'center',
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    marginTop: spacing.xxl,
   },
-  reminders: {
+  tile: {
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    flexBasis: '47%',
+    flexGrow: 1,
+    gap: spacing.sm,
+    minHeight: 132,
+    padding: spacing.lg,
+  },
+  tileIcon: {
     alignItems: 'center',
-    flex: 1,
-    gap: spacing.lg,
+    borderRadius: radius.md,
+    height: 40,
     justifyContent: 'center',
-    paddingHorizontal: spacing.xxxl,
+    width: 40,
   },
-  iconCircle: {
+  tileName: {
+    fontSize: typography.size.md,
+    fontWeight: typography.weight.bold,
+  },
+  tileSport: {
+    fontSize: typography.size.sm,
+  },
+  tick: {
     alignItems: 'center',
     borderRadius: radius.pill,
-    height: 112,
+    height: 22,
     justifyContent: 'center',
-    width: 112,
+    position: 'absolute',
+    right: spacing.md,
+    top: spacing.md,
+    width: 22,
+  },
+  note: {
+    fontSize: typography.size.sm,
+    lineHeight: 18,
+    marginTop: spacing.lg,
   },
   footer: {
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.xl,
   },
-  footerDivider: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  primaryButton: {
+  button: {
     alignItems: 'center',
     borderRadius: radius.md,
     paddingVertical: spacing.lg,
   },
-  primaryButtonText: {
+  buttonText: {
     fontSize: typography.size.md,
     fontWeight: typography.weight.bold,
-  },
-  secondaryButton: {
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-  },
-  secondaryButtonText: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
   },
 });

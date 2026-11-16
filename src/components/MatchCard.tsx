@@ -34,6 +34,8 @@ interface MatchCardProps {
   homeTeam: Team;
   awayTeam: Team;
   favorite?: boolean;
+  /** Off where a header already names the competition. */
+  showCompetition?: boolean;
   onPress?: () => void;
 }
 
@@ -99,6 +101,7 @@ export const MatchCard = React.memo(function MatchCard({
   homeTeam,
   awayTeam,
   favorite = false,
+  showCompetition = true,
   onPress,
 }: MatchCardProps) {
   const { colors } = useTheme();
@@ -108,7 +111,7 @@ export const MatchCard = React.memo(function MatchCard({
 
   const meta = [
     formatTime(match.startsAt),
-    getCompetition(match.competition).label,
+    showCompetition ? getCompetition(match.competition).label : '',
     formatRound(match.roundLabel),
   ]
     .filter(Boolean)

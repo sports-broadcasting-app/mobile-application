@@ -1,5 +1,6 @@
-import { act, renderHook } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   CompetitionProvider,
   useCompetition,
@@ -32,5 +33,41 @@ describe('CompetitionContext', () => {
     act(() => result.current.setCompetition('serie-a'));
     expect(result.current.filter).toBe('serie-a');
     expect(result.current.competition).toBe('serie-a');
+  });
+
+  it('follows everything until the user chooses', () => {
+    const { result } = renderHook(() => useCompetition(), { wrapper });
+    expect(result.current.followed).toEqual([
+      'masculina',
+      'feminina',
+      'serie-a',
+      'nfl',
+    ]);
+  });
+
+  it('loads the stored choice, dropping unknown slugs', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(
+      '["nfl","cricket","serie-a"]',
+    );
+    const { result } = renderHook(() => useCompetition(), { wrapper });
+    await waitFor(() =>
+      expect(result.current.followed).toEqual(['serie-a', 'nfl']),
+    );
+    expect(result.current.competition).toBe('serie-a');
+  });
+
+  it('never ends with nothing followed', () => {
+    const { result } = renderHook(() => useCompetition(), { wrapper });
+    act(() => result.current.setFollowed([]));
+    expect(result.current.followed).toHaveLength(4);
+  });
+
+  it('leaves a filter the user stopped following', async () => {
+    const { result } = renderHook(() => useCompetition(), { wrapper });
+    act(() => result.current.setFilter('nfl'));
+    act(() => result.current.setFollowed(['masculina', 'serie-a']));
+    await waitFor(() => expect(result.current.filter).toBe('todos'));
+    expect(result.current.competition).toBe('masculina');
+    expect(result.current.isFollowed('nfl')).toBe(false);
   });
 });

@@ -67,13 +67,13 @@ export function useDayMatches(day: Date) {
 
 export function useNextMatches(
   fromMs: number,
-  competition: CompetitionSlug | undefined,
+  competitions: CompetitionSlug[],
   enabled: boolean,
 ) {
   const { lastSyncAt } = useSync();
   return useQuery({
-    queryKey: ['nextMatches', fromMs, competition, lastSyncAt],
-    queryFn: () => getNextMatches(fromMs, NEXT_MATCHES_LIMIT, competition),
+    queryKey: ['nextMatches', fromMs, competitions.join(','), lastSyncAt],
+    queryFn: () => getNextMatches(fromMs, NEXT_MATCHES_LIMIT, competitions),
     enabled,
   });
 }

@@ -13,6 +13,8 @@ interface SearchFieldProps {
   onChangeText: (text: string) => void;
   placeholder: string;
   testID?: string;
+  /** Drops the side margin, for a field inside a padded container. */
+  inset?: boolean;
 }
 
 export function SearchField({
@@ -20,6 +22,7 @@ export function SearchField({
   onChangeText,
   placeholder,
   testID,
+  inset = false,
 }: SearchFieldProps) {
   const { colors } = useTheme();
 
@@ -27,6 +30,7 @@ export function SearchField({
     <View
       style={[
         styles.search,
+        inset && styles.inset,
         { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
       ]}
     >
@@ -51,6 +55,9 @@ export function SearchField({
 }
 
 const styles = StyleSheet.create({
+  inset: {
+    marginHorizontal: 0,
+  },
   search: {
     alignItems: 'center',
     borderRadius: radius.md,
