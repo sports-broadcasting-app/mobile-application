@@ -3,7 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import { Match, Team } from '../types/snapshot';
-import { formatDay, formatTime } from '../utils/date';
+import { formatShortDay, formatTime } from '../utils/date';
 import { getTeamName } from '../utils/teamName';
 import {
   iconSize,
@@ -30,7 +30,7 @@ export const MatchRow = React.memo(function MatchRow({
 }: MatchRowProps) {
   const { colors } = useTheme();
   const date = new Date(match.startsAt);
-  const when = `${formatDay(date).replace(', ', ' ')} · ${formatTime(match.startsAt)}`;
+  const when = `${formatShortDay(date)} · ${formatTime(match.startsAt)}`;
   const [channel] = match.channels;
 
   return (
@@ -41,7 +41,12 @@ export const MatchRow = React.memo(function MatchRow({
       testID={`match-row-${match.id}`}
       style={[styles.row, { borderBottomColor: colors.borderLight }]}
     >
-      <Text style={[styles.when, { color: colors.textSecondary }]}>{when}</Text>
+      <Text
+        numberOfLines={1}
+        style={[styles.when, { color: colors.textSecondary }]}
+      >
+        {when}
+      </Text>
       <View style={styles.teams}>
         <Text
           numberOfLines={1}
@@ -89,7 +94,8 @@ const styles = StyleSheet.create({
   when: {
     fontSize: typography.size.sm + 1,
     fontWeight: typography.weight.medium,
-    width: 92,
+    // Fits "dom 22 · 15:00" on one line with the system font at 100%.
+    width: 112,
   },
   teams: {
     alignItems: 'center',

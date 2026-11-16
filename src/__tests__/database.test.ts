@@ -74,6 +74,10 @@ describe('database', () => {
     const from = new Date(2026, 9, 1).getTime();
     expect(await getNextMatches(from, 5, 'masculina')).toHaveLength(1);
     expect(await getNextMatches(from, 5, 'feminina')).toHaveLength(0);
+    expect(
+      await getNextMatches(from, 5, ['feminina', 'masculina']),
+    ).toHaveLength(1);
+    expect(await getNextMatches(from, 5, [])).toEqual([]);
   });
 
   it('removes matches that left the source', async () => {

@@ -21,12 +21,18 @@ interface FavoritesContextValue {
     competition: CompetitionSlug,
     teamId: string,
   ) => Promise<void>;
+  /** Makes `teamId` the favorite of the competition; null removes it. */
+  setFavorite: (
+    competition: CompetitionSlug,
+    teamId: string | null,
+  ) => Promise<void>;
   isFavorite: (teamId: string) => boolean;
 }
 
 const FavoritesContext = createContext<FavoritesContextValue>({
   favorites: {},
   toggleFavorite: async () => {},
+  setFavorite: async () => {},
   isFavorite: () => false,
 });
 
@@ -54,13 +60,27 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     [favorites],
   );
 
+  const setFavorite = useCallback(
+    async (competition: CompetitionSlug, teamId: string | null) => {
+      if (teamId === null) {
+        await deleteFavorite(competition);
+        setFavorites(({ [competition]: _removed, ...rest }) => rest);
+      } else {
+        await saveFavorite(competition, teamId);
+        setFavorites((current) => ({ ...current, [competition]: teamId }));
+      }
+    },
+    [],
+  );
+
   const value = useMemo(
     () => ({
       favorites,
       toggleFavorite,
+      setFavorite,
       isFavorite: (teamId: string) => Object.values(favorites).includes(teamId),
     }),
-    [favorites, toggleFavorite],
+    [favorites, toggleFavorite, setFavorite],
   );
 
   return (

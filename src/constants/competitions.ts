@@ -37,6 +37,23 @@ export const COMPETITIONS: CompetitionInfo[] = [
   },
 ];
 
+/** Sport names and MaterialCommunityIcons glyphs, in the order they group. */
+export const SPORTS: { sport: Sport; name: string; icon: SportIcon }[] = [
+  { sport: 'futebol', name: 'Futebol', icon: 'soccer' },
+  { sport: 'futebol-americano', name: 'Futebol americano', icon: 'football' },
+  { sport: 'volei', name: 'Vôlei', icon: 'volleyball' },
+];
+
+export type SportIcon = 'soccer' | 'football' | 'volleyball';
+
+export function getSport(sport: Sport) {
+  return SPORTS.find((entry) => entry.sport === sport) ?? SPORTS[0];
+}
+
+export const ALL_COMPETITIONS: CompetitionSlug[] = COMPETITIONS.map(
+  (info) => info.slug,
+);
+
 const BY_SLUG = new Map(COMPETITIONS.map((info) => [info.slug, info]));
 
 export function isCompetitionSlug(value: unknown): value is CompetitionSlug {

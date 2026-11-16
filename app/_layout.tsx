@@ -58,16 +58,16 @@ export default function RootLayout() {
             <QueryClientProvider client={queryClient}>
               <SyncProvider>
                 <FavoritesProvider>
-                  <NotificationsProvider>
-                    <CompetitionProvider>
+                  <CompetitionProvider>
+                    <NotificationsProvider>
                       <SyncGate>
                         <OnboardingGate>
                           <RootStack />
                           <NotificationResponder />
                         </OnboardingGate>
                       </SyncGate>
-                    </CompetitionProvider>
-                  </NotificationsProvider>
+                    </NotificationsProvider>
+                  </CompetitionProvider>
                 </FavoritesProvider>
               </SyncProvider>
             </QueryClientProvider>

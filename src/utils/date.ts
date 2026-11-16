@@ -23,6 +23,11 @@ export function formatDay(date: Date): string {
   return `${WEEKDAYS[date.getDay()]}, ${pad(date.getDate())}/${pad(date.getMonth() + 1)}`;
 }
 
+/** "qui 19": weekday and day of month, for lists of the coming days. */
+export function formatShortDay(date: Date): string {
+  return `${WEEKDAYS[date.getDay()]} ${date.getDate()}`;
+}
+
 export function formatMatchDate(isoDate: string): string {
   return `${formatDay(new Date(isoDate))} - ${formatTime(isoDate)}`;
 }

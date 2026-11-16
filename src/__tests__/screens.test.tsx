@@ -25,6 +25,7 @@ import {
   buildSnapshot,
   finishedMatch,
   flamengo,
+  footballMatch,
   footballCompetition,
   homeTeam,
   palmeiras,
@@ -149,10 +150,73 @@ describe('HomeScreen', () => {
     expect(await screen.findByText(/dados salvos/)).toBeTruthy();
   });
 
-  it('asks for a favorite only while there is none', async () => {
+  it('groups "Todos" into your teams and one section per competition', async () => {
+    (getFavorites as jest.Mock).mockResolvedValue({ masculina: '1' });
+    (getTeams as jest.Mock).mockResolvedValue([
+      homeTeam,
+      awayTeam,
+      flamengo,
+      palmeiras,
+    ]);
+    mockDayMatches([
+      scheduledMatch,
+      {
+        ...footballMatch,
+        status: 'scheduled',
+        homeScore: null,
+        awayScore: null,
+      },
+    ]);
     render(<HomeScreen />);
-    fireEvent.press(await screen.findByText(/Escolha seu time/));
-    expect(mockPush).toHaveBeenCalledWith('/configuracoes');
+    expect(await screen.findByTestId('section-mine')).toHaveTextContent(
+      /Seus times/,
+    );
+    expect(await screen.findByTestId('section-serie-a')).toHaveTextContent(
+      /Brasileirão Série A.*1 jogo/,
+    );
+    // The favorite's game sits in "Seus times" only.
+    expect(screen.queryByTestId('section-masculina')).toBeNull();
+    expect(screen.queryByTestId('favorite-pill')).toBeNull();
+  });
+
+  it('shows only the competitions the user follows', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockImplementation(async (key) =>
+      key === '@followed_competitions' ? '["serie-a"]' : null,
+    );
+    mockDayMatches([scheduledMatch]);
+    render(<HomeScreen />);
+    await waitFor(() => expect(screen.queryByText('Superliga M')).toBeNull());
+    expect(screen.getByText('Brasileirão')).toBeTruthy();
+    expect(screen.queryByTestId('match-card-100')).toBeNull();
+    (AsyncStorage.getItem as jest.Mock).mockImplementation(async () => null);
+  });
+
+  it('edits the followed competitions from the chips', async () => {
+    render(<HomeScreen />);
+    fireEvent.press(await screen.findByTestId('edit-competitions'));
+    expect(screen.getByText('Suas competições')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('follow-feminina'));
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+      '@followed_competitions',
+      JSON.stringify(['masculina', 'serie-a', 'nfl']),
+    );
+    await waitFor(() => expect(screen.queryByText('Superliga F')).toBeNull());
+  });
+
+  it('fills a day with few games with the next ones', async () => {
+    mockDayMatches([scheduledMatch]);
+    (getNextMatches as jest.Mock).mockResolvedValue([
+      { ...scheduledMatch, id: '102' },
+    ]);
+    render(<HomeScreen />);
+    fireEvent.press(await screen.findByText('Superliga M'));
+    expect(
+      await screen.findByText('Próximos jogos · Superliga M'),
+    ).toBeTruthy();
+    expect(await screen.findByTestId('match-row-102')).toBeTruthy();
+    expect(getNextMatches).toHaveBeenLastCalledWith(expect.any(Number), 6, [
+      'masculina',
+    ]);
   });
 });
 
@@ -286,22 +350,41 @@ describe('TransfersScreen', () => {
 });
 
 describe('SettingsScreen', () => {
-  it('saves and removes a favorite in the database', async () => {
+  it('picks and removes a favorite from the team sheet', async () => {
     render(<SettingsScreen />);
+    fireEvent.press(await screen.findByTestId('pick-team-masculina'));
     fireEvent.press(await screen.findByTestId('team-option-1'));
     await waitFor(() =>
       expect(saveFavorite).toHaveBeenCalledWith('masculina', '1'),
     );
+    expect(
+      await screen.findByLabelText(/Seu time em Superliga Masculina/),
+    ).toBeTruthy();
 
-    await waitFor(() =>
-      expect(
-        screen.getByTestId('team-option-1').props.accessibilityState.selected,
-      ).toBe(true),
-    );
-    fireEvent.press(screen.getByTestId('team-option-1'));
+    fireEvent.press(screen.getByTestId('pick-team-masculina'));
+    fireEvent.press(await screen.findByTestId('team-none'));
     await waitFor(() =>
       expect(deleteFavorite).toHaveBeenCalledWith('masculina'),
     );
+  });
+
+  it('stops following a competition, but never the last one', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockImplementation(async (key) =>
+      key === '@followed_competitions' ? '["masculina","nfl"]' : null,
+    );
+    render(<SettingsScreen />);
+    await waitFor(() =>
+      expect(screen.queryByTestId('pick-team-feminina')).toBeNull(),
+    );
+    fireEvent(screen.getByTestId('follow-nfl'), 'valueChange', false);
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+      '@followed_competitions',
+      JSON.stringify(['masculina']),
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('follow-masculina').props.disabled).toBe(true),
+    );
+    (AsyncStorage.getItem as jest.Mock).mockImplementation(async () => null);
   });
 });
 
@@ -312,6 +395,7 @@ describe('SettingsScreen search and theme', () => {
       { ...awayTeam, name: 'VÔLEI RENATA' },
     ]);
     render(<SettingsScreen />);
+    fireEvent.press(await screen.findByTestId('pick-team-masculina'));
     await screen.findByTestId('team-option-2');
     fireEvent.changeText(screen.getByTestId('team-search'), 'volei');
     await waitFor(() =>
@@ -322,6 +406,7 @@ describe('SettingsScreen search and theme', () => {
 
   it('says when no team matches', async () => {
     render(<SettingsScreen />);
+    fireEvent.press(await screen.findByTestId('pick-team-masculina'));
     await screen.findByTestId('team-option-1');
     fireEvent.changeText(screen.getByTestId('team-search'), 'xyz');
     expect(await screen.findByText('Nenhum time encontrado')).toBeTruthy();

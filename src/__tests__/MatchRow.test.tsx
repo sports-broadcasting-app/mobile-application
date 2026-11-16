@@ -17,7 +17,7 @@ describe('MatchRow', () => {
         onPress={onPress}
       />,
     );
-    expect(await screen.findByText('dom 01/11 · 20:30')).toBeTruthy();
+    expect(await screen.findByText('dom 1 · 20:30')).toBeTruthy();
     expect(screen.getByText('Sada Cruzeiro × Vôlei Renata')).toBeTruthy();
     expect(screen.getByText('GE TV')).toBeTruthy();
     fireEvent.press(screen.getByTestId('match-row-100'));
