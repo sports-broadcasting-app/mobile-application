@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppearancePicker } from '../components/AppearancePicker';
 import { ReminderToggle } from '../components/ReminderToggle';
+import { SportIcon } from '../components/SportIcon';
 import { TeamCircle } from '../components/TeamCircle';
 import { TeamSheet } from '../components/TeamSheet';
 import { useCompetition } from '../contexts/CompetitionContext';
@@ -23,7 +24,7 @@ import { useTeamsById } from '../hooks/useSuperliga';
 import { CompetitionSlug, Team } from '../types/snapshot';
 import { getTeamName } from '../utils/teamName';
 import { promptExactAlarms } from '../utils/exactAlarmPrompt';
-import { COMPETITIONS, getSport } from '../constants/competitions';
+import { COMPETITIONS } from '../constants/competitions';
 import {
   iconSize,
   radius,
@@ -137,8 +138,8 @@ export default function SettingsScreen() {
                       { backgroundColor: colors.surfaceAlt },
                     ]}
                   >
-                    <MaterialCommunityIcons
-                      name={getSport(info.sport).icon}
+                    <SportIcon
+                      sport={info.sport}
                       size={iconSize.md}
                       color={colors.textSecondary}
                     />
