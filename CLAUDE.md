@@ -78,7 +78,7 @@ Stack over tabs:
 ## Data Flow
 
 ```
-GitHub Action (every 2h) → reads cbv.com.br and ge.globo.com → validates → publishes onde-passa.json (GitHub Pages)
+GitHub Action (every 30 min) → reads cbv.com.br and ge.globo.com → validates → publishes onde-passa.json (GitHub Pages)
 App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens read only SQLite
 ```
 
