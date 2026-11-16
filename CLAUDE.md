@@ -93,6 +93,7 @@ App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens 
 - **Later runs**: opens from SQLite and refreshes in the background when data is older than 6h (15min on match days).
 - **Offline**: keeps local data and says so on the Home header.
 - **`saveSnapshot` must never touch the `favorites` table.**
+- **Schema changes**: bump `SCHEMA_VERSION` in `database.ts` whenever a data table changes columns. A mismatch drops and recreates the data tables (never `favorites`), because `CREATE TABLE IF NOT EXISTS` keeps an old table as it is. Standings are read in snapshot order (`sortOrder`), since divided tables restart `position` per group.
 - **Dates**: `startsAt` carries an offset (European for the CBV, Brasília for ge). Always compare instants; never slice the text to get the day.
 - **Collector privacy**: the source page holds contact e-mails and rosters. `parseCbv.ts` copies only whitelisted fields.
 

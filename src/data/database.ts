@@ -12,40 +12,45 @@ const DB_NAME = 'superliga.db';
 const LAST_SYNC_KEY = 'lastSyncAt';
 const SCHEMA_KEY = 'schemaVersion';
 /** Bump when the stored payloads change shape; favorites are always kept. */
-const SCHEMA_VERSION = '2';
+const SCHEMA_VERSION = '3';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
+
+/** Tables rebuilt from each snapshot; their columns follow SCHEMA_VERSION. */
+const DATA_TABLES = `
+  CREATE TABLE IF NOT EXISTS teams (
+    id TEXT PRIMARY KEY,
+    competition TEXT NOT NULL,
+    payload TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS matches (
+    id TEXT PRIMARY KEY,
+    competition TEXT NOT NULL,
+    startsAtMs INTEGER NOT NULL,
+    payload TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_matches_startsAtMs ON matches (startsAtMs);
+  CREATE TABLE IF NOT EXISTS standings (
+    competition TEXT NOT NULL,
+    teamId TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    sortOrder INTEGER NOT NULL,
+    payload TEXT NOT NULL,
+    PRIMARY KEY (competition, teamId)
+  );
+  CREATE TABLE IF NOT EXISTS transfers (
+    id TEXT NOT NULL,
+    competition TEXT NOT NULL,
+    date TEXT,
+    payload TEXT NOT NULL,
+    PRIMARY KEY (competition, id)
+  );
+`;
 
 async function openDb(): Promise<SQLite.SQLiteDatabase> {
   const db = await SQLite.openDatabaseAsync(DB_NAME);
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
-    CREATE TABLE IF NOT EXISTS teams (
-      id TEXT PRIMARY KEY,
-      competition TEXT NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS matches (
-      id TEXT PRIMARY KEY,
-      competition TEXT NOT NULL,
-      startsAtMs INTEGER NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS idx_matches_startsAtMs ON matches (startsAtMs);
-    CREATE TABLE IF NOT EXISTS standings (
-      competition TEXT NOT NULL,
-      teamId TEXT NOT NULL,
-      position INTEGER NOT NULL,
-      payload TEXT NOT NULL,
-      PRIMARY KEY (competition, teamId)
-    );
-    CREATE TABLE IF NOT EXISTS transfers (
-      id TEXT NOT NULL,
-      competition TEXT NOT NULL,
-      date TEXT,
-      payload TEXT NOT NULL,
-      PRIMARY KEY (competition, id)
-    );
     CREATE TABLE IF NOT EXISTS meta (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
@@ -62,13 +67,14 @@ async function openDb(): Promise<SQLite.SQLiteDatabase> {
     [SCHEMA_KEY],
   );
   if (schema?.value !== SCHEMA_VERSION) {
-    // Data written by an older app has another shape: drop it so the next
-    // sync rebuilds it. Favorites survive.
+    // Tables written by an older app may lack columns: CREATE IF NOT EXISTS
+    // would keep them as they are, so they are dropped and the next sync
+    // fills them again. Favorites survive.
     await db.execAsync(`
-      DELETE FROM teams;
-      DELETE FROM matches;
-      DELETE FROM standings;
-      DELETE FROM transfers;
+      DROP TABLE IF EXISTS teams;
+      DROP TABLE IF EXISTS matches;
+      DROP TABLE IF EXISTS standings;
+      DROP TABLE IF EXISTS transfers;
       DELETE FROM meta;
     `);
     await db.runAsync('INSERT INTO meta (key, value) VALUES (?, ?)', [
@@ -76,6 +82,7 @@ async function openDb(): Promise<SQLite.SQLiteDatabase> {
       SCHEMA_VERSION,
     ]);
   }
+  await db.execAsync(DATA_TABLES);
   return db;
 }
 
@@ -127,14 +134,17 @@ export async function saveSnapshot(
         );
       }
 
-      for (const standing of competition.standings) {
+      // The snapshot order is the display order: positions restart in each
+      // group of a divided table, so sorting by them would interleave groups.
+      for (const [index, standing] of competition.standings.entries()) {
         await db.runAsync(
-          `INSERT OR REPLACE INTO standings (competition, teamId, position, payload)
-            VALUES (?, ?, ?, ?)`,
+          `INSERT OR REPLACE INTO standings (competition, teamId, position, sortOrder, payload)
+            VALUES (?, ?, ?, ?, ?)`,
           [
             competition.slug,
             standing.teamId,
             standing.position,
+            index,
             JSON.stringify(standing),
           ],
         );
@@ -273,7 +283,7 @@ export async function getStandings(
 ): Promise<Standing[]> {
   const db = await getDb();
   const rows = await db.getAllAsync<{ payload: string }>(
-    'SELECT payload FROM standings WHERE competition = ? ORDER BY position ASC',
+    'SELECT payload FROM standings WHERE competition = ? ORDER BY sortOrder ASC',
     [competition],
   );
   return parseRows<Standing>(rows);

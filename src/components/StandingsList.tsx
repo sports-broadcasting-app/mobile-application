@@ -100,7 +100,7 @@ export function StandingsList({
       </View>
 
       {groupStandings(standings).map(({ name, rows }, index) => (
-        <Fragment key={name ?? index}>
+        <Fragment key={index}>
           {name !== undefined && (
             <Text
               testID={`standing-group-${name}`}

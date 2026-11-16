@@ -196,7 +196,7 @@ describe('parseMatches', () => {
         setScores: [],
         channels: ['SporTV', 'Globoplay', 'GE TV'],
         venue: 'NRG Stadium',
-        city: 'Houston',
+        city: null,
       },
     ]);
   });

@@ -16,6 +16,7 @@ import {
 import {
   buildSnapshot,
   finishedMatch,
+  homeTeam,
   scheduledMatch,
   transfers,
 } from '../test-fixtures';
@@ -43,6 +44,24 @@ describe('database', () => {
   it('orders standings by position', async () => {
     const standings = await getStandings('masculina');
     expect(standings.map((row) => row.teamId)).toEqual(['2', '1']);
+  });
+
+  it('keeps a divided table in snapshot order, not by position', async () => {
+    const snapshot = buildSnapshot([scheduledMatch]);
+    const [first, second] = snapshot.competitions[0].standings;
+    snapshot.competitions[0].standings = [
+      { ...first, position: 1, group: 'A' },
+      { ...second, position: 2, group: 'A' },
+      { ...second, teamId: '9', position: 1, group: 'B' },
+    ];
+    snapshot.competitions[0].teams.push({ ...homeTeam, id: '9' });
+    await saveSnapshot(snapshot, 3000);
+    const standings = await getStandings('masculina');
+    expect(standings.map((row) => [row.group, row.position])).toEqual([
+      ['A', 1],
+      ['A', 2],
+      ['B', 1],
+    ]);
   });
 
   it('assigns a match to the local day, not to the day in its text', async () => {

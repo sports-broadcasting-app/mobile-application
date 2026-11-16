@@ -259,7 +259,8 @@ export function parseMatches(
       setScores: [],
       channels: toChannels(sources),
       venue: toText(location.name),
-      city: toText(location.popularName),
+      // ge's popularName is a stadium nickname ("The Bank"), not a city.
+      city: null,
     });
   }
 
