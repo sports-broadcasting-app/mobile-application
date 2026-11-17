@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
@@ -28,6 +29,12 @@ const queryClient = new QueryClient({
   },
 });
 
+/** Dark icons over the light theme, light over the dark one, on every screen. */
+function ThemedStatusBar() {
+  const { colors } = useTheme();
+  return <StatusBar style={colors.statusBar} />;
+}
+
 function RootStack() {
   const { colors } = useTheme();
 
@@ -53,6 +60,7 @@ export default function RootLayout() {
   return (
     <AnimatedSplash>
       <ThemeProvider>
+        <ThemedStatusBar />
         <ErrorBoundary>
           <AdsProvider>
             <QueryClientProvider client={queryClient}>
