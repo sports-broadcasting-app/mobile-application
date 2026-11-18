@@ -19,16 +19,53 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deploy1.outputs.page_url || steps.deploy2.outputs.page_url || steps.deploy3.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      # A failed or suspicious collection stops here, so the last good file stays online.
-      - run: node scripts/collect.ts public
+      # A failed or suspicious source keeps its competitions from the file online
+      # (a warning on the run); the run fails only when nothing new was collected.
+      - id: collect
+        run: node scripts/collect.ts public
+        env:
+          PREVIOUS_SNAPSHOT_URL: https://dados.onde-passa.app/onde-passa.json
       - uses: actions/upload-pages-artifact@v3
         with:
           path: public
-      - id: deployment
+      # GitHub's OIDC token service sometimes times out ("Failed to get ID
+      # Token"); the uploaded artifact is still there, so deploy it again.
+      - id: deploy1
         uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - if: steps.deploy1.outcome == 'failure'
+        run: sleep 30
+      - id: deploy2
+        if: steps.deploy1.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - if: steps.deploy2.outcome == 'failure'
+        run: sleep 90
+      - id: deploy3
+        if: steps.deploy2.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+
+      # Where the app reads from since 1.2 (R2 behind dados.onde-passa.app, with
+      # the Cloudflare cache in front). GitHub Pages above stays for older builds.
+      # Runs even when the Pages deploy failed, so one host never blocks the other.
+      - name: Publish to Cloudflare R2
+        if: ${{ !cancelled() && steps.collect.outcome == 'success' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          # R2 rejects the newer default checksums of the AWS CLI.
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+          R2_ENDPOINT: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+        run: >-
+          aws s3 cp public/onde-passa.json s3://onde-passa-data/onde-passa.json
+          --endpoint-url "$R2_ENDPOINT"
+          --content-type application/json
+          --cache-control "public, max-age=300"
