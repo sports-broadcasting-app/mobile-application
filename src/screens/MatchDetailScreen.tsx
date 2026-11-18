@@ -1,20 +1,15 @@
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { TeamCircle } from '../components/TeamCircle';
 import { useTheme } from '../contexts/ThemeContext';
+import { Button } from '../components/Button';
 import { useMatch, useTeamsById } from '../hooks/useSuperliga';
 import { getChannelUrl } from '../utils/broadcast';
 import { formatMatchDate } from '../utils/date';
 import { formatRound } from '../utils/roundLabel';
 import { getTeamName } from '../utils/teamName';
-import { radius, spacing, typography } from '../constants/designTokens';
+import { spacing, typography } from '../constants/designTokens';
 
 export default function MatchDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -105,22 +100,14 @@ export default function MatchDetailScreen() {
         {match.channels.map((channel) => {
           const url = getChannelUrl(channel);
           return (
-            <TouchableOpacity
+            <Button
               key={channel}
-              accessibilityRole="button"
+              label={url ? `Assistir no ${channel}` : channel}
               disabled={!url}
-              style={[
-                styles.channel,
-                { backgroundColor: colors.ctaBackground },
-              ]}
               onPress={() => {
                 if (url) Linking.openURL(url).catch(() => {});
               }}
-            >
-              <Text style={[styles.channelText, { color: colors.ctaText }]}>
-                {url ? `Assistir no ${channel}` : channel}
-              </Text>
-            </TouchableOpacity>
+            />
           );
         })}
       </View>
@@ -172,14 +159,5 @@ const styles = StyleSheet.create({
     fontSize: typography.size.md,
     fontWeight: typography.weight.bold,
     textAlign: 'center',
-  },
-  channel: {
-    alignItems: 'center',
-    borderRadius: radius.md,
-    padding: spacing.md,
-  },
-  channelText: {
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.bold,
   },
 });

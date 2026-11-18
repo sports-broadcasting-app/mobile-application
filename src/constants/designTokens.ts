@@ -64,3 +64,20 @@ export const iconSize = {
   lg: 24,
   xl: 32,
 } as const;
+
+/** Smallest comfortable touch target (Apple HIG 44 pt, Material 48 dp). */
+export const touchTarget = 44;
+
+/**
+ * Cap for system text scaling on text that sits in fixed-width columns or
+ * single-line chips; free-flowing text scales without a cap.
+ */
+export const maxFontScale = 1.3;
+
+/** The uppercase label above a group of rows; color comes from the theme. */
+export const sectionLabel = {
+  fontSize: typography.size.sm,
+  fontWeight: typography.weight.bold,
+  letterSpacing: 0.6,
+  textTransform: 'uppercase' as const,
+};

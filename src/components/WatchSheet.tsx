@@ -1,23 +1,11 @@
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../contexts/ThemeContext';
+import { Button } from './Button';
 import { Match, Team } from '../types/snapshot';
 import { getChannelUrl } from '../utils/broadcast';
 import { getTeamName } from '../utils/teamName';
-import {
-  iconSize,
-  radius,
-  spacing,
-  typography,
-} from '../constants/designTokens';
+import { radius, spacing, typography } from '../constants/designTokens';
 
 interface WatchSheetProps {
   match: Match | null;
@@ -88,66 +76,38 @@ export function WatchSheet({
 
         {channels.map(({ name, url }) =>
           url ? (
-            <TouchableOpacity
+            <Button
               key={name}
-              accessibilityRole="button"
+              label={`Abrir ${name}`}
+              icon="open-in-app"
               testID={`watch-open-${name}`}
-              style={[styles.primary, { backgroundColor: colors.watchBtnBg }]}
               onPress={() => open(url)}
-            >
-              <MaterialCommunityIcons
-                name="open-in-app"
-                size={iconSize.md}
-                color={colors.watchBtnText}
-              />
-              <Text
-                style={[styles.primaryText, { color: colors.watchBtnText }]}
-              >
-                Abrir {name}
-              </Text>
-            </TouchableOpacity>
+            />
           ) : (
-            <View
+            <Button
               key={name}
-              style={[styles.primary, { backgroundColor: colors.surfaceAlt }]}
-            >
-              <MaterialCommunityIcons
-                name="television-classic"
-                size={iconSize.md}
-                color={colors.textSecondary}
-              />
-              <Text
-                style={[styles.primaryText, { color: colors.textSecondary }]}
-              >
-                {name} (sem app)
-              </Text>
-            </View>
+              label={`${name} (sem app)`}
+              icon="television-classic"
+              disabled
+            />
           ),
         )}
 
-        <TouchableOpacity
-          accessibilityRole="button"
+        <Button
+          label="Ver detalhes do jogo"
+          variant="secondary"
           testID="watch-details"
-          style={[styles.secondary, { borderColor: colors.border }]}
           onPress={() => {
             if (match) onDetails(match);
           }}
-        >
-          <Text style={[styles.secondaryText, { color: colors.textPrimary }]}>
-            Ver detalhes do jogo
-          </Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          accessibilityRole="button"
+        <Button
+          label="Cancelar"
+          variant="plain"
           testID="watch-cancel"
-          style={styles.cancel}
           onPress={onClose}
-        >
-          <Text style={[styles.cancelText, { color: colors.textSecondary }]}>
-            Cancelar
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
     </Modal>
   );
@@ -179,35 +139,5 @@ const styles = StyleSheet.create({
   message: {
     fontSize: typography.size.body,
     marginBottom: spacing.sm,
-  },
-  primary: {
-    alignItems: 'center',
-    borderRadius: radius.md,
-    flexDirection: 'row',
-    gap: spacing.sm,
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-  },
-  primaryText: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
-  },
-  secondary: {
-    alignItems: 'center',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    paddingVertical: spacing.md,
-  },
-  secondaryText: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
-  },
-  cancel: {
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-  cancelText: {
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.medium,
   },
 });

@@ -279,7 +279,9 @@ describe('TransfersScreen', () => {
 
   it('lists every transfer without a favorite', async () => {
     render(<TransfersScreen />);
-    expect(await screen.findByText('Todas (3)')).toBeTruthy();
+    expect(
+      await screen.findByTestId('transfers-section-Todas'),
+    ).toHaveTextContent(/Todas.*· 3/);
     expect(screen.getByTestId('transfer-card-t2')).toBeTruthy();
     expect(screen.queryByText(/^Seu time/)).toBeNull();
   });
@@ -294,8 +296,12 @@ describe('TransfersScreen', () => {
   it('puts the favorite team first and marks arrivals and departures', async () => {
     (getFavorites as jest.Mock).mockResolvedValue({ masculina: '1' });
     render(<TransfersScreen />);
-    expect(await screen.findByText('Seu time (2)')).toBeTruthy();
-    expect(screen.getByText('Demais times (1)')).toBeTruthy();
+    expect(
+      await screen.findByTestId('transfers-section-Seu time'),
+    ).toHaveTextContent(/Seu time.*· 2/);
+    expect(
+      screen.getByTestId('transfers-section-Demais times'),
+    ).toHaveTextContent(/Demais times.*· 1/);
     expect(screen.getByText('Chegou ao seu time')).toBeTruthy();
     expect(screen.getByText('Saiu do seu time')).toBeTruthy();
   });
@@ -317,8 +323,12 @@ describe('TransfersScreen', () => {
     fireEvent.press(screen.getByTestId('team-suggestion-1'));
 
     expect(screen.getByTestId('selected-team')).toBeTruthy();
-    expect(screen.getByText('Chegaram (1)')).toBeTruthy();
-    expect(screen.getByText('Saíram (1)')).toBeTruthy();
+    expect(screen.getByTestId('transfers-section-Chegaram')).toHaveTextContent(
+      /Chegaram.*· 1/,
+    );
+    expect(screen.getByTestId('transfers-section-Saíram')).toHaveTextContent(
+      /Saíram.*· 1/,
+    );
     expect(screen.queryByTestId('transfer-card-t2')).toBeNull();
 
     fireEvent.press(screen.getByTestId('clear-team'));

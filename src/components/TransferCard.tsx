@@ -122,6 +122,7 @@ export const TransferCard = React.memo(function TransferCard({
       <TouchableOpacity
         accessibilityRole="link"
         testID={`transfer-source-${transfer.id}`}
+        hitSlop={spacing.md}
         style={styles.source}
         onPress={() => Linking.openURL(transfer.sourceUrl).catch(() => {})}
       >

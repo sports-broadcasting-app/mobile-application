@@ -15,6 +15,7 @@ import { AppearancePicker } from '../components/AppearancePicker';
 import { ReminderToggle } from '../components/ReminderToggle';
 import { SportIcon } from '../components/SportIcon';
 import { TeamCircle } from '../components/TeamCircle';
+import { SectionHeader } from '../components/SectionHeader';
 import { TeamSheet } from '../components/TeamSheet';
 import { useCompetition } from '../contexts/CompetitionContext';
 import { useFavorites } from '../contexts/FavoritesContext';
@@ -29,6 +30,7 @@ import {
   iconSize,
   radius,
   spacing,
+  touchTarget,
   typography,
 } from '../constants/designTokens';
 
@@ -98,22 +100,17 @@ export default function SettingsScreen() {
 
         {notificationsSupported && (
           <>
-            <Text
-              style={[styles.sectionTitle, { color: colors.sectionHeaderText }]}
-            >
-              Notificações
-            </Text>
+            <SectionHeader title="Notificações" style={styles.sectionHeader} />
             <View style={[styles.group, { backgroundColor: colors.surface }]}>
               <ReminderToggle />
             </View>
           </>
         )}
 
-        <Text
-          style={[styles.sectionTitle, { color: colors.sectionHeaderText }]}
-        >
-          Competições e times
-        </Text>
+        <SectionHeader
+          title="Competições e times"
+          style={styles.sectionHeader}
+        />
         <View style={[styles.group, { backgroundColor: colors.surface }]}>
           {COMPETITIONS.map((info, index) => {
             const on = followed.includes(info.slug);
@@ -226,11 +223,7 @@ export default function SettingsScreen() {
           })}
         </View>
 
-        <Text
-          style={[styles.sectionTitle, { color: colors.sectionHeaderText }]}
-        >
-          Aparência
-        </Text>
+        <SectionHeader title="Aparência" style={styles.sectionHeader} />
         <AppearancePicker />
       </ScrollView>
 
@@ -258,13 +251,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
-  sectionTitle: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
-    paddingBottom: spacing.sm,
-    paddingHorizontal: spacing.lg,
+  sectionHeader: {
     paddingTop: spacing.xl,
-    textTransform: 'uppercase',
   },
   group: {
     borderRadius: radius.lg,
@@ -300,7 +288,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     marginLeft: 34 + spacing.md,
-    minHeight: 44,
+    minHeight: touchTarget,
     paddingHorizontal: spacing.md,
   },
   teamLabel: {

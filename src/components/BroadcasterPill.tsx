@@ -1,6 +1,12 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import {
+  maxFontScale,
+  radius,
+  spacing,
+  typography,
+} from '../constants/designTokens';
 
 interface BroadcasterPillProps {
   name: string;
@@ -13,10 +19,14 @@ export const BroadcasterPill = React.memo(function BroadcasterPill({
 
   return (
     <View
-      style={[styles.pill, { backgroundColor: colors.broadcastBadgeBg }]}
+      style={[styles.pill, { backgroundColor: colors.primarySoft }]}
       testID={`broadcaster-pill-${name}`}
     >
-      <Text style={[styles.text, { color: colors.primary }]} numberOfLines={1}>
+      <Text
+        maxFontSizeMultiplier={maxFontScale}
+        numberOfLines={1}
+        style={[styles.text, { color: colors.primary }]}
+      >
         {name}
       </Text>
     </View>
@@ -25,12 +35,12 @@ export const BroadcasterPill = React.memo(function BroadcasterPill({
 
 const styles = StyleSheet.create({
   pill: {
-    borderRadius: 12,
-    paddingHorizontal: 8,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
   text: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.semibold,
   },
 });

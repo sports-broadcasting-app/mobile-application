@@ -7,7 +7,12 @@ import {
   View,
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import { radius, spacing, typography } from '../constants/designTokens';
+import {
+  maxFontScale,
+  radius,
+  spacing,
+  typography,
+} from '../constants/designTokens';
 
 interface ChipOption<T extends string> {
   value: T;
@@ -53,19 +58,18 @@ export function SegmentedChips<T extends string>({
         <View
           style={[
             styles.chip,
-            active ? styles.chipActive : { borderColor: colors.chipBorder },
+            active ? styles.chipActive : { borderColor: colors.controlBorder },
             {
-              backgroundColor: active
-                ? colors.chipActiveBg
-                : colors.chipInactiveBg,
+              backgroundColor: active ? colors.primary : colors.controlBg,
             },
           ]}
         >
           <Text
+            maxFontSizeMultiplier={maxFontScale}
             style={[
               styles.label,
               {
-                color: active ? colors.chipActiveText : colors.chipInactiveText,
+                color: active ? colors.onPrimary : colors.controlText,
               },
             ]}
           >
@@ -73,9 +77,7 @@ export function SegmentedChips<T extends string>({
           </Text>
         </View>
         {active && (
-          <View
-            style={[styles.arrow, { borderLeftColor: colors.chipActiveBg }]}
-          />
+          <View style={[styles.arrow, { borderLeftColor: colors.primary }]} />
         )}
       </TouchableOpacity>
     );

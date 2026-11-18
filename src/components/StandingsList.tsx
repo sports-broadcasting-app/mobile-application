@@ -5,7 +5,12 @@ import { Sport, Standing, Team } from '../types/snapshot';
 import { getTeamName } from '../utils/teamName';
 import { TeamCircle } from './TeamCircle';
 import { STANDINGS_COLUMNS } from '../constants/competitions';
-import { spacing, typography } from '../constants/designTokens';
+import {
+  maxFontScale,
+  sectionLabel,
+  spacing,
+  typography,
+} from '../constants/designTokens';
 
 interface StandingsListProps {
   sport: Sport;
@@ -51,15 +56,19 @@ export function StandingsList({
         style={[
           styles.row,
           { borderBottomColor: colors.borderLight },
-          favorite && { backgroundColor: colors.broadcastBadgeBg },
+          favorite && { backgroundColor: colors.primarySoft },
         ]}
       >
-        <Text style={[styles.position, { color: colors.textSecondary }]}>
+        <Text
+          maxFontSizeMultiplier={maxFontScale}
+          style={[styles.position, { color: colors.textSecondary }]}
+        >
           {standing.position}
         </Text>
         <View style={styles.team}>
           <TeamCircle team={team} size={24} />
           <Text
+            maxFontSizeMultiplier={maxFontScale}
             numberOfLines={1}
             style={[styles.teamCode, { color: colors.textPrimary }]}
           >
@@ -68,6 +77,7 @@ export function StandingsList({
         </View>
         {columns.map(({ code, value }, index) => (
           <Text
+            maxFontSizeMultiplier={maxFontScale}
             key={code}
             style={[
               styles.column,
@@ -85,12 +95,21 @@ export function StandingsList({
   return (
     <View>
       <View style={[styles.row, { borderBottomColor: colors.border }]}>
-        <Text style={[styles.position, { color: colors.textTertiary }]}>#</Text>
-        <Text style={[styles.headerTeam, { color: colors.textTertiary }]}>
+        <Text
+          maxFontSizeMultiplier={maxFontScale}
+          style={[styles.position, { color: colors.textTertiary }]}
+        >
+          #
+        </Text>
+        <Text
+          maxFontSizeMultiplier={maxFontScale}
+          style={[styles.headerTeam, { color: colors.textTertiary }]}
+        >
           Time
         </Text>
         {columns.map(({ code }) => (
           <Text
+            maxFontSizeMultiplier={maxFontScale}
             key={code}
             style={[styles.column, { color: colors.textTertiary }]}
           >
@@ -103,6 +122,8 @@ export function StandingsList({
         <Fragment key={index}>
           {name !== undefined && (
             <Text
+              accessibilityRole="header"
+              maxFontSizeMultiplier={maxFontScale}
               testID={`standing-group-${name}`}
               style={[
                 styles.group,
@@ -131,11 +152,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   group: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
+    ...sectionLabel,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    textTransform: 'uppercase',
   },
   position: {
     fontSize: typography.size.sm,

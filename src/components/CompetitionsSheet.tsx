@@ -8,6 +8,8 @@ import {
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomSheet } from './BottomSheet';
 import { SportIcon } from './SportIcon';
+import { SectionHeader } from './SectionHeader';
+import { Button } from './Button';
 import { useCompetition } from '../contexts/CompetitionContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -54,16 +56,7 @@ export function CompetitionsSheet({
       message="Os filtros, a classificação e os avisos mostram só o que você acompanha."
       testID="competitions-sheet"
       footer={
-        <TouchableOpacity
-          accessibilityRole="button"
-          testID="competitions-done"
-          style={[styles.done, { backgroundColor: colors.primary }]}
-          onPress={onClose}
-        >
-          <Text style={[styles.doneText, { color: colors.textOnPrimary }]}>
-            Pronto
-          </Text>
-        </TouchableOpacity>
+        <Button label="Pronto" testID="competitions-done" onPress={onClose} />
       }
     >
       <ScrollView>
@@ -72,21 +65,17 @@ export function CompetitionsSheet({
           if (items.length === 0) return null;
           return (
             <View key={sport}>
-              <View style={styles.group}>
-                <SportIcon
-                  sport={sport}
-                  size={iconSize.sm}
-                  color={colors.sectionHeaderText}
-                />
-                <Text
-                  style={[
-                    styles.groupText,
-                    { color: colors.sectionHeaderText },
-                  ]}
-                >
-                  {name}
-                </Text>
-              </View>
+              <SectionHeader
+                title={name}
+                style={styles.group}
+                icon={
+                  <SportIcon
+                    sport={sport}
+                    size={iconSize.sm}
+                    color={colors.sectionHeaderText}
+                  />
+                }
+              />
               {items.map((info) => {
                 const on = followed.includes(info.slug);
                 const teamId = favorites[info.slug];
@@ -145,7 +134,7 @@ export function CompetitionsSheet({
                           ? { backgroundColor: colors.primary }
                           : [
                               styles.unchecked,
-                              { borderColor: colors.chipBorder },
+                              { borderColor: colors.controlBorder },
                             ],
                       ]}
                     >
@@ -153,7 +142,7 @@ export function CompetitionsSheet({
                         <MaterialCommunityIcons
                           name="check"
                           size={iconSize.sm}
-                          color={colors.textOnPrimary}
+                          color={colors.onPrimary}
                         />
                       ) : null}
                     </View>
@@ -173,17 +162,10 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   group: {
-    alignItems: 'center',
-    flexDirection: 'row',
     gap: spacing.sm,
     paddingBottom: spacing.xs,
+    paddingHorizontal: 0,
     paddingTop: spacing.md,
-  },
-  groupText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.bold,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
   },
   row: {
     alignItems: 'center',
@@ -217,14 +199,5 @@ const styles = StyleSheet.create({
     height: 24,
     justifyContent: 'center',
     width: 24,
-  },
-  done: {
-    alignItems: 'center',
-    borderRadius: radius.md,
-    paddingVertical: spacing.lg,
-  },
-  doneText: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.bold,
   },
 });
