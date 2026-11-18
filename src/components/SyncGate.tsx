@@ -4,6 +4,7 @@ import { HAS_DATA_URL_ENV, DATA_URL } from '../constants/config';
 import { useSync } from '../contexts/SyncContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing, typography } from '../constants/designTokens';
+import { Button } from './Button';
 
 /** Blocks the app only on the first run, while there is no local data yet. */
 export function SyncGate({ children }: { children: ReactNode }) {
@@ -25,7 +26,7 @@ export function SyncGate({ children }: { children: ReactNode }) {
         <>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={[styles.message, { color: colors.textSecondary }]}>
-            Buscando os jogos da Superliga...
+            Buscando os jogos...
           </Text>
         </>
       ) : (
@@ -33,20 +34,8 @@ export function SyncGate({ children }: { children: ReactNode }) {
           <Text style={[styles.message, { color: colors.textSecondary }]}>
             Não foi possível carregar os dados. Verifique sua conexão.
           </Text>
-          <Text
-            accessibilityRole="button"
-            style={[styles.retry, { color: colors.primary }]}
-            onPress={refresh}
-          >
-            Tentar novamente
-          </Text>
-          <Text
-            accessibilityRole="button"
-            style={[styles.details, { color: colors.textTertiary }]}
-            onPress={showDetails}
-          >
-            Ver detalhes
-          </Text>
+          <Button label="Tentar novamente" onPress={refresh} />
+          <Button label="Ver detalhes" variant="plain" onPress={showDetails} />
         </>
       )}
     </View>
@@ -64,12 +53,5 @@ const styles = StyleSheet.create({
   message: {
     fontSize: typography.size.md,
     textAlign: 'center',
-  },
-  details: {
-    fontSize: typography.size.sm,
-  },
-  retry: {
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.semibold,
   },
 });

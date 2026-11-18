@@ -1,75 +1,65 @@
+/**
+ * Colors by role, never by component: a new screen picks from these instead
+ * of adding `somethingBtnBg`. Contrast pairs: `onPrimary` over `primary`,
+ * `onLive` over `live`.
+ */
 export interface ThemeColors {
+  /** Screen behind everything. */
   background: string;
+  /** Cards, sheets, grouped lists. */
   surface: string;
+  /** Wells inside a surface: icon tiles, disabled buttons, search field. */
   surfaceAlt: string;
-  surfaceCard: string;
-  headerBg: string;
   primary: string;
+  /** Text and icons drawn over `primary`. */
+  onPrimary: string;
+  /** Tinted fill for the favorite highlight and broadcaster pills. */
+  primarySoft: string;
+  /** The AO VIVO badge: red in both themes. */
+  live: string;
+  onLive: string;
   textPrimary: string;
   textSecondary: string;
   textTertiary: string;
-  textOnPrimary: string;
+  /** Uppercase section labels. */
+  sectionHeaderText: string;
+  /** The "×" between the two clubs. */
+  versusText: string;
   border: string;
   borderLight: string;
+  /** Unselected chips, checkboxes and radios. */
+  controlBg: string;
+  controlText: string;
+  controlBorder: string;
   error: string;
-  broadcastBadgeBg: string;
-  chipBorder: string;
-  chipActiveBg: string;
-  chipActiveText: string;
-  chipInactiveBg: string;
-  chipInactiveText: string;
-  shadow: string;
-  statusBar: 'dark' | 'light';
-  gradientStart: string;
-  gradientEnd: string;
-  vsBadgeBg: string;
-  ctaBackground: string;
-  ctaText: string;
-  reminderBtnBg: string;
-  reminderBtnText: string;
-  watchBtnBg: string;
-  watchBtnText: string;
   overlayBg: string;
-  sectionHeaderText: string;
   skeletonBase: string;
-  skeletonHighlight: string;
+  statusBar: 'dark' | 'light';
 }
 
 export const lightTheme: ThemeColors = {
   background: '#f8f9fa',
   surface: '#fff',
   surfaceAlt: '#f1f5f9',
-  surfaceCard: '#fff',
-  headerBg: '#fff',
   primary: '#16a34a',
+  onPrimary: '#fff',
+  primarySoft: '#dcfce7',
+  live: '#dc2626',
+  onLive: '#fff',
   textPrimary: '#111827',
   textSecondary: '#6b7280',
   textTertiary: '#9ca3af',
-  textOnPrimary: '#fff',
+  sectionHeaderText: '#6b7280',
+  versusText: '#6b7280',
   border: '#e5e7eb',
   borderLight: '#f3f4f6',
+  controlBg: '#fff',
+  controlText: '#374151',
+  controlBorder: '#d1d5db',
   error: '#dc2626',
-  broadcastBadgeBg: '#dcfce7',
-  chipBorder: '#d1d5db',
-  chipActiveBg: '#16a34a',
-  chipActiveText: '#fff',
-  chipInactiveBg: '#fff',
-  chipInactiveText: '#374151',
-  shadow: '#000',
-  statusBar: 'dark',
-  gradientStart: '#14532d',
-  gradientEnd: '#16a34a',
-  vsBadgeBg: '#6b7280',
-  ctaBackground: '#16a34a',
-  ctaText: '#fff',
-  reminderBtnBg: '#f3f4f6',
-  reminderBtnText: '#374151',
-  watchBtnBg: '#16a34a',
-  watchBtnText: '#fff',
   overlayBg: 'rgba(0, 0, 0, 0.5)',
-  sectionHeaderText: '#6b7280',
   skeletonBase: '#e5e7eb',
-  skeletonHighlight: '#f3f4f6',
+  statusBar: 'dark',
 };
 
 export const darkTheme: ThemeColors = {
@@ -77,35 +67,24 @@ export const darkTheme: ThemeColors = {
   background: '#0b1120',
   surface: '#141d2e',
   surfaceAlt: '#1b2740',
-  surfaceCard: '#141d2e',
-  headerBg: '#141d2e',
   primary: '#22c55e',
+  // White over this lighter green fails contrast; near-black passes.
+  onPrimary: '#07140c',
+  primarySoft: 'rgba(34, 197, 94, 0.14)',
+  live: '#ef4444',
+  onLive: '#fff',
   textPrimary: '#f1f5f9',
   textSecondary: '#8b94a6',
   textTertiary: '#64748b',
-  textOnPrimary: '#fff',
+  sectionHeaderText: '#94a3b8',
+  versusText: '#475569',
   border: 'rgba(255, 255, 255, 0.1)',
   borderLight: 'rgba(255, 255, 255, 0.08)',
+  controlBg: '#172033',
+  controlText: '#c3cad6',
+  controlBorder: 'rgba(255, 255, 255, 0.08)',
   error: '#ef4444',
-  broadcastBadgeBg: 'rgba(34, 197, 94, 0.14)',
-  chipBorder: 'rgba(255, 255, 255, 0.08)',
-  chipActiveBg: '#22c55e',
-  chipActiveText: '#07140c',
-  chipInactiveBg: '#172033',
-  chipInactiveText: '#c3cad6',
-  shadow: '#000',
-  statusBar: 'light',
-  gradientStart: '#052e16',
-  gradientEnd: '#14532d',
-  vsBadgeBg: '#475569',
-  ctaBackground: '#22c55e',
-  ctaText: '#07140c',
-  reminderBtnBg: '#1b2740',
-  reminderBtnText: '#e2e8f0',
-  watchBtnBg: '#22c55e',
-  watchBtnText: '#07140c',
   overlayBg: 'rgba(0, 0, 0, 0.7)',
-  sectionHeaderText: '#94a3b8',
   skeletonBase: '#1b2740',
-  skeletonHighlight: '#243049',
+  statusBar: 'light',
 };

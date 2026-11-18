@@ -187,28 +187,39 @@ const { colors, toggleTheme, isDark } = useTheme();
 
 ### Color Tokens
 
-| Token              | Light     | Dark      | Usage                                 |
-| ------------------ | --------- | --------- | ------------------------------------- |
-| `background`       | `#f5f5f5` | `#111827` | Screen backgrounds                    |
-| `surface`          | `#fff`    | `#1f2937` | Cards, headers, tab bar               |
-| `surfaceAlt`       | `#f8fafc` | `#374151` | Sport chips, search bar               |
-| `primary`          | `#2563eb` | `#3b82f6` | Active tab, links, icons, header tint |
-| `textPrimary`      | `#111`    | `#f5f5f5` | Titles, team names                    |
-| `textSecondary`    | `#666`    | `#9ca3af` | Dates, labels                         |
-| `textTertiary`     | `#999`    | `#6b7280` | Placeholders, inactive tabs           |
-| `border`           | `#e5e5e5` | `#374151` | Tab bar border, dividers              |
-| `borderLight`      | `#f0f0f0` | `#1f2937` | List separators                       |
-| `error`            | `#dc2626` | `#ef4444` | Error text (AO VIVO badge always red) |
-| `broadcastBadgeBg` | `#f0f4ff` | `#1e3a5f` | Broadcast badge background            |
-| `chipBorder`       | `#e5e7eb` | `#374151` | Sport chip border                     |
-| `shadow`           | `#000`    | `#000`    | Card shadows                          |
-| `statusBar`        | `dark`    | `light`   | StatusBar style                       |
+Named by role, never by component (no `watchBtnBg`): reuse these before adding one. Source of truth is `src/constants/theme.ts`.
 
-### Layout Constants (not theme-dependent)
+| Token               | Light              | Dark                  | Usage                                       |
+| ------------------- | ------------------ | --------------------- | ------------------------------------------- |
+| `background`        | `#f8f9fa`          | `#0b1120`             | Screen backgrounds                          |
+| `surface`           | `#fff`             | `#141d2e`             | Cards, sheets, grouped lists                |
+| `surfaceAlt`        | `#f1f5f9`          | `#1b2740`             | Wells: icon tiles, disabled buttons, search |
+| `primary`           | `#16a34a`          | `#22c55e`             | Main actions, selection, links              |
+| `onPrimary`         | `#fff`             | `#07140c`             | Text/icons over `primary` (dark: contrast)  |
+| `primarySoft`       | `#dcfce7`          | green 14%             | Favorite row, broadcaster pills             |
+| `live` / `onLive`   | `#dc2626` / `#fff` | `#ef4444` / `#fff`    | AO VIVO badge                               |
+| `textPrimary`       | `#111827`          | `#f1f5f9`             | Titles, team names                          |
+| `textSecondary`     | `#6b7280`          | `#8b94a6`             | Dates, labels                               |
+| `textTertiary`      | `#9ca3af`          | `#64748b`             | Placeholders, counts                        |
+| `sectionHeaderText` | `#6b7280`          | `#94a3b8`             | `SectionHeader` labels                      |
+| `versusText`        | `#6b7280`          | `#475569`             | The "×" between clubs                       |
+| `border`            | `#e5e7eb`          | white 10%             | Dividers, outlined buttons                  |
+| `borderLight`       | `#f3f4f6`          | white 8%              | List separators                             |
+| `controlBg`/`Text`  | `#fff` / `#374151` | `#172033` / `#c3cad6` | Unselected chips                            |
+| `controlBorder`     | `#d1d5db`          | white 8%              | Chips, checkboxes, radios                   |
+| `error`             | `#dc2626`          | `#ef4444`             | Error text, "Adiado"                        |
+| `overlayBg`         | black 50%          | black 70%             | Sheet backdrops                             |
+| `skeletonBase`      | `#e5e7eb`          | `#1b2740`             | Loading placeholders                        |
+| `statusBar`         | `dark`             | `light`               | StatusBar style (`ThemedStatusBar`)         |
 
-| Token         | Value                             |
-| ------------- | --------------------------------- |
-| Border radius | `12` (cards), `20` (badges/pills) |
+### Tokens and building blocks (`src/constants/designTokens.ts`)
+
+- `spacing`, `radius`, `typography`, `iconSize`, `shadows`: use them instead of numbers.
+- `touchTarget` (44): minimum height of anything tappable; small links get `hitSlop`.
+- `maxFontScale` (1.3): pass as `maxFontSizeMultiplier` on text in fixed-width columns or one-line chips (`MatchRow`, `StandingsList`, `SegmentedChips`, pills). Free text scales without a cap.
+- `sectionLabel`: the uppercase label style.
+- **`SectionHeader`** (`title`, `icon`, `detail`): every label above a group of rows. Don't restyle a `Text` for it.
+- **`Button`** (`primary` | `secondary` | `plain`, `icon`, `disabled`): every full-width action. Disabled primary turns `surfaceAlt`.
 
 ## Git Workflow
 

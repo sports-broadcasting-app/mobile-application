@@ -123,14 +123,14 @@ export function TeamSheet({ competition, onClose, onPicked }: TeamSheetProps) {
                   styles.radio,
                   on
                     ? { backgroundColor: colors.primary }
-                    : [styles.unchecked, { borderColor: colors.chipBorder }],
+                    : [styles.unchecked, { borderColor: colors.controlBorder }],
                 ]}
               >
                 {on ? (
                   <MaterialCommunityIcons
                     name="check"
                     size={iconSize.sm - 2}
-                    color={colors.textOnPrimary}
+                    color={colors.onPrimary}
                   />
                 ) : null}
               </View>

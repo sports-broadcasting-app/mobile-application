@@ -12,6 +12,7 @@ import { SearchField } from '../components/SearchField';
 import { SegmentedChips } from '../components/SegmentedChips';
 import { TeamCircle } from '../components/TeamCircle';
 import { TransferCard } from '../components/TransferCard';
+import { SectionHeader } from '../components/SectionHeader';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTeams, useTeamsById, useTransfers } from '../hooks/useSuperliga';
@@ -74,9 +75,11 @@ export default function TransfersScreen() {
   const renderSection = (title: string, items: Transfer[]) =>
     items.length > 0 && (
       <>
-        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-          {`${title} (${items.length})`}
-        </Text>
+        <SectionHeader
+          title={title}
+          detail={String(items.length)}
+          testID={`transfers-section-${title}`}
+        />
         {items.map((transfer) => (
           <TransferCard
             key={transfer.id}
@@ -157,9 +160,7 @@ export default function TransfersScreen() {
 
       {teamSuggestions.length > 0 && (
         <>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-            Times
-          </Text>
+          <SectionHeader title="Times" />
           {teamSuggestions.map((team) => (
             <TouchableOpacity
               key={team.id}
@@ -207,14 +208,6 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: spacing.xxxl,
     paddingTop: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
-    paddingBottom: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    textTransform: 'uppercase',
   },
   selected: {
     alignItems: 'center',

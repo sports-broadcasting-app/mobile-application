@@ -14,6 +14,7 @@ import { AdBanner } from '../components/AdBanner';
 import { CompetitionsSheet } from '../components/CompetitionsSheet';
 import { MatchCard } from '../components/MatchCard';
 import { MatchRow } from '../components/MatchRow';
+import { SectionHeader } from '../components/SectionHeader';
 import { WatchSheet } from '../components/WatchSheet';
 import { SegmentedChips } from '../components/SegmentedChips';
 import {
@@ -260,36 +261,25 @@ export default function HomeScreen() {
         {sections.map((section) => (
           <View key={section.key}>
             {section.title !== '' && (
-              <View
-                style={styles.sectionHeader}
+              <SectionHeader
+                title={section.title}
                 testID={`section-${section.key}`}
-              >
-                {section.favorite && (
-                  <MaterialCommunityIcons
-                    name="star"
-                    size={iconSize.sm}
-                    color={colors.primary}
-                  />
-                )}
-                <Text
-                  style={[
-                    styles.sectionTitle,
-                    { color: colors.sectionHeaderText },
-                  ]}
-                >
-                  {section.title}
-                </Text>
-                {section.count !== undefined && (
-                  <Text
-                    style={[
-                      styles.sectionCount,
-                      { color: colors.textTertiary },
-                    ]}
-                  >
-                    · {plural(section.count)}
-                  </Text>
-                )}
-              </View>
+                style={styles.sectionHeader}
+                icon={
+                  section.favorite ? (
+                    <MaterialCommunityIcons
+                      name="star"
+                      size={iconSize.sm}
+                      color={colors.primary}
+                    />
+                  ) : undefined
+                }
+                detail={
+                  section.count !== undefined
+                    ? plural(section.count)
+                    : undefined
+                }
+              />
             )}
             {section.matches.map(renderMatch)}
           </View>
@@ -302,15 +292,7 @@ export default function HomeScreen() {
         )}
         {showNext && (nextMatches ?? []).length > 0 && (
           <>
-            <Text
-              style={[
-                styles.sectionHeader,
-                styles.sectionTitle,
-                { color: colors.sectionHeaderText },
-              ]}
-            >
-              {nextTitle}
-            </Text>
+            <SectionHeader title={nextTitle} style={styles.sectionHeader} />
             <View
               style={[styles.nextList, { backgroundColor: colors.surface }]}
             >
@@ -365,21 +347,8 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
   },
   sectionHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.xs,
     paddingBottom: spacing.xs,
-    paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.bold,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-  },
-  sectionCount: {
-    fontSize: typography.size.sm,
   },
   editChip: {
     alignItems: 'center',

@@ -7,6 +7,7 @@ import { formatShortDay, formatTime } from '../utils/date';
 import { getTeamName } from '../utils/teamName';
 import {
   iconSize,
+  maxFontScale,
   radius,
   spacing,
   typography,
@@ -42,6 +43,7 @@ export const MatchRow = React.memo(function MatchRow({
       style={[styles.row, { borderBottomColor: colors.borderLight }]}
     >
       <Text
+        maxFontSizeMultiplier={maxFontScale}
         numberOfLines={1}
         style={[styles.when, { color: colors.textSecondary }]}
       >
@@ -49,6 +51,7 @@ export const MatchRow = React.memo(function MatchRow({
       </Text>
       <View style={styles.teams}>
         <Text
+          maxFontSizeMultiplier={maxFontScale}
           numberOfLines={1}
           style={[styles.teamsText, { color: colors.textPrimary }]}
         >
@@ -63,10 +66,9 @@ export const MatchRow = React.memo(function MatchRow({
         )}
       </View>
       {channel ? (
-        <View
-          style={[styles.channel, { backgroundColor: colors.broadcastBadgeBg }]}
-        >
+        <View style={[styles.channel, { backgroundColor: colors.primarySoft }]}>
           <Text
+            maxFontSizeMultiplier={maxFontScale}
             numberOfLines={1}
             style={[styles.channelText, { color: colors.primary }]}
           >
@@ -74,7 +76,10 @@ export const MatchRow = React.memo(function MatchRow({
           </Text>
         </View>
       ) : (
-        <Text style={[styles.tbd, { color: colors.textTertiary }]}>
+        <Text
+          maxFontSizeMultiplier={maxFontScale}
+          style={[styles.tbd, { color: colors.textTertiary }]}
+        >
           a definir
         </Text>
       )}

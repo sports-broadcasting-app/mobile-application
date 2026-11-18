@@ -78,16 +78,14 @@ function LiveBadge() {
   }, [pulse]);
 
   return (
-    <View style={[styles.liveBadge, { backgroundColor: colors.error }]}>
+    <View style={[styles.liveBadge, { backgroundColor: colors.live }]}>
       <Animated.View
         style={[
           styles.liveDot,
-          { backgroundColor: colors.textOnPrimary, opacity: pulse },
+          { backgroundColor: colors.onLive, opacity: pulse },
         ]}
       />
-      <Text style={[styles.liveText, { color: colors.textOnPrimary }]}>
-        AO VIVO
-      </Text>
+      <Text style={[styles.liveText, { color: colors.onLive }]}>AO VIVO</Text>
     </View>
   );
 }
@@ -126,7 +124,7 @@ export const MatchCard = React.memo(function MatchCard({
       style={[
         styles.card,
         {
-          backgroundColor: colors.surfaceCard,
+          backgroundColor: colors.surface,
           borderColor: favorite ? colors.primary : colors.borderLight,
         },
       ]}
@@ -160,7 +158,7 @@ export const MatchCard = React.memo(function MatchCard({
               {match.homeScore}
             </Text>
           )}
-          <Text style={[styles.versus, { color: colors.vsBadgeBg }]}>×</Text>
+          <Text style={[styles.versus, { color: colors.versusText }]}>×</Text>
           {hasScore && (
             <Text style={[styles.scoreText, { color: colors.textPrimary }]}>
               {match.awayScore}
@@ -196,7 +194,7 @@ export const MatchCard = React.memo(function MatchCard({
             style={[
               styles.watch,
               primary
-                ? { backgroundColor: colors.watchBtnBg }
+                ? { backgroundColor: colors.primary }
                 : [
                     styles.watchSecondary,
                     {
@@ -213,13 +211,13 @@ export const MatchCard = React.memo(function MatchCard({
               source={screenPlay}
               style={[
                 styles.watchIcon,
-                { tintColor: primary ? colors.watchBtnText : colors.primary },
+                { tintColor: primary ? colors.onPrimary : colors.primary },
               ]}
             />
             <Text
               style={[
                 styles.watchText,
-                { color: primary ? colors.watchBtnText : colors.textPrimary },
+                { color: primary ? colors.onPrimary : colors.textPrimary },
               ]}
             >
               {primary ? `Assistir no ${channel}` : `Abrir no ${channel}`}

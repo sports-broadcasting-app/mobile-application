@@ -1,5 +1,8 @@
 import React, { Component, ReactNode } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
+import { spacing, typography } from '../constants/designTokens';
+import { Button } from './Button';
 
 interface FallbackProps {
   error: Error;
@@ -7,17 +10,21 @@ interface FallbackProps {
 }
 
 function DefaultErrorFallback({ error, onRetry }: FallbackProps) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Algo deu errado</Text>
-      <Text style={styles.message}>{error.message}</Text>
-      <TouchableOpacity
-        style={styles.button}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.textPrimary }]}>
+        Algo deu errado
+      </Text>
+      <Text style={[styles.message, { color: colors.textSecondary }]}>
+        {error.message}
+      </Text>
+      <Button
+        label="Tentar novamente"
         onPress={onRetry}
         testID="error-boundary-retry"
-      >
-        <Text style={styles.buttonText}>Tentar novamente</Text>
-      </TouchableOpacity>
+      />
     </View>
   );
 }
@@ -61,33 +68,19 @@ export class ErrorBoundary extends Component<
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
+    flex: 1,
     justifyContent: 'center',
-    padding: 32,
-    backgroundColor: '#0a0a1a',
+    padding: spacing.xxxl,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 8,
-    color: '#f0f0f0',
+    fontSize: typography.size.xl,
+    fontWeight: typography.weight.bold,
+    marginBottom: spacing.sm,
   },
   message: {
-    fontSize: 14,
+    fontSize: typography.size.body,
+    marginBottom: spacing.xxl,
     textAlign: 'center',
-    marginBottom: 24,
-    color: '#8e8e93',
-  },
-  button: {
-    borderRadius: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: '#16a34a',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
   },
 });

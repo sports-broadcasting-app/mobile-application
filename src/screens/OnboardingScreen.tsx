@@ -9,6 +9,7 @@ import {
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SportIcon } from '../components/SportIcon';
+import { Button } from '../components/Button';
 import { useCompetition } from '../contexts/CompetitionContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { CompetitionSlug } from '../types/snapshot';
@@ -80,7 +81,7 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
                   styles.tile,
                   {
                     backgroundColor: colors.surface,
-                    borderColor: on ? colors.primary : colors.chipBorder,
+                    borderColor: on ? colors.primary : colors.controlBorder,
                   },
                 ]}
                 onPress={() => toggle(info.slug)}
@@ -96,7 +97,7 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
                   <SportIcon
                     sport={info.sport}
                     size={iconSize.lg}
-                    color={on ? colors.textOnPrimary : colors.textSecondary}
+                    color={on ? colors.onPrimary : colors.textSecondary}
                     filled={on}
                     knockoutColor={colors.primary}
                   />
@@ -114,14 +115,17 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
                     styles.tick,
                     on
                       ? { backgroundColor: colors.primary }
-                      : [styles.unchecked, { borderColor: colors.chipBorder }],
+                      : [
+                          styles.unchecked,
+                          { borderColor: colors.controlBorder },
+                        ],
                   ]}
                 >
                   {on ? (
                     <MaterialCommunityIcons
                       name="check"
                       size={iconSize.sm - 2}
-                      color={colors.textOnPrimary}
+                      color={colors.onPrimary}
                     />
                   ) : null}
                 </View>
@@ -137,34 +141,12 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityState={{ disabled: picked.length === 0 }}
+        <Button
+          label={picked.length === 0 ? 'Escolha pelo menos uma' : 'Começar'}
           disabled={picked.length === 0}
           testID="onboarding-start"
-          style={[
-            styles.button,
-            {
-              backgroundColor:
-                picked.length === 0 ? colors.surfaceAlt : colors.primary,
-            },
-          ]}
           onPress={start}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              {
-                color:
-                  picked.length === 0
-                    ? colors.textSecondary
-                    : colors.textOnPrimary,
-              },
-            ]}
-          >
-            {picked.length === 0 ? 'Escolha pelo menos uma' : 'Começar'}
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
     </SafeAreaView>
   );
@@ -242,14 +224,5 @@ const styles = StyleSheet.create({
   footer: {
     paddingBottom: spacing.md,
     paddingHorizontal: spacing.xl,
-  },
-  button: {
-    alignItems: 'center',
-    borderRadius: radius.md,
-    paddingVertical: spacing.lg,
-  },
-  buttonText: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.bold,
   },
 });
