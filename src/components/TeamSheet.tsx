@@ -77,6 +77,7 @@ export function TeamSheet({ competition, onClose, onPicked }: TeamSheetProps) {
       title="Qual é o seu time?"
       message="Os jogos dele aparecem primeiro e você recebe o aviso antes de começar."
       testID="team-sheet"
+      fullHeight
       footer={
         selected ? (
           <TouchableOpacity
