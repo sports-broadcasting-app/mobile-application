@@ -1,5 +1,13 @@
 import { ReactNode } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { radius, spacing, typography } from '../constants/designTokens';
 
@@ -13,6 +21,11 @@ interface BottomSheetProps {
   /** Fills the space between the header and the footer; may scroll. */
   children: ReactNode;
   footer?: ReactNode;
+  /**
+   * Keeps the sheet at its full height instead of fitting the content, for
+   * a list filtered by a search field: it would shrink under the keyboard.
+   */
+  fullHeight?: boolean;
   testID?: string;
 }
 
@@ -25,6 +38,7 @@ export function BottomSheet({
   message,
   children,
   footer,
+  fullHeight = false,
   testID,
 }: BottomSheetProps) {
   const { colors } = useTheme();
@@ -36,7 +50,11 @@ export function BottomSheet({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.root}>
+      {/* Lifts the sheet over the keyboard (Android resizes the window). */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.root}
+      >
         <Pressable
           accessibilityLabel="Fechar"
           style={[styles.backdrop, { backgroundColor: colors.overlayBg }]}
@@ -45,7 +63,11 @@ export function BottomSheet({
         />
         <View
           accessibilityViewIsModal
-          style={[styles.sheet, { backgroundColor: colors.surface }]}
+          style={[
+            styles.sheet,
+            fullHeight && styles.fullHeight,
+            { backgroundColor: colors.surface },
+          ]}
           testID={testID}
         >
           <View style={[styles.handle, { backgroundColor: colors.border }]} />
@@ -68,7 +90,7 @@ export function BottomSheet({
           <View style={styles.body}>{children}</View>
           {footer ? <View style={styles.footer}>{footer}</View> : null}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -88,6 +110,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxxl,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
+  },
+  fullHeight: {
+    height: '88%',
   },
   handle: {
     alignSelf: 'center',
@@ -111,6 +136,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   body: {
+    flexGrow: 1,
     flexShrink: 1,
     marginTop: spacing.md,
   },
