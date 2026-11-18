@@ -80,9 +80,13 @@ Stack over tabs:
 ## Data Flow
 
 ```
-GitHub Action (every 30 min) → reads cbv.com.br and ge.globo.com → validates → publishes onde-passa.json (GitHub Pages)
+GitHub Action (every 30 min) → reads cbv.com.br and ge.globo.com → validates → publishes onde-passa.json
+  → Cloudflare R2 bucket onde-passa-data, served at https://dados.onde-passa.app/onde-passa.json (app 1.2+)
+  → GitHub Pages (older builds, plus the legacy superliga.json)
 App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens read only SQLite
 ```
+
+- **Collector resilience**: `scripts/http.ts` retries timeouts, network errors, 5xx and 429 twice (5 s, 15 s); other statuses fail at once. `scripts/fallback.ts` validates each source on its own: one that fails or looks suspicious keeps its competitions from the published file (`PREVIOUS_SNAPSHOT_URL`, the R2 copy, with their old `updatedAt`) and leaves a `::warning` on the run. The run fails only when a failed source has nothing to fall back on or every source failed. Offline (fixtures) runs never fall back. The Pages deploy tries three times, since GitHub's OIDC token service times out now and then; the R2 upload (AWS CLI, secrets `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, cache 5 min) runs even when Pages failed.
 
 - **Competitions**: `masculina` and `feminina` (volleyball, CBV), `serie-a` (football, ge) and `nfl` (American football, ge). `src/constants/competitions.ts` is the single list: slug, sport, names and the standings columns of each sport. The app ignores competitions it does not know, so a sport can be added to the file before the app update ships.
 - **Scores**: `homeScore`/`awayScore` are sets in volleyball, goals in football and points in the NFL; `setScores` is empty outside volleyball. `Standing.scoredFor`/`scoredAgainst` follow the same rule, and `draws` is always 0 in volleyball. `Standing.group` names the NFL division ("AFC Leste"), `position` counts within it, and `points` is 0; `StandingsList` renders one section per group.

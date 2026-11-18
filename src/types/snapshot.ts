@@ -85,6 +85,11 @@ export interface CompetitionData {
   standings: Standing[];
   /** Optional until the collector has a source for transfers. */
   transfers?: Transfer[];
+  /**
+   * When this competition was last collected. Older than `generatedAt` when
+   * its source failed and the collector kept the published data.
+   */
+  updatedAt?: string;
 }
 
 export interface Snapshot {
