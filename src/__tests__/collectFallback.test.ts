@@ -111,14 +111,18 @@ describe('collectWithFallback', () => {
     expect(result.competitions[1].name).toBe('NFL antiga');
   });
 
-  it('fails when a broken source has nothing to fall back on', async () => {
-    await expect(
-      collectWithFallback(
-        [ok('nfl'), broken('Brasileirão', ['serie-a'])],
-        previous,
-        now,
-      ),
-    ).rejects.toThrow('Brasileirão: ge returned 503 (nothing to fall back on)');
+  it('leaves out a new league that fails instead of holding back the others', async () => {
+    const result = await collectWithFallback(
+      [ok('nfl'), broken('NBA', ['nba'])],
+      previous,
+      now,
+    );
+
+    expect(result.kept).toEqual(['NBA']);
+    expect(result.competitions.map((c) => c.slug)).toEqual(['nfl']);
+  });
+
+  it('fails when the published snapshot could not be read', async () => {
     await expect(
       collectWithFallback([broken('NFL', ['nfl'])], null, now),
     ).rejects.toThrow('nothing to fall back on');

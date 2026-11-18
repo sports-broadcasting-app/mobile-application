@@ -36,6 +36,10 @@ const VOLLEY_SEAMS =
   'M12 12C9.6 9.3 9.8 5.8 12.4 3.01M16.3 4.1c-1.8 2.2-2.2 5-1.1 7.5';
 const VOLLEY_TURNS = ['0', '120', '240'];
 
+// The cross seams and the two side curves of a basketball.
+const BASKETBALL_SEAMS =
+  'M12 3v18M3 12h18M6.2 5.2c2.6 3.2 2.6 10.4 0 13.6M17.8 5.2c-2.6 3.2-2.6 10.4 0 13.6';
+
 function SoccerBall({ color, clipId }: { color: string; clipId: string }) {
   return (
     <>
@@ -134,6 +138,22 @@ export function SportIcon({
             />
           </>
         ))}
+
+      {sport === 'basquete' && (
+        <>
+          {filled ? (
+            <Circle cx="12" cy="12" r="10" fill={color} />
+          ) : (
+            <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth={STROKE} />
+          )}
+          <Path
+            d={BASKETBALL_SEAMS}
+            stroke={filled ? knockoutColor : color}
+            strokeWidth={filled ? DETAIL : 1.5}
+            strokeLinecap="round"
+          />
+        </>
+      )}
 
       {sport === 'volei' && (
         <>

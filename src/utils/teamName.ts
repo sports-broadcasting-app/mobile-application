@@ -1,8 +1,8 @@
 import { normalizeForSearch } from './search';
 
 /**
- * CBV names carry sponsors and come in capitals, and NFL names carry the
- * city; fans know the short ones.
+ * CBV names carry sponsors and come in capitals, and NFL and NBA names carry
+ * the city; fans know the short ones.
  */
 const SHORT_NAMES: Record<string, string> = {
   // Masculina
@@ -64,6 +64,37 @@ const SHORT_NAMES: Record<string, string> = {
   'tampa bay buccaneers': 'Buccaneers',
   'tennessee titans': 'Titans',
   'washington commanders': 'Commanders',
+  // NBA: same as the NFL.
+  'atlanta hawks': 'Hawks',
+  'boston celtics': 'Celtics',
+  'brooklyn nets': 'Nets',
+  'charlotte hornets': 'Hornets',
+  'chicago bulls': 'Bulls',
+  'cleveland cavaliers': 'Cavaliers',
+  'dallas mavericks': 'Mavericks',
+  'denver nuggets': 'Nuggets',
+  'detroit pistons': 'Pistons',
+  'golden state warriors': 'Warriors',
+  'houston rockets': 'Rockets',
+  'indiana pacers': 'Pacers',
+  'los angeles clippers': 'Clippers',
+  'los angeles lakers': 'Lakers',
+  'memphis grizzlies': 'Grizzlies',
+  'miami heat': 'Heat',
+  'milwaukee bucks': 'Bucks',
+  'minnesota timberwolves': 'Timberwolves',
+  'new orleans pelicans': 'Pelicans',
+  'new york knicks': 'Knicks',
+  'oklahoma city thunder': 'Thunder',
+  'orlando magic': 'Magic',
+  'philadelphia 76ers': '76ers',
+  'phoenix suns': 'Suns',
+  'portland trail blazers': 'Trail Blazers',
+  'sacramento kings': 'Kings',
+  'san antonio spurs': 'Spurs',
+  'toronto raptors': 'Raptors',
+  'utah jazz': 'Jazz',
+  'washington wizards': 'Wizards',
 };
 
 const LOWERCASE_WORDS = new Set(['de', 'da', 'do', 'das', 'dos', 'e']);

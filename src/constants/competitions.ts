@@ -35,10 +35,17 @@ export const COMPETITIONS: CompetitionInfo[] = [
     name: 'NFL',
     label: 'NFL',
   },
+  {
+    slug: 'nba',
+    sport: 'basquete',
+    name: 'NBA',
+    label: 'NBA',
+  },
 ];
 
 /** Sport names, in the order the pickers group them. Icons: SportIcon. */
 export const SPORTS: { sport: Sport; name: string }[] = [
+  { sport: 'basquete', name: 'Basquete' },
   { sport: 'futebol', name: 'Futebol' },
   { sport: 'futebol-americano', name: 'Futebol americano' },
   { sport: 'volei', name: 'Vôlei' },
@@ -104,6 +111,24 @@ export const STANDINGS_COLUMNS: Record<Sport, StandingsColumn[]> = {
     { code: 'E', label: 'Empates', value: (s) => s.draws },
     { code: 'PF', label: 'Pontos a favor', value: (s) => s.scoredFor },
     { code: 'PC', label: 'Pontos contra', value: (s) => s.scoredAgainst },
+    {
+      code: 'DIF',
+      label: 'Diferença de pontos',
+      value: (s) => s.scoredFor - s.scoredAgainst,
+    },
+  ],
+  // The league's own table: no draws, ranked by winning percentage. Season
+  // points run into four digits, too wide for the columns, so only the
+  // difference is shown.
+  basquete: [
+    { code: 'V', label: 'Vitórias', value: (s) => s.wins },
+    { code: 'D', label: 'Derrotas', value: (s) => s.losses },
+    {
+      code: '%',
+      label: 'Aproveitamento',
+      value: (s) =>
+        s.matches > 0 ? Math.round((100 * s.wins) / s.matches) : 0,
+    },
     {
       code: 'DIF',
       label: 'Diferença de pontos',

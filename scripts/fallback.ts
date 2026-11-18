@@ -22,9 +22,10 @@ export interface CollectResult {
 /**
  * Collects every source, so one site being down or changing its page does not
  * freeze the others: a failed or suspicious source keeps its competitions
- * from the snapshot already online (with their old `updatedAt`). Throws when
- * a failed source has nothing to fall back on, or when every source failed,
- * since republishing the same data would only hide the problem.
+ * from the snapshot already online (with their old `updatedAt`); one never
+ * published yet (a new league) is left out. Throws when the published
+ * snapshot could not be read, or when every source failed, since
+ * republishing the same data would only hide the problem.
  */
 export async function collectWithFallback(
   sources: Source[],
@@ -46,7 +47,17 @@ export async function collectWithFallback(
       const old = source.slugs.map((slug) =>
         previous?.competitions.find((c) => c.slug === slug),
       );
-      if (!previous || old.some((c) => c === undefined)) {
+      if (!previous) {
+        throw new Error(`${source.name}: ${reason} (nothing to fall back on)`);
+      }
+      // A league just added has never been published: leave it out for now
+      // rather than holding back the others.
+      if (old.every((c) => c === undefined)) {
+        console.log(`::warning title=${source.name} left out::${reason}`);
+        kept.push(source.name);
+        continue;
+      }
+      if (old.some((c) => c === undefined)) {
         throw new Error(`${source.name}: ${reason} (nothing to fall back on)`);
       }
       // A GitHub Actions annotation: the run stays green but shows it.

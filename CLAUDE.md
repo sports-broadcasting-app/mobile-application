@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A React Native (Expo) mobile application that shows where Superliga volleyball matches (men's and women's), Brasileirão Série A football matches and NFL games are broadcast, with day matches and standings. There is no login and no backend: the app downloads a static JSON on first run and keeps everything on the device in SQLite.
+A React Native (Expo) mobile application that shows where Superliga volleyball matches (men's and women's), Brasileirão Série A football matches, NFL and NBA games are broadcast, with day matches and standings. There is no login and no backend: the app downloads a static JSON on first run and keeps everything on the device in SQLite.
 
 ## Tech Stack
 
@@ -39,7 +39,8 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 ├── scripts/collect.ts          # Collector entry point: writes onde-passa.json and the legacy superliga.json
 ├── scripts/superliga/          # CBV parser for both Superligas, curated transfers
 ├── scripts/brasileirao/        # ge parser for the Brasileirão Série A
-├── scripts/nfl/                # ge parser for the NFL (standings page + matches GraphQL)
+├── scripts/multisport/         # ge "multisport" pages (standings page + matches GraphQL), shared by NFL and NBA
+├── scripts/nfl/, scripts/nba/  # league configs for the multisport collector
 └── .github/workflows/          # Scheduled collector, publishes to GitHub Pages
 ```
 
@@ -86,13 +87,14 @@ GitHub Action (every 30 min) → reads cbv.com.br and ge.globo.com → validates
 App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens read only SQLite
 ```
 
-- **Collector resilience**: `scripts/http.ts` retries timeouts, network errors, 5xx and 429 twice (5 s, 15 s); other statuses fail at once. `scripts/fallback.ts` validates each source on its own: one that fails or looks suspicious keeps its competitions from the published file (`PREVIOUS_SNAPSHOT_URL`, the R2 copy, with their old `updatedAt`) and leaves a `::warning` on the run. The run fails only when a failed source has nothing to fall back on or every source failed. Offline (fixtures) runs never fall back. The Pages deploy tries three times, since GitHub's OIDC token service times out now and then; the R2 upload (AWS CLI, secrets `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, cache 5 min) runs even when Pages failed.
+- **Collector resilience**: `scripts/http.ts` retries timeouts, network errors, 5xx and 429 twice (5 s, 15 s); other statuses fail at once. `scripts/fallback.ts` validates each source on its own: one that fails or looks suspicious keeps its competitions from the published file (`PREVIOUS_SNAPSHOT_URL`, the R2 copy, with their old `updatedAt`) and leaves a `::warning` on the run. A league never published yet (just added) that fails is left out with a warning. The run fails only when the published file could not be read and a source failed, or when every source failed. Offline (fixtures) runs never fall back. The Pages deploy tries three times, since GitHub's OIDC token service times out now and then; the R2 upload (AWS CLI, secrets `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, cache 5 min) runs even when Pages failed.
 
-- **Competitions**: `masculina` and `feminina` (volleyball, CBV), `serie-a` (football, ge) and `nfl` (American football, ge). `src/constants/competitions.ts` is the single list: slug, sport, names and the standings columns of each sport. The app ignores competitions it does not know, so a sport can be added to the file before the app update ships.
-- **Scores**: `homeScore`/`awayScore` are sets in volleyball, goals in football and points in the NFL; `setScores` is empty outside volleyball. `Standing.scoredFor`/`scoredAgainst` follow the same rule, and `draws` is always 0 in volleyball. `Standing.group` names the NFL division ("AFC Leste"), `position` counts within it, and `points` is 0; `StandingsList` renders one section per group.
+- **Competitions**: `masculina` and `feminina` (volleyball, CBV), `serie-a` (football, ge), `nfl` (American football, ge) and `nba` (basketball, ge). `src/constants/competitions.ts` is the single list: slug, sport, names and the standings columns of each sport. The app ignores competitions it does not know, so a sport can be added to the file before the app update ships.
+- **Scores**: `homeScore`/`awayScore` are sets in volleyball, goals in football and points in the NFL; `setScores` is empty outside volleyball. `Standing.scoredFor`/`scoredAgainst` follow the same rule, and `draws` is always 0 in volleyball. `Standing.group` names the NFL division ("AFC Leste") or the NBA conference, `position` counts within it, and `points` is 0; `StandingsList` renders one section per group.
 - **Legacy file**: the first release reads `superliga.json` (version 1, Superligas only). `scripts/legacy.ts` keeps publishing it from the new snapshot until those installs are gone.
 - **Brasileirão source**: the ge championship page names the public table service (`api.globoesporte.globo.com/tabela/...`) the page itself calls; rounds and standings come from there, and the broadcasters from each match page (`liveWatchSources`), fetched only for matches up to 8 days ahead. ge gives Brasília wall-clock times; `toInstant` adds the offset.
-- **NFL source**: the ge standings page (`ge.globo.com/futebol-americano/nfl/classificacao/`) embeds a `tabela-context` JSON with the season phases and the table by division; each week comes from the GraphQL service the page itself calls (`geql.globo.com/graphql`, `GetMultisportMatchesByPhase`), already with the Brazilian broadcasters per game, so no match pages and no manual curation. Rounds are "Semana n"; playoff phases are asked for only once the season reaches them (the service errors on future ones). ge's odd codes (`KCC`, `SF4`) are mapped to the league ones.
+- **NFL and NBA source**: one collector, `scripts/multisport/` (each league is a `MultisportLeague` in `scripts/nfl/collect.ts` / `scripts/nba/collect.ts`). The ge standings page (`ge.globo.com/futebol-americano/nfl/classificacao/`, `ge.globo.com/basquete/nba/classificacao/`) embeds a `tabela-context` JSON with the season phases and the table by division/conference; each round comes from the GraphQL service the page itself calls (`geql.globo.com/graphql`, `GetMultisportMatchesByPhase`), already with the Brazilian broadcasters per game, so no match pages and no manual curation. Playoff phases are asked for only once the season reaches them (the service errors on future ones); NBA series ask up to 7 rounds and stop at the first empty one. NFL rounds are "Semana n"; NBA rounds are game days (150+ a season), so cards show the phase name. ge's odd NFL codes (`KCC`, `SF4`) are mapped to the league ones; games with teams outside the table (All-Star, Pro Bowl) are dropped.
+- **Incremental rounds**: with the published file, the multisport collector reuses rounds that are settled (all finished, last game over 36 h ago) or more than 10 days ahead, and asks for the rest (NBA: ~13 rounds instead of 65+). A fetched game wins over a reused one. Every round is asked again in the 08:00 UTC hour.
 
 - **First run**: `SyncGate` blocks with a loader; on failure it shows a retry. Then `OnboardingGate` shows `OnboardingScreen` once (`@onboarding_done` in AsyncStorage): pick the competitions to follow (at least one).
 - **Followed competitions**: `CompetitionContext.followed`, stored as `@followed_competitions`; nothing stored (installs from before) means all. Filters, standings, the Home and reminders only use followed ones; the last one cannot be unfollowed. Favorite teams are picked in Configurações (`TeamSheet`); the first pick offers the reminders once (`@reminders_offered`).
@@ -108,7 +110,7 @@ App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens 
 node scripts/collect.ts public                 # live collection: public/onde-passa.json + public/superliga.json
 node scripts/collect.ts out <dir-with-fixtures> # offline: {slug}-agenda.html, {slug}-classificacao.html (CBV),
                                                # serie-a-tabela.html, serie-a-classificacao.json, serie-a-rodada-{n}.json, serie-a-jogo-{id}.html (ge)
-                                               # nfl-classificacao.html, nfl-{phase-slug}-rodada-{n}.json (ge)
+                                               # nfl-classificacao.html, nfl-{phase-slug}-rodada-{n}.json (ge), same for nba-
 ```
 
 ## Commands

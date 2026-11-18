@@ -1,4 +1,10 @@
-import { parseMatches, parseStandingsPage } from '../../scripts/nfl/parseGe';
+import {
+  parseMatches,
+  parseStandingsPage,
+} from '../../scripts/multisport/parseGe';
+import { canReuse } from '../../scripts/multisport/collect';
+import { NFL_TEAM_CODES } from '../../scripts/nfl/collect';
+import type { Match } from '../types/snapshot';
 
 const NOW = Date.parse('2026-11-16T12:00:00-03:00');
 
@@ -145,7 +151,7 @@ describe('parseStandingsPage', () => {
   });
 
   it('keeps the table by division, in page order', () => {
-    const { teams, standings } = parseStandingsPage(page());
+    const { teams, standings } = parseStandingsPage(page(), NFL_TEAM_CODES);
     expect(teams.map((t) => t.code)).toEqual(['BUF', 'NE', 'SEA', 'SF']);
     expect(standings.map((s) => [s.group, s.position, s.teamId])).toEqual([
       ['AFC Leste', 1, '6920'],
@@ -252,5 +258,79 @@ describe('parseMatches', () => {
     expect(() =>
       parseMatches(body, { number: 1, label: 'Wild Card' }, 'nfl', NOW),
     ).toThrow('Wild Card: Fail to get Multisport Matches from Phase');
+  });
+});
+
+describe('NBA on the same pages', () => {
+  it('reads baskets as points and keeps the conferences', () => {
+    const nba = JSON.parse(JSON.stringify(context));
+    const data = nba.getStandingData.body.standings;
+    data.championshipEdition = {
+      name: 'NBA 2026/2027',
+      slug: 'nba-2026-2027',
+      championship: { slug: 'nba' },
+    };
+    data.multisportStandings[0].standing = [
+      {
+        __typename: 'GroupedRoundRobinStandingData',
+        name: 'Conferência Leste',
+        totalRounds: 65,
+        ratings: [
+          {
+            order: 1,
+            standingColumns: [
+              { slug: 'jogos', value: 15 },
+              { slug: 'vitorias', value: 12 },
+              { slug: 'derrotas', value: 3 },
+              { slug: 'aproveitamento', value: 80 },
+              { slug: 'cestas-pro', value: 1711 },
+              { slug: 'cestas-contra', value: 1669 },
+            ],
+            contestant: {
+              contestantData: team(4683, 'Philadelphia 76ers', 'PHI'),
+            },
+          },
+        ],
+      },
+    ];
+
+    const parsed = parseStandingsPage(page(nba));
+
+    expect(parsed.season).toBe('2026/27');
+    expect(parsed.phases[0].rounds).toBe(65);
+    expect(parsed.standings[0]).toMatchObject({
+      group: 'Conferência Leste',
+      wins: 12,
+      losses: 3,
+      scoredFor: 1711,
+      scoredAgainst: 1669,
+    });
+  });
+});
+
+describe('canReuse', () => {
+  const game = (startsAt: string, status: Match['status']) =>
+    ({ startsAt, status }) as Match;
+
+  it('keeps settled rounds and rounds far ahead, asks for the rest', () => {
+    // NOW is 2026-11-16 12:00 in Brasília.
+    expect(canReuse([game('2026-11-10T21:00:00-03:00', 'finished')], NOW)).toBe(
+      true,
+    );
+    expect(
+      canReuse([game('2026-11-30T21:00:00-03:00', 'scheduled')], NOW),
+    ).toBe(true);
+    // Yesterday, today and the next days: always asked again.
+    expect(canReuse([game('2026-11-15T21:00:00-03:00', 'finished')], NOW)).toBe(
+      false,
+    );
+    expect(
+      canReuse([game('2026-11-20T21:00:00-03:00', 'scheduled')], NOW),
+    ).toBe(false);
+    // An old game ge never closed is asked again until it is.
+    expect(
+      canReuse([game('2026-11-01T21:00:00-03:00', 'scheduled')], NOW),
+    ).toBe(false);
+    expect(canReuse([], NOW)).toBe(false);
   });
 });

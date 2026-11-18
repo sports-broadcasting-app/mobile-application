@@ -112,7 +112,7 @@ describe('fetchSnapshot', () => {
     const snapshot = buildSnapshot([]);
     snapshot.competitions.push({
       ...footballCompetition,
-      slug: 'nba' as never,
+      slug: 'cricket' as never,
     });
     respondWith(snapshot);
     const { competitions } = await fetchSnapshot();
@@ -121,7 +121,9 @@ describe('fetchSnapshot', () => {
 
   it('rejects a file whose competitions are all unknown', async () => {
     const snapshot = buildSnapshot([]);
-    snapshot.competitions = [{ ...footballCompetition, slug: 'nba' as never }];
+    snapshot.competitions = [
+      { ...footballCompetition, slug: 'cricket' as never },
+    ];
     respondWith(snapshot);
     await expect(fetchSnapshot()).rejects.toThrow('Dados inválidos');
   });
