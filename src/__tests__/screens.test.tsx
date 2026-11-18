@@ -198,7 +198,7 @@ describe('HomeScreen', () => {
     fireEvent.press(screen.getByTestId('follow-feminina'));
     expect(AsyncStorage.setItem).toHaveBeenCalledWith(
       '@followed_competitions',
-      JSON.stringify(['masculina', 'serie-a', 'nfl']),
+      JSON.stringify(['masculina', 'serie-a', 'nfl', 'nba']),
     );
     await waitFor(() => expect(screen.queryByText('Superliga F')).toBeNull());
   });

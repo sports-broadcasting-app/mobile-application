@@ -189,6 +189,8 @@ const styles = StyleSheet.create({
     flexBasis: '47%',
     flexGrow: 1,
     gap: spacing.sm,
+    // An odd last tile keeps the size of the others instead of the full row.
+    maxWidth: '48.5%',
     minHeight: 132,
     padding: spacing.lg,
   },

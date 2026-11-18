@@ -1,8 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Snapshot } from '../src/types/snapshot';
+import type { CompetitionSlug, Snapshot } from '../src/types/snapshot';
 import { collectSerieA } from './brasileirao/collect.ts';
 import { collectWithFallback, loadPrevious } from './fallback.ts';
+import { collectNba } from './nba/collect.ts';
 import { collectNfl } from './nfl/collect.ts';
 import { toLegacySnapshot } from './legacy.ts';
 import { collectSuperliga } from './superliga/collect.ts';
@@ -26,6 +27,9 @@ async function main(): Promise<void> {
   const previous =
     previousUrl && !fixturesDir ? await loadPrevious(previousUrl) : null;
 
+  const previousOf = (slug: CompetitionSlug) =>
+    previous?.competitions.find((c) => c.slug === slug);
+
   const { competitions } = await collectWithFallback(
     [
       {
@@ -41,7 +45,16 @@ async function main(): Promise<void> {
       {
         name: 'NFL (ge)',
         slugs: ['nfl'],
-        collect: async () => [await collectNfl(fixturesDir)],
+        collect: async () => [
+          await collectNfl(fixturesDir, Date.now(), previousOf('nfl')),
+        ],
+      },
+      {
+        name: 'NBA (ge)',
+        slugs: ['nba'],
+        collect: async () => [
+          await collectNba(fixturesDir, Date.now(), previousOf('nba')),
+        ],
       },
     ],
     previous,

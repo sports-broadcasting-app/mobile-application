@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ALL_COMPETITIONS } from '../constants/competitions';
 import {
   CompetitionProvider,
   useCompetition,
@@ -42,6 +43,7 @@ describe('CompetitionContext', () => {
       'feminina',
       'serie-a',
       'nfl',
+      'nba',
     ]);
   });
 
@@ -59,7 +61,7 @@ describe('CompetitionContext', () => {
   it('never ends with nothing followed', () => {
     const { result } = renderHook(() => useCompetition(), { wrapper });
     act(() => result.current.setFollowed([]));
-    expect(result.current.followed).toHaveLength(4);
+    expect(result.current.followed).toEqual(ALL_COMPETITIONS);
   });
 
   it('leaves a filter the user stopped following', async () => {

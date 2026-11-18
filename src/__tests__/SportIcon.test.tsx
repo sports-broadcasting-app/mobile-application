@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react-native';
 import { SportIcon } from '../components/SportIcon';
 import { Sport } from '../types/snapshot';
 
-const SPORTS: Sport[] = ['futebol', 'futebol-americano', 'volei'];
+const SPORTS: Sport[] = ['basquete', 'futebol', 'futebol-americano', 'volei'];
 
 describe('SportIcon', () => {
   it.each(SPORTS)('draws %s in both states at the asked size', (sport) => {

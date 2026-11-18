@@ -7,24 +7,19 @@ import type {
 } from '../../src/types/snapshot';
 import { toChannels, toInstant } from '../brasileirao/parseGe.ts';
 
+/**
+ * The ge "multisport" pages (NFL, NBA): a standings page that embeds the
+ * season phases and the table by group, and a GraphQL service with the games
+ * of each round, already with the Brazilian broadcasters.
+ */
+
 type RawObject = Record<string, unknown>;
 
-/** A game that started this long ago is over, even before ge says so. */
-const MATCH_LENGTH_MS = 4 * 60 * 60 * 1000;
-
-/** ge abbreviates a few clubs its own way; fans know the league codes. */
-const TEAM_CODES: Record<string, string> = {
-  GBP: 'GB',
-  KCC: 'KC',
-  LVR: 'LV',
-  NEP: 'NE',
-  NOS: 'NO',
-  SF4: 'SF',
-  TBB: 'TB',
-};
+/** ge abbreviations it writes its own way → the league codes fans know. */
+export type TeamCodes = Record<string, string>;
 
 /** Rounds of a phase and whether it is the one being played. */
-export interface NflPhase {
+export interface GePhase {
   slug: string;
   name: string;
   knockout: boolean;
@@ -33,7 +28,7 @@ export interface NflPhase {
 }
 
 /** The slugs the matches service needs, as the standings page names them. */
-export interface NflFilter {
+export interface GeFilter {
   championshipSlug: string;
   championshipEditionSlug: string;
   sportSlug: string;
@@ -41,11 +36,11 @@ export interface NflFilter {
   categorySlug: string;
 }
 
-export interface NflPage {
+export interface GePage {
   /** "2026/27" */
   season: string;
-  filter: NflFilter;
-  phases: NflPhase[];
+  filter: GeFilter;
+  phases: GePhase[];
   teams: Team[];
   standings: Standing[];
 }
@@ -62,7 +57,7 @@ function asObject(value: unknown): RawObject {
   return value && typeof value === 'object' ? (value as RawObject) : {};
 }
 
-function toTeam(raw: unknown): Team | null {
+function toTeam(raw: unknown, codes: TeamCodes): Team | null {
   const data = asObject(raw);
   const id = toNumber(data.id);
   const name = toText(data.popularName) ?? toText(data.name);
@@ -71,12 +66,12 @@ function toTeam(raw: unknown): Team | null {
   return {
     id: String(id),
     name,
-    code: (TEAM_CODES[abbreviation] ?? abbreviation).toUpperCase(),
+    code: (codes[abbreviation] ?? abbreviation).toUpperCase(),
     badgeUrl: toText(data.badge),
   };
 }
 
-/** "NFL 2026/2027" → "2026/27"; a single year stays as it is. */
+/** "NBA 2026/2027" → "2026/27"; a single year stays as it is. */
 function toSeason(editionName: string): string {
   const span = editionName.match(/(\d{4})\/(\d{4})/);
   if (span) return `${span[1]}/${span[2].slice(2)}`;
@@ -100,15 +95,18 @@ function readPageContext(html: string): RawObject {
 
 /**
  * The standings page carries the phases of the season and the regular
- * season table, one group per division, in the order ge shows them.
+ * season table, one group per division or conference, in ge's order.
  */
-export function parseStandingsPage(html: string): NflPage {
+export function parseStandingsPage(
+  html: string,
+  codes: TeamCodes = {},
+): GePage {
   const context = readPageContext(html);
   const data = asObject(
     asObject(asObject(context.getStandingData).body).standings,
   );
   const edition = asObject(data.championshipEdition);
-  const filter: NflFilter = {
+  const filter: GeFilter = {
     championshipSlug: toText(asObject(edition.championship).slug) ?? '',
     championshipEditionSlug: toText(edition.slug) ?? '',
     sportSlug: toText(asObject(data.sport).slug) ?? '',
@@ -119,7 +117,7 @@ export function parseStandingsPage(html: string): NflPage {
     throw new Error('Standings page changed: championship slugs not found');
   }
 
-  const phases: NflPhase[] = [];
+  const phases: GePhase[] = [];
   const teams: Team[] = [];
   const standings: Standing[] = [];
   const entries = Array.isArray(data.multisportStandings)
@@ -147,7 +145,7 @@ export function parseStandingsPage(html: string): NflPage {
         ? (table.ratings as unknown[]).map(asObject)
         : [];
       for (const rating of ratings) {
-        const team = toTeam(asObject(rating.contestant).contestantData);
+        const team = toTeam(asObject(rating.contestant).contestantData, codes);
         const position = toNumber(rating.order);
         if (!team || position === null) continue;
         const columns = new Map<string, number>();
@@ -167,8 +165,11 @@ export function parseStandingsPage(html: string): NflPage {
           wins: columns.get('vitorias') ?? 0,
           draws: columns.get('empates') ?? 0,
           losses: columns.get('derrotas') ?? 0,
-          scoredFor: columns.get('pontos-a-favor') ?? 0,
-          scoredAgainst: columns.get('pontos-contra') ?? 0,
+          // Points in the NFL, baskets ("cestas") in the NBA.
+          scoredFor:
+            columns.get('pontos-a-favor') ?? columns.get('cestas-pro') ?? 0,
+          scoredAgainst:
+            columns.get('pontos-contra') ?? columns.get('cestas-contra') ?? 0,
           group,
         });
       }
@@ -195,24 +196,36 @@ export function parseStandingsPage(html: string): NflPage {
   };
 }
 
-function toStatus(moment: string | null, startsAt: string, now: number) {
+export interface MatchOptions {
+  codes?: TeamCodes;
+  /** A game that started this long ago is over, even before ge says so. */
+  matchLengthMs?: number;
+}
+
+function toStatus(
+  moment: string | null,
+  startsAt: string,
+  now: number,
+  matchLengthMs: number,
+) {
   if (moment === 'PAST') return 'finished' as MatchStatus;
   const start = Date.parse(startsAt);
   if (now < start) return 'scheduled' as MatchStatus;
-  return now < start + MATCH_LENGTH_MS
+  return now < start + matchLengthMs
     ? ('live' as MatchStatus)
     : ('finished' as MatchStatus);
 }
 
 /**
- * The games of one round from the ge matches service. `roundLabel` is
- * "Semana 11" in the regular season and the phase name in the playoffs.
+ * The games of one round from the ge matches service; the label is what the
+ * cards show ("Semana 11" in the NFL, the phase name in the playoffs).
  */
 export function parseMatches(
   json: string,
   round: { number: number; label: string },
   competition: CompetitionSlug,
   now: number,
+  { codes = {}, matchLengthMs = 4 * 60 * 60 * 1000 }: MatchOptions = {},
 ): { matches: Match[]; teams: Team[] } {
   const body = asObject(JSON.parse(json));
   const items = asObject(body.data).multisportMatchesByPhase;
@@ -231,13 +244,13 @@ export function parseMatches(
     const day = toText(raw.startDate);
     const hour = toText(raw.startHour)?.slice(0, 5);
     const startsAt = day && hour ? toInstant(`${day}T${hour}`) : null;
-    const home = toTeam(raw.firstContestant);
-    const away = toTeam(raw.secondContestant);
+    const home = toTeam(raw.firstContestant, codes);
+    const away = toTeam(raw.secondContestant, codes);
     if (id === null || !startsAt || !home || !away) continue;
     teams.set(home.id, home);
     teams.set(away.id, away);
 
-    const status = toStatus(toText(raw.moment), startsAt, now);
+    const status = toStatus(toText(raw.moment), startsAt, now, matchLengthMs);
     const hasResult = status !== 'scheduled';
     const score = asObject(raw.scoreboard);
     const location = asObject(raw.location);
@@ -259,7 +272,7 @@ export function parseMatches(
       setScores: [],
       channels: toChannels(sources),
       venue: toText(location.name),
-      // ge's popularName is a stadium nickname ("The Bank"), not a city.
+      // ge's popularName is an arena nickname ("The Bank"), not a city.
       city: null,
     });
   }
