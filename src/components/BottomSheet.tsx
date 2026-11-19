@@ -1,5 +1,6 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -29,6 +30,28 @@ interface BottomSheetProps {
   testID?: string;
 }
 
+/**
+ * Height of the keyboard on Android. With edge-to-edge the window is not
+ * resized, so the keyboard would cover the bottom of the sheet; iOS is
+ * handled by KeyboardAvoidingView.
+ */
+function useAndroidKeyboardHeight(active: boolean) {
+  const [height, setHeight] = useState(0);
+  useEffect(() => {
+    if (Platform.OS !== 'android' || !active) return;
+    const show = Keyboard.addListener('keyboardDidShow', (event) =>
+      setHeight(event.endCoordinates.height),
+    );
+    const hide = Keyboard.addListener('keyboardDidHide', () => setHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+      setHeight(0);
+    };
+  }, [active]);
+  return height;
+}
+
 /** A sheet from the bottom with a title, its content and a fixed footer. */
 export function BottomSheet({
   visible,
@@ -42,6 +65,7 @@ export function BottomSheet({
   testID,
 }: BottomSheetProps) {
   const { colors } = useTheme();
+  const keyboardHeight = useAndroidKeyboardHeight(visible);
 
   return (
     <Modal
@@ -50,10 +74,10 @@ export function BottomSheet({
       animationType="slide"
       onRequestClose={onClose}
     >
-      {/* Lifts the sheet over the keyboard (Android resizes the window). */}
+      {/* Lifts the sheet over the keyboard (padding on iOS, measured on Android). */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.root}
+        style={[styles.root, { paddingBottom: keyboardHeight }]}
       >
         <Pressable
           accessibilityLabel="Fechar"
