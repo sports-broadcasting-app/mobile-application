@@ -2,9 +2,9 @@ import {
   parseMatches,
   parseStandingsPage,
 } from '../../scripts/multisport/parseGe';
-import { canReuse } from '../../scripts/multisport/collect';
+import { canReuse, needsFullRefresh } from '../../scripts/multisport/collect';
 import { NFL_TEAM_CODES } from '../../scripts/nfl/collect';
-import type { Match } from '../types/snapshot';
+import type { CompetitionData, Match } from '../types/snapshot';
 
 const NOW = Date.parse('2026-11-16T12:00:00-03:00');
 
@@ -332,5 +332,26 @@ describe('canReuse', () => {
       canReuse([game('2026-11-01T21:00:00-03:00', 'scheduled')], NOW),
     ).toBe(false);
     expect(canReuse([], NOW)).toBe(false);
+  });
+});
+
+describe('needsFullRefresh', () => {
+  const league = (fullRefreshAt?: string) =>
+    ({ fullRefreshAt }) as CompetitionData;
+
+  it('asks every round once a day, whatever the hour of the run', () => {
+    // NOW is 2026-11-16 12:00 in Brasília (15:00 UTC).
+    expect(needsFullRefresh(league('2026-11-16T03:00:00.000Z'), NOW)).toBe(
+      false,
+    );
+    expect(needsFullRefresh(league('2026-11-15T15:00:00.000Z'), NOW)).toBe(
+      true,
+    );
+  });
+
+  it('does a full pass without previous data or the field', () => {
+    expect(needsFullRefresh(undefined, NOW)).toBe(true);
+    expect(needsFullRefresh(league(undefined), NOW)).toBe(true);
+    expect(needsFullRefresh(league('garbage'), NOW)).toBe(true);
   });
 });

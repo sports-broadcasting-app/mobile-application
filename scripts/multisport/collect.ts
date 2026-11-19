@@ -43,8 +43,8 @@ const DAY_MS = 24 * HOUR_MS;
 const SETTLED_AFTER_MS = 36 * HOUR_MS;
 /** Broadcasters are announced days before; rounds further out can wait. */
 const LOOKAHEAD_MS = 10 * DAY_MS;
-/** Once a day (05:00 in Brasília) every round is fetched again. */
-const FULL_REFRESH_UTC_HOUR = 8;
+/** Every round is fetched again once the last full pass is this old. */
+const FULL_REFRESH_EVERY_MS = 24 * HOUR_MS;
 
 /** Only the fields the parser reads, so a schema change elsewhere is harmless. */
 const MATCHES_QUERY = `
@@ -119,8 +119,20 @@ export function canReuse(games: Match[], now: number): boolean {
   return settled || Math.min(...starts) > now + LOOKAHEAD_MS;
 }
 
-export function isFullRefresh(now: number): boolean {
-  return new Date(now).getUTCHours() === FULL_REFRESH_UTC_HOUR;
+/**
+ * Whether this run asks for every round. Based on the age of the last full
+ * pass, not on the clock: GitHub delays scheduled runs by hours, so a fixed
+ * hour could be skipped for days. No previous data, or data from before this
+ * field existed, means a full pass.
+ */
+export function needsFullRefresh(
+  previous: CompetitionData | undefined,
+  now: number,
+): boolean {
+  const last = previous?.fullRefreshAt
+    ? Date.parse(previous.fullRefreshAt)
+    : NaN;
+  return Number.isNaN(last) || now - last >= FULL_REFRESH_EVERY_MS;
 }
 
 /**
@@ -143,8 +155,9 @@ export async function collectMultisport(
   const page = parseStandingsPage(pageHtml, codes);
   const knownTeams = new Map(page.teams.map((team) => [team.id, team]));
 
+  const full = fixturesDir !== undefined || needsFullRefresh(previous, now);
   const reusable = new Map<string, Match[]>();
-  if (previous && !fixturesDir && !isFullRefresh(now)) {
+  if (previous && !full) {
     for (const match of previous.matches) {
       const key = roundKey(match.roundLabel, match.round);
       reusable.set(key, [...(reusable.get(key) ?? []), match]);
@@ -197,7 +210,9 @@ export async function collectMultisport(
   const matches = [...byId.values()]
     .filter((m) => knownTeams.has(m.homeTeamId) && knownTeams.has(m.awayTeamId))
     .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
-  console.log(`${league.name}: ${asked} rounds asked, ${kept} kept`);
+  console.log(
+    `${league.name}: ${asked} rounds asked, ${kept} kept${full ? ' (full refresh)' : ''}`,
+  );
 
   return {
     slug,
@@ -207,5 +222,6 @@ export async function collectMultisport(
     teams: [...knownTeams.values()] as Team[],
     matches,
     standings: page.standings,
+    fullRefreshAt: full ? new Date(now).toISOString() : previous?.fullRefreshAt,
   };
 }
