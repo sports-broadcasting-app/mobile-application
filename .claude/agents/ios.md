@@ -35,6 +35,7 @@ cd ios && pod install
 - `ITSAppUsesNonExemptEncryption: false` is set; keep it so uploads skip the export compliance question.
 - `supportsTablet: false`: iPhone screenshots only. App Store sizes: 6.9" 1320×2868, 6.3" 1206×2622 (resize with `sips -z <h> <w>`).
 - The KeyboardAvoidingView in `BottomSheet` uses `behavior="padding"` on iOS, which sets its own `paddingBottom` and overrides the one in the style. The Android keyboard measurement (`useAndroidKeyboardHeight`, PR #18) returns 0 and registers no listener on iOS, so it never doubles the padding here.
+- **Stale dev build:** after a package with native code is added, the installed dev client lacks it and fails on launch (`Can't find ViewManager` / `requireNativeComponent` error). Rebuild with `yarn ios --device "Device Hub"`; it is not a JS bug.
 - The simulator UI is Device Hub (`/Applications/Xcode.app/Contents/Applications/DeviceHub.app`). `axe type` sends hardware key events, so iOS hides the soft keyboard; to see it, press Cmd+K in Device Hub (it is a user setting, Cmd+K again turns it back).
 
 ## Releases

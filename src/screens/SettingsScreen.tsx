@@ -3,7 +3,6 @@ import {
   Alert,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -14,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppearancePicker } from '../components/AppearancePicker';
 import { ReminderToggle } from '../components/ReminderToggle';
 import { SportIcon } from '../components/SportIcon';
+import { ThemedSwitch } from '../components/ThemedSwitch';
 import { TeamCircle } from '../components/TeamCircle';
 import { SectionHeader } from '../components/SectionHeader';
 import { TeamSheet } from '../components/TeamSheet';
@@ -149,13 +149,12 @@ export default function SettingsScreen() {
                   >
                     {info.name}
                   </Text>
-                  <Switch
+                  <ThemedSwitch
                     accessibilityLabel={`Acompanhar ${info.name}`}
                     testID={`follow-${info.slug}`}
                     value={on}
                     disabled={locked}
                     onValueChange={(next) => toggleFollow(info.slug, next)}
-                    trackColor={{ true: colors.primary }}
                   />
                 </View>
                 {on && (

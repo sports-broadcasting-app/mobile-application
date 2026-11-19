@@ -1,15 +1,9 @@
-import {
-  Alert,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useNotifications } from '../contexts/NotificationsContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { ThemedSwitch } from './ThemedSwitch';
 import { promptExactAlarms } from '../utils/exactAlarmPrompt';
 import { REMINDER_LEAD_MINUTES } from '../utils/reminders';
 import { spacing, typography } from '../constants/designTokens';
@@ -56,12 +50,11 @@ export function ReminderToggle() {
               : 'Escolha um time favorito abaixo para receber avisos'}
           </Text>
         </View>
-        <Switch
+        <ThemedSwitch
           accessibilityLabel="Avisar antes dos jogos"
           testID="reminder-switch"
           value={enabled}
           onValueChange={onChange}
-          trackColor={{ true: colors.primary }}
         />
       </View>
 

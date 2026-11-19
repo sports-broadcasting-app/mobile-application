@@ -31,6 +31,8 @@ export interface ThemeColors {
   controlBg: string;
   controlText: string;
   controlBorder: string;
+  /** Knob of an "on" switch, over `primary`: white in both modes, like iOS. */
+  controlThumb: string;
   error: string;
   overlayBg: string;
   skeletonBase: string;
@@ -56,6 +58,7 @@ export const lightTheme: ThemeColors = {
   controlBg: '#fff',
   controlText: '#374151',
   controlBorder: '#d1d5db',
+  controlThumb: '#fff',
   error: '#dc2626',
   overlayBg: 'rgba(0, 0, 0, 0.5)',
   skeletonBase: '#e5e7eb',
@@ -83,6 +86,7 @@ export const darkTheme: ThemeColors = {
   controlBg: '#172033',
   controlText: '#c3cad6',
   controlBorder: 'rgba(255, 255, 255, 0.08)',
+  controlThumb: '#fff',
   error: '#ef4444',
   overlayBg: 'rgba(0, 0, 0, 0.7)',
   skeletonBase: '#1b2740',
