@@ -26,6 +26,15 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 5. Update the tests that count competitions (CompetitionContext, screens, syncService).
 6. Update the collector bullets and the competitions list in CLAUDE.md.
 
+## How the multisport rounds are reused
+
+`collectMultisport` (`scripts/multisport/collect.ts`) gets the league's previous `CompetitionData` from the published file.
+
+- A round is reusable when it is settled (every game finished and the last one started over `SETTLED_AFTER_MS`, 36 h, ago) or starts more than `LOOKAHEAD_MS` (10 days) ahead. Reused games are keyed by `roundKey(phase label, round)`; a game fetched in this run wins over a reused one.
+- **Full refresh (by age, not by hour):** `needsFullRefresh(previous, now)` is true when `previous.fullRefreshAt` is missing, unparseable or at least 24 h old (`FULL_REFRESH_EVERY_MS`). Then nothing is reused and the result carries `fullRefreshAt = now`; otherwise it keeps the previous value. A fixed UTC hour did not work because GitHub delays scheduled runs past it. Offline (fixtures) runs are always full.
+- The log line says "`<League>: n rounds asked, m kept`", with "(full refresh)" appended on a full run. Normal sizes: NFL ~3 asked / 15 kept, NBA ~14 / 51; a full run asks every round (NFL 18, NBA 65+).
+- `fullRefreshAt` is an optional field of `CompetitionData` (`src/types/snapshot.ts`); the app ignores it. Tests: the `needsFullRefresh` block in `src/__tests__/parseGeMultisport.test.ts`.
+
 ## Checking your work
 
 ```bash

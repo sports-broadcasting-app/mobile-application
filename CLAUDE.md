@@ -235,3 +235,12 @@ Named by role, never by component (no `watchBtnBg`): reuse these before adding o
 - **Feature branches**: `feature/<feature-name>`
 - **Bugfix branches**: `bugfix/<bug-name>`
 - Pre-commit hooks automatically run ESLint and Prettier on staged files
+
+### Agent notes on every PR
+
+Before opening a PR, update the agents in `.claude/agents/` that own the areas it touches (`collector`: scripts/; `devops`: workflows, Worker, R2, EAS; `react-native`: src/; `android` / `ios`: platform behavior; `ui-reviewer`: design system rules), in the same branch:
+
+- A technical note of what was done: the problem, the mechanism (functions, constants, config keys, step ids), the files, why this way and not the obvious alternative, and how to check it (command, screen, test file). Cite the PR number.
+- Fix or delete notes the change makes wrong; an agent with stale notes misleads the next session.
+- Put each note under the agent's section it belongs to; keep it short, facts only.
+- Say in the PR description which agents were updated. A PR that changes nothing an agent relies on (copy, a version bump) says so instead.

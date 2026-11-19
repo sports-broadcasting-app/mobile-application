@@ -18,7 +18,7 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 - `saveSnapshot` must never touch the `favorites` table. Bump `SCHEMA_VERSION` whenever a data table changes columns.
 - Dates: `startsAt` carries an offset. Compare instants; never slice the string.
 - New competitions come from `src/constants/competitions.ts`; the app ignores slugs it does not know. Followed competitions live in `CompetitionContext` (`@followed_competitions`), and the last one cannot be unfollowed.
-- Colors only from `useTheme()`, sizes from `designTokens`, and the building blocks (`Button`, `SectionHeader`, `BottomSheet`, `SearchField`). Sheets with a text field pass `fullHeight`.
+- Colors only from `useTheme()`, sizes from `designTokens`, and the building blocks (`Button`, `SectionHeader`, `BottomSheet`, `SearchField`). Sheets with a text field pass `fullHeight`. `BottomSheet` already keeps its content above the keyboard on both platforms (iOS: KeyboardAvoidingView `padding`; Android: `useAndroidKeyboardHeight` as `paddingBottom`, PR #18); don't wrap a sheet's content in another KeyboardAvoidingView.
 - Platform files: `.web.tsx` variants exist for ads, notifications and splash. Keep them in sync when you change the native one.
 - Dependencies: `yarn expo install <pkg>` (picks the version for SDK 58; never npm). A package with native code, or a change to `app.json` plugins, needs a new `eas build` — say so; JS-only changes can ship with `eas update` (`runtimeVersion` follows the app version).
 

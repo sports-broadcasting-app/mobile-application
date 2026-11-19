@@ -15,6 +15,12 @@ GitHub Action data.yml (main; own cron every 3 h as backup) → node scripts/col
 App → EXPO_PUBLIC_DATA_URL (expo.dev env var, production) → SQLite
 ```
 
+## How the pieces are built
+
+- **Trigger Worker** (`infra/cloudflare/data-trigger/worker.js`, pasted in the dashboard, not deployed from the repo): its `scheduled` handler POSTs `{"ref":"main"}` to `actions/workflows/data.yml/dispatches` with `Authorization: Bearer $GITHUB_TOKEN`, `User-Agent: onde-passa-trigger` and `X-GitHub-Api-Version: 2022-11-28`, and throws on anything but 204, so failures show in the Worker logs. Its `fetch` answers 404. A change to the file only takes effect once pasted again in the dashboard.
+- **`data.yml` steps:** `collect` (id) → upload `upload1` with `continue-on-error`, then `sleep 30` and a second upload, both `if: steps.upload1.outcome == 'failure'` (PR #19) → `deploy1`/`deploy2`/`deploy3` with the same pattern (pauses 30 s and 90 s) → "Publish to Cloudflare R2" with `if: !cancelled() && steps.collect.outcome == 'success'`, so it runs whatever happened to Pages. `continue-on-error` keeps a failed try from failing the job; the job fails only when the last try fails. `environment.url` picks the first non-empty `page_url` of the three deploys. `concurrency: match-data` with `cancel-in-progress: false`: a dispatch that arrives while a run is going waits for it (GitHub keeps only the newest waiting one).
+- To add a retry to another flaky step, copy that pattern (id + `continue-on-error`, then `if: steps.<id>.outcome == 'failure'`); don't wrap actions in shell loops.
+
 ## Skills to load
 
 If the Expo plugin is installed: `eas-workflows`, `eas-update`, `eas-update-insights`, `eas-observe`, `eas-app-stores`.
