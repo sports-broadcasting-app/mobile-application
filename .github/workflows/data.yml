@@ -24,8 +24,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy1.outputs.page_url || steps.deploy2.outputs.page_url || steps.deploy3.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       # A failed or suspicious source keeps its competitions from the file online
@@ -34,25 +34,35 @@ jobs:
         run: node scripts/collect.ts public
         env:
           PREVIOUS_SNAPSHOT_URL: https://dados.onde-passa.app/onde-passa.json
-      - uses: actions/upload-pages-artifact@v3
+      # The artifact service drops the connection now and then ("Failed to
+      # FinalizeArtifact: ECONNRESET"); one more try after a pause.
+      - id: upload1
+        uses: actions/upload-pages-artifact@v5
+        continue-on-error: true
+        with:
+          path: public
+      - if: steps.upload1.outcome == 'failure'
+        run: sleep 30
+      - if: steps.upload1.outcome == 'failure'
+        uses: actions/upload-pages-artifact@v5
         with:
           path: public
       # GitHub's OIDC token service sometimes times out ("Failed to get ID
       # Token"); the uploaded artifact is still there, so deploy it again.
       - id: deploy1
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
         continue-on-error: true
       - if: steps.deploy1.outcome == 'failure'
         run: sleep 30
       - id: deploy2
         if: steps.deploy1.outcome == 'failure'
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
         continue-on-error: true
       - if: steps.deploy2.outcome == 'failure'
         run: sleep 90
       - id: deploy3
         if: steps.deploy2.outcome == 'failure'
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
       # Where the app reads from since 1.2 (R2 behind dados.onde-passa.app, with
       # the Cloudflare cache in front). GitHub Pages above stays for older builds.
