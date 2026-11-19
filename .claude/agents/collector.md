@@ -1,6 +1,6 @@
 ---
 name: collector
-description: Use for any change to the data collector in scripts/ — a new league or competition, a parser broken because a source changed its page, fallback and validation rules, incremental rounds, or the publish workflow (.github/workflows/data.yml). Not for app screens.
+description: Use for any change to the data collector in scripts/ — a new league or competition, a parser broken because a source changed its page, fallback and validation rules, or incremental rounds. Not for app screens, nor for running the workflow, hosting or caching (use devops).
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
