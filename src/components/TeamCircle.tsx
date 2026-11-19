@@ -22,12 +22,9 @@ export const TeamCircle = React.memo(function TeamCircle({
     <View
       style={[
         styles.circle,
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: showImage ? 'transparent' : color,
-        },
+        { width: size, height: size, borderRadius: size / 2 },
+        // Without the logo, the circle shows the code over the team color.
+        !showImage && { backgroundColor: color },
       ]}
       testID={`team-circle-${team.id}`}
     >

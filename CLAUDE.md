@@ -172,7 +172,8 @@ eas update --channel production --message "description"    # Update production b
 - Jest runs with `TZ=America/Sao_Paulo` (set in `jest.config.js`)
 - Mock `expo-linking` in tests that use Linking: `jest.mock('expo-linking', () => ({ openURL: jest.fn() }))`
 - Test behavior, not implementation details
-- Run `yarn test` before committing (husky pre-commit runs lint-staged)
+- Run `yarn test` before committing (husky pre-commit runs lint-staged, which only lints and formats the staged files)
+- The CI job `checks` (`.github/workflows/ci.yml`) runs `type-check`, `lint --max-warnings 0`, `format:check` and `yarn test` on every PR; `main` only takes PRs with it green
 
 ## Theming (Dark Mode / Light Mode)
 

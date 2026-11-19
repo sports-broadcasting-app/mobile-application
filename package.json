@@ -12,8 +12,8 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,json}\"",
+    "format": "prettier --write \"{src,scripts}/**/*.{ts,tsx,json}\" \".github/**/*.yml\" \"infra/**/*.js\"",
+    "format:check": "prettier --check \"{src,scripts}/**/*.{ts,tsx,json}\" \".github/**/*.yml\" \"infra/**/*.js\"",
     "type-check": "tsc --noEmit",
     "prepare": "husky"
   },

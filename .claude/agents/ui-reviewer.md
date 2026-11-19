@@ -21,7 +21,7 @@ By default review what changed: `git diff main...HEAD -- src/` plus uncommitted 
 4. **Building blocks:** labels above a group of rows use `SectionHeader` (not a restyled `Text`); full-width actions use `Button` (primary/secondary/plain); sheets use `BottomSheet`; search uses `SearchField`.
 5. **Touch targets:** anything tappable is at least `touchTarget` (44) tall, or small links carry `hitSlop`. Pressables have `accessibilityRole` and an `accessibilityLabel` when they have no visible text.
 6. **Font scaling:** text in fixed-width columns or one-line chips (rows, standings, chips, pills) sets `maxFontSizeMultiplier={maxFontScale}`; free text has no cap.
-7. **Layout:** `StyleSheet.create()` for layout; colors only via style arrays. Functional components, named exports (default export only for screens and routes).
+7. **Layout:** `StyleSheet.create()` for layout; colors only via style arrays. A conditional style is a `cond && { … }` entry in the array, never an inline object with a literal in a ternary (`react-native/no-inline-styles` warns, and the CI fails on warnings). Functional components, named exports (default export only for screens and routes).
 8. **Keyboard and safe areas:** sheets or screens with a text field stay usable with the keyboard open (see `BottomSheet` `fullHeight`).
 9. **Tests:** a new component or hook has a test in `src/__tests__/`.
 
