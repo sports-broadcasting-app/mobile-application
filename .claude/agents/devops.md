@@ -23,6 +23,14 @@ App → EXPO_PUBLIC_DATA_URL (expo.dev env var, production) → SQLite
 - **Dependabot (`.github/dependabot.yml`, PR #22):** weekly on Monday. npm minor/patch come as two grouped PRs (dependencies, dev-dependencies); majors of `expo`/`expo-*`/`react`, and minors of `react-native`/`react`, are ignored because they move with the Expo SDK (use the `expo-upgrade` skill). `github-actions` bumps the workflow actions (it would have caught the Node 20 deprecation). Its PRs run the CI like any other; merge them only green.
 - To add a retry to another flaky step, copy that pattern (id + `continue-on-error`, then `if: steps.<id>.outcome == 'failure'`); don't wrap actions in shell loops.
 
+## Repository protection (public repo, org on GitHub Free)
+
+- **Ruleset "Protect main"** (`gh api repos/sports-broadcasting-app/mobile-application/rulesets`): PR required (0 approvals, solo maintainer), status check `checks` from GitHub Actions (integration 15368) required, no force push, no deletion. Bypass: repository admin, mode `pull_request` only, so even the admin cannot push straight to `main`; the bypass is for merging a PR in an emergency. Check what applies with `gh api repos/sports-broadcasting-app/mobile-application/rules/branches/main`.
+- **Every change to `main` goes through a PR**, including docs and agent notes. The data workflow does not push (Pages artifact + R2), so it is not affected.
+- Secret scanning + push protection on; Dependabot security updates on; workflows from any outside contributor wait for approval; Actions limited to GitHub-owned actions (`actions/*`, `github/*`): a third-party action needs that setting changed first. Branches are deleted after merge.
+- **Rulesets are only enforced on public repos in GitHub Free.** Making the repo private turns them into no-ops unless the org moves to Team, and the CI then spends the 2,000 private minutes.
+- **Secret alert #1 (2026-11-19):** a Google API key in `google-services.json`, committed in `f855806` (2026-03) and removed in `2e2254d` (2026-11-01), still in the public history. It belonged to the Firebase project `notifications-where-to-watch`, used only for FCM, which the app dropped (reminders are local). The fix is revoking it in Google Cloud, not rewriting history (force push is blocked, and clones and GitHub caches keep the old commits); then close the alert as revoked: `gh api -X PATCH repos/sports-broadcasting-app/mobile-application/secret-scanning/alerts/1 -f state=resolved -f resolution=revoked`.
+
 ## Skills to load
 
 If the Expo plugin is installed: `eas-workflows`, `eas-update`, `eas-update-insights`, `eas-observe`, `eas-app-stores`.
@@ -30,7 +38,7 @@ If the Expo plugin is installed: `eas-workflows`, `eas-update`, `eas-update-insi
 ## Rules
 
 - **Read-only by default.** Diagnose and propose. Ask before: editing a workflow, `gh workflow run`, re-running or cancelling a run, `eas update` / `eas build` / `eas submit`, `eas env:*` writes, anything on Cloudflare. Infra changes go on a branch and a PR.
-- **Never print a secret value.** Say whether it exists and where (`gh secret list`, `eas env:list` names only). Never paste tokens into commands that echo them. The Firebase admin key in the repo root is git-ignored; it must stay that way.
+- **Never print a secret value.** Say whether it exists and where (`gh secret list`, `eas env:list` names only). Never paste tokens into commands that echo them. Service account keys (`*firebase-adminsdk*.json`) stay git-ignored; the app has no use for one.
 - Never fetch cbv.com.br (robots.txt blocks ClaudeBot); checking ge or the published JSON is fine.
 
 ## Health check (run this first when asked "is it working?")
