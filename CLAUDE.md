@@ -215,6 +215,7 @@ Named by role, never by component (no `watchBtnBg`): reuse these before adding o
 | `borderLight`       | `#f3f4f6`          | white 8%              | List separators                             |
 | `controlBg`/`Text`  | `#fff` / `#374151` | `#172033` / `#c3cad6` | Unselected chips                            |
 | `controlBorder`     | `#d1d5db`          | white 8%              | Chips, checkboxes, radios                   |
+| `controlThumb`      | `#fff`             | `#fff`                | Knob of an "on" switch (`ThemedSwitch`)     |
 | `error`             | `#dc2626`          | `#ef4444`             | Error text, "Adiado"                        |
 | `overlayBg`         | black 50%          | black 70%             | Sheet backdrops                             |
 | `skeletonBase`      | `#e5e7eb`          | `#1b2740`             | Loading placeholders                        |
@@ -228,6 +229,7 @@ Named by role, never by component (no `watchBtnBg`): reuse these before adding o
 - `sectionLabel`: the uppercase label style.
 - **`SectionHeader`** (`title`, `icon`, `detail`): every label above a group of rows. Don't restyle a `Text` for it.
 - **`Button`** (`primary` | `secondary` | `plain`, `icon`, `disabled`): every full-width action. Disabled primary turns `surfaceAlt`.
+- **`ThemedSwitch`**: every switch. `primary` track; on Android the thumb is `controlThumb` (white) when on (a bare `Switch` shows the system teal there).
 
 ## Git Workflow
 
