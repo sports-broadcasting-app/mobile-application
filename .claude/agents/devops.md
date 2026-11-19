@@ -8,7 +8,8 @@ model: sonnet
 You run the infrastructure of Onde Passa. CLAUDE.md "Data Flow" describes the pipeline; read it first.
 
 ```
-GitHub Action data.yml (cron */30, main) → node scripts/collect.ts public
+Cloudflare Worker onde-passa-trigger (cron */30) → workflow_dispatch
+GitHub Action data.yml (main; own cron every 3 h as backup) → node scripts/collect.ts public
   → GitHub Pages (onde-passa.json + legacy superliga.json, for builds 1.0–1.1)
   → Cloudflare R2 bucket onde-passa-data → https://dados.onde-passa.app/onde-passa.json (app 1.2+)
 App → EXPO_PUBLIC_DATA_URL (expo.dev env var, production) → SQLite
@@ -38,8 +39,8 @@ Report: last success, real interval between scheduled runs vs the cron, age of `
 
 ## Known behaviors and past incidents
 
-- **GitHub cron is best effort.** Scheduled runs get delayed or dropped under load; this repo has seen gaps of 6–8 h on a 30-min cron. Measure the real interval before trusting it. The fix is an external trigger (e.g. a Cloudflare Worker cron calling `workflow_dispatch`), not a shorter cron.
-- **Full refresh hour:** the multisport collector asks every round only in the 08:00 UTC hour (`isFullRefresh`). If no run lands in that hour, the full refresh is skipped that day.
+- **GitHub cron is best effort.** Scheduled runs get delayed or dropped under load; this repo saw gaps of 6–9 h on a 30-min cron. That is why the Worker `onde-passa-trigger` (`infra/cloudflare/data-trigger/worker.js`) dispatches the workflow every 30 min. Runs with event `workflow_dispatch` about every 30 min mean it works; only `schedule` runs mean the Worker stopped — check its logs in the Cloudflare dashboard. A 401 there means the fine-grained token in its secret `GITHUB_TOKEN` expired: the user creates a new one (this repo only, Actions read/write) and replaces the secret.
+- **Full refresh:** the multisport collector asks every round when the league's `fullRefreshAt` is over 24 h old (`needsFullRefresh`); the run log says "(full refresh)".
 - **deploy-pages OIDC timeout** ("Failed to get OIDC token"): transient on GitHub's side; the workflow already tries three times and the R2 upload runs even when Pages failed.
 - **R2 with the AWS CLI** needs `AWS_REQUEST_CHECKSUM_CALCULATION=when_required` and `AWS_RESPONSE_CHECKSUM_VALIDATION=when_required`; region `auto`; endpoint `https://<R2_ACCOUNT_ID>.r2.cloudflarestorage.com`.
 - **Cache:** objects carry `Cache-Control: public, max-age=300`. The Cache Rule "dados json" must keep Edge TTL from the header and Browser TTL "Respect origin TTL" — a fixed Browser TTL once turned it into 14400.
