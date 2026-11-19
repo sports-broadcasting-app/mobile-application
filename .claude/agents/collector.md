@@ -45,7 +45,7 @@ yarn lint --max-warnings 0
 yarn format:check   # covers scripts/ too
 ```
 
-The CI job `checks` (`.github/workflows/ci.yml`) runs the same on every PR, including the parser tests against the saved fixtures, so a parser change that breaks a fixture blocks the merge. It never touches the network.
+The CI job `checks` (`.github/workflows/ci.yml`, PR #22) runs the same on every PR, including the parser tests against the saved fixtures, so a parser change that breaks a fixture blocks the merge. It never touches the network.
 
 Live runs (`node scripts/collect.ts public`) hit ge only; ask before running one.
 
