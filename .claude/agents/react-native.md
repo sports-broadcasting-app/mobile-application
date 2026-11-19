@@ -34,6 +34,8 @@ yarn lint --max-warnings 0
 yarn format:check
 ```
 
+A test that passes locally but fails on CI with "Exceeded timeout of 5000 ms" is usually the cold CI runner transforming every module a screen imports in the file's first test; `jest.config.js` sets `testTimeout: 15_000` for that (dependency-updates PR). Raise it only with evidence from the CI timings (`gh run view <id> --log | grep '<file>.test.tsx ('`); a real hang still fails at 15 s.
+
 These are the same gates the CI job `checks` runs on every PR (`.github/workflows/ci.yml`, PR #22); `main` only takes PRs with it green, and a single lint warning fails it. Run them before saying the work is done.
 
 Every new component or hook gets a test in `src/__tests__/` (mock `expo-router`, `../data/database`, `expo-linking` as CLAUDE.md shows; real SQL through `createExpoSqliteMock()`). For a UI change, suggest a pass by the `ui-reviewer` agent; to see it on a device, the `ios` or `android` agent runs the app.
