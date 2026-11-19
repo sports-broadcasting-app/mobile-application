@@ -1,8 +1,11 @@
 name: Match data
 
 on:
+  # Every 30 min the Cloudflare Worker in infra/cloudflare/data-trigger starts
+  # this through workflow_dispatch: GitHub's cron is best effort and ran it
+  # only every 6-9 hours. The cron below is a backup, off the busy minutes.
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '17 */3 * * *'
   workflow_dispatch:
 
 permissions:

@@ -95,6 +95,11 @@ export interface CompetitionData {
    * its source failed and the collector kept the published data.
    */
   updatedAt?: string;
+  /**
+   * When every round was last fetched. The ge multisport leagues reuse
+   * settled rounds in between and ask for all of them again once a day.
+   */
+  fullRefreshAt?: string;
 }
 
 export interface Snapshot {
