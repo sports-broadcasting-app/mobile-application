@@ -19,6 +19,7 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 - Dates: `startsAt` carries an offset. Compare instants; never slice the string.
 - New competitions come from `src/constants/competitions.ts`; the app ignores slugs it does not know. Followed competitions live in `CompetitionContext` (`@followed_competitions`), and the last one cannot be unfollowed.
 - Colors only from `useTheme()`, sizes from `designTokens`, and the building blocks (`Button`, `SectionHeader`, `BottomSheet`, `SearchField`). Sheets with a text field pass `fullHeight`. `BottomSheet` already keeps its content above the keyboard on both platforms (iOS: KeyboardAvoidingView `padding`; Android: `useAndroidKeyboardHeight` as `paddingBottom`, PR #18); don't wrap a sheet's content in another KeyboardAvoidingView.
+- A style that depends on a condition goes in the style array as `cond && { … }`, not as an object with a ternary and a literal (`backgroundColor: x ? 'transparent' : color`): `react-native/no-inline-styles` warns on the literal, and the CI fails on any warning (fixed in `TeamCircle`, PR adding the CI).
 - Platform files: `.web.tsx` variants exist for ads, notifications and splash. Keep them in sync when you change the native one.
 - Dependencies: `yarn expo install <pkg>` (picks the version for SDK 58; never npm). A package with native code, or a change to `app.json` plugins, needs a new `eas build` — say so; JS-only changes can ship with `eas update` (`runtimeVersion` follows the app version).
 
@@ -27,8 +28,11 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 ```bash
 yarn test          # Jest runs with TZ=America/Sao_Paulo
 yarn type-check
-yarn lint
+yarn lint --max-warnings 0
+yarn format:check
 ```
+
+These are the same gates the CI job `checks` runs on every PR (`.github/workflows/ci.yml`); `main` only takes PRs with it green, and a single lint warning fails it. Run them before saying the work is done.
 
 Every new component or hook gets a test in `src/__tests__/` (mock `expo-router`, `../data/database`, `expo-linking` as CLAUDE.md shows; real SQL through `createExpoSqliteMock()`). For a UI change, suggest a pass by the `ui-reviewer` agent; to see it on a device, the `ios` or `android` agent runs the app.
 
