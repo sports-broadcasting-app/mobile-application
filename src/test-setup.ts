@@ -38,7 +38,11 @@ jest.mock('react-native-google-mobile-ads', () => {
 });
 
 jest.mock('expo-tracking-transparency', () => ({
+  // Already answered by default; ads.test covers the first prompt.
+  getTrackingPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ granted: true, status: 'granted' }),
+  ),
   requestTrackingPermissionsAsync: jest.fn(() =>
-    Promise.resolve({ granted: true }),
+    Promise.resolve({ granted: true, status: 'granted' }),
   ),
 }));
