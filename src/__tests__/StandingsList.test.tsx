@@ -62,7 +62,10 @@ describe('StandingsList', () => {
     expect(screen.getByTestId('standing-row-3')).toHaveTextContent(
       /1\s*Seahawks/,
     );
-    expect(screen.getByText('DIF')).toBeTruthy();
+    // The code header is hidden from screen readers (rows say the names).
+    expect(
+      screen.getByText('DIF', { includeHiddenElements: true }),
+    ).toBeTruthy();
     expect(screen.getByTestId('standing-row-1')).toHaveTextContent(/88$/);
   });
 
@@ -77,5 +80,19 @@ describe('StandingsList', () => {
     );
     expect(screen.queryByTestId(/standing-group-/)).toBeNull();
     expect(screen.getByTestId('standing-row-2')).toBeTruthy();
+  });
+
+  it('reads each row with its column names', () => {
+    render(
+      <StandingsList
+        sport="futebol-americano"
+        standings={[standing('1', 1)]}
+        teamsById={teamsById}
+        isFavorite={() => false}
+      />,
+    );
+    expect(
+      screen.getByLabelText(/^1º, Bills, 8 vitórias, 1 derrota,/),
+    ).toBeTruthy();
   });
 });

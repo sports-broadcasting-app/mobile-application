@@ -3,6 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import { Match, Team } from '../types/snapshot';
+import { describeMatch } from '../utils/accessibility';
 import { formatShortDay, formatTime } from '../utils/date';
 import { getTeamName } from '../utils/teamName';
 import {
@@ -39,6 +40,15 @@ export const MatchRow = React.memo(function MatchRow({
       activeOpacity={0.7}
       disabled={!onPress}
       onPress={onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={describeMatch({
+        match,
+        homeName: homeTeam.name,
+        awayName: awayTeam.name,
+        favorite,
+        details: [formatShortDay(date), formatTime(match.startsAt)],
+      })}
+      accessibilityHint={onPress ? 'Abre os detalhes do jogo' : undefined}
       testID={`match-row-${match.id}`}
       style={[styles.row, { borderBottomColor: colors.borderLight }]}
     >
