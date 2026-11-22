@@ -226,7 +226,7 @@ Named by role, never by component (no `watchBtnBg`): reuse these before adding o
 
 - `spacing`, `radius`, `typography`, `iconSize`, `shadows`: use them instead of numbers.
 - `touchTarget` (44): minimum height of anything tappable; small links get `hitSlop`.
-- `maxFontScale` (1.3): pass as `maxFontSizeMultiplier` on text in fixed-width columns or one-line chips (`MatchRow`, `StandingsList`, `SegmentedChips`, pills). Free text scales without a cap.
+- `maxFontScale` (1.3): pass as `maxFontSizeMultiplier` on text in fixed-width columns or one-line chips (`MatchRow`, `StandingsList`, `SegmentedChips`, pills, `MatchCard` names, score and buttons) and on screen titles. Free text scales without a cap and wraps; boxes that hold text use `minHeight`, not `height`.
 - `sectionLabel`: the uppercase label style.
 - **`SectionHeader`** (`title`, `icon`, `detail`): every label above a group of rows. Don't restyle a `Text` for it.
 - **`Button`** (`primary` | `secondary` | `plain`, `icon`, `disabled`): every full-width action. Disabled primary turns `surfaceAlt`.

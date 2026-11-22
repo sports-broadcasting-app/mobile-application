@@ -116,6 +116,9 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flexGrow: 0,
+    // ScrollView defaults to flexShrink 1: under a long list it lost a few
+    // points and cut the bottom of the chips.
+    flexShrink: 0,
   },
   scrollRow: {
     flexDirection: 'row',
