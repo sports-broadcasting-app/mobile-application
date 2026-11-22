@@ -141,7 +141,8 @@
             "enableShrinkResourcesInReleaseBuilds": true
           }
         }
-      ]
+      ],
+      "./plugins/withGradleMemory"
     ]
   }
 }
