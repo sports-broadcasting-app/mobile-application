@@ -28,6 +28,7 @@ import { promptExactAlarms } from '../utils/exactAlarmPrompt';
 import { COMPETITIONS } from '../constants/competitions';
 import {
   iconSize,
+  maxFontScale,
   radius,
   spacing,
   touchTarget,
@@ -94,7 +95,11 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.content}
         contentInsetAdjustmentBehavior="automatic"
       >
-        <Text style={[styles.title, { color: colors.textPrimary }]}>
+        <Text
+          // Screen titles are already large; uncapped they broke mid-word.
+          maxFontSizeMultiplier={maxFontScale}
+          style={[styles.title, { color: colors.textPrimary }]}
+        >
           Configurações
         </Text>
 

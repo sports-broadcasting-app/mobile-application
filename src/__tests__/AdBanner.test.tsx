@@ -1,13 +1,14 @@
 import { act, fireEvent, render, screen } from '../test-utils';
 import { AdsConsent } from 'react-native-google-mobile-ads';
 import { AdBanner } from '../components/AdBanner';
-import { AdsProvider } from '../contexts/AdsContext';
+import { AdsProvider, AdsStarter } from '../contexts/AdsContext';
 
 const getConsentInfo = AdsConsent.getConsentInfo as jest.Mock;
 
 function renderWithAds() {
   return render(
     <AdsProvider>
+      <AdsStarter />
       <AdBanner />
     </AdsProvider>,
   );

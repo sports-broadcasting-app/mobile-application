@@ -100,6 +100,7 @@ App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens 
 - **First run**: `SyncGate` blocks with a loader; on failure it shows a retry. Then `OnboardingGate` shows `OnboardingScreen` once (`@onboarding_done` in AsyncStorage): pick the competitions to follow (at least one).
 - **Followed competitions**: `CompetitionContext.followed`, stored as `@followed_competitions`; nothing stored (installs from before) means all. Filters, standings, the Home and reminders only use followed ones; the last one cannot be unfollowed. Favorite teams are picked in Configurações (`TeamSheet`); the first pick offers the reminders once (`@reminders_offered`).
 - **Match reminders**: local notifications only (`expo-notifications` with `enableRemoteNotifications: false`; no push server, no Firebase/FCM, no `google-services.json`). `NotificationsContext` keeps the pending list equal to the reminders 30 min before each scheduled match of the favorites whenever favorites, data or the switch change: `replaceScheduledReminders` cancels or schedules only what changed (each request carries `matchId` and `fireAt` in `data` to compare) (max 60, iOS caps at 64). `NotificationResponder` uses `router.replace` when a match detail is already open, `push` otherwise. On only when the in-app choice (`@match_reminders`) and the system permission are both on. `NotificationResponder` opens `/match/[id]` on tap. Android declares `SCHEDULE_EXACT_ALARM`: without it Android 12+ may fire a reminder up to 1 h late (after kickoff); Android 14+ leaves it off, so turning reminders on explains it and opens "Alarmes e lembretes", and Configuracoes keeps a notice while it is off. Web has no reminders (`notifications.web.ts`).
+- **Ads**: `react-native-google-mobile-ads`. Nothing starts at launch: `AdsStarter` (inside `OnboardingGate`) runs consent, then the iOS tracking prompt (only when the app is active, retried on the next foreground while unanswered), then the SDK. Test unit ids everywhere except store builds (`AdBanner`).
 - **Later runs**: opens from SQLite and refreshes in the background when data is older than 6h (15min on match days).
 - **Offline**: keeps local data and says so on the Home header.
 - **`saveSnapshot` must never touch the `favorites` table.**
@@ -225,7 +226,7 @@ Named by role, never by component (no `watchBtnBg`): reuse these before adding o
 
 - `spacing`, `radius`, `typography`, `iconSize`, `shadows`: use them instead of numbers.
 - `touchTarget` (44): minimum height of anything tappable; small links get `hitSlop`.
-- `maxFontScale` (1.3): pass as `maxFontSizeMultiplier` on text in fixed-width columns or one-line chips (`MatchRow`, `StandingsList`, `SegmentedChips`, pills). Free text scales without a cap.
+- `maxFontScale` (1.3): pass as `maxFontSizeMultiplier` on text in fixed-width columns or one-line chips (`MatchRow`, `StandingsList`, `SegmentedChips`, pills, `MatchCard` names, score and buttons) and on screen titles. Free text scales without a cap and wraps; boxes that hold text use `minHeight`, not `height`.
 - `sectionLabel`: the uppercase label style.
 - **`SectionHeader`** (`title`, `icon`, `detail`): every label above a group of rows. Don't restyle a `Text` for it.
 - **`Button`** (`primary` | `secondary` | `plain`, `icon`, `disabled`): every full-width action. Disabled primary turns `surfaceAlt`.

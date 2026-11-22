@@ -40,6 +40,7 @@ import {
 import { COMPETITION_OPTIONS, getCompetition } from '../constants/competitions';
 import {
   iconSize,
+  maxFontScale,
   radius,
   spacing,
   typography,
@@ -199,6 +200,8 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <Text
           numberOfLines={1}
+          // Screen titles are already large; uncapped they broke mid-word.
+          maxFontSizeMultiplier={maxFontScale}
           style={[styles.title, { color: colors.textPrimary }]}
         >
           {competition ? getCompetition(competition).name : 'Jogos'}
@@ -236,7 +239,10 @@ export default function HomeScreen() {
               size={iconSize.sm}
               color={colors.primary}
             />
-            <Text style={[styles.editText, { color: colors.primary }]}>
+            <Text
+              maxFontSizeMultiplier={maxFontScale}
+              style={[styles.editText, { color: colors.primary }]}
+            >
               Editar
             </Text>
           </TouchableOpacity>
@@ -357,7 +363,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     gap: spacing.xs,
-    height: 36,
+    minHeight: 36,
     paddingHorizontal: spacing.md,
   },
   editText: {

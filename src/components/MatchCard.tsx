@@ -20,6 +20,7 @@ import { getTeamName } from '../utils/teamName';
 import { TeamCircle } from './TeamCircle';
 import {
   iconSize,
+  maxFontScale,
   radius,
   spacing,
   typography,
@@ -45,7 +46,8 @@ function TeamColumn({ team }: { team: Team }) {
     <View style={styles.team}>
       <TeamCircle team={team} size={48} />
       <Text
-        numberOfLines={1}
+        numberOfLines={2}
+        maxFontSizeMultiplier={maxFontScale}
         style={[styles.teamName, { color: colors.textPrimary }]}
       >
         {getTeamName(team.name)}
@@ -85,7 +87,12 @@ function LiveBadge() {
           { backgroundColor: colors.onLive, opacity: pulse },
         ]}
       />
-      <Text style={[styles.liveText, { color: colors.onLive }]}>AO VIVO</Text>
+      <Text
+        maxFontSizeMultiplier={maxFontScale}
+        style={[styles.liveText, { color: colors.onLive }]}
+      >
+        AO VIVO
+      </Text>
     </View>
   );
 }
@@ -131,7 +138,8 @@ export const MatchCard = React.memo(function MatchCard({
     >
       <View style={styles.header}>
         <Text
-          numberOfLines={1}
+          numberOfLines={2}
+          maxFontSizeMultiplier={maxFontScale}
           style={[styles.meta, { color: colors.textSecondary }]}
         >
           {meta}
@@ -146,7 +154,12 @@ export const MatchCard = React.memo(function MatchCard({
         )}
         {isLive && <LiveBadge />}
         {match.status === 'postponed' && (
-          <Text style={[styles.meta, { color: colors.error }]}>Adiado</Text>
+          <Text
+            maxFontSizeMultiplier={maxFontScale}
+            style={[styles.meta, { color: colors.error }]}
+          >
+            Adiado
+          </Text>
         )}
       </View>
 
@@ -154,13 +167,24 @@ export const MatchCard = React.memo(function MatchCard({
         <TeamColumn team={homeTeam} />
         <View style={styles.score}>
           {hasScore && (
-            <Text style={[styles.scoreText, { color: colors.textPrimary }]}>
+            <Text
+              maxFontSizeMultiplier={maxFontScale}
+              style={[styles.scoreText, { color: colors.textPrimary }]}
+            >
               {match.homeScore}
             </Text>
           )}
-          <Text style={[styles.versus, { color: colors.versusText }]}>×</Text>
+          <Text
+            maxFontSizeMultiplier={maxFontScale}
+            style={[styles.versus, { color: colors.versusText }]}
+          >
+            ×
+          </Text>
           {hasScore && (
-            <Text style={[styles.scoreText, { color: colors.textPrimary }]}>
+            <Text
+              maxFontSizeMultiplier={maxFontScale}
+              style={[styles.scoreText, { color: colors.textPrimary }]}
+            >
               {match.awayScore}
             </Text>
           )}
@@ -215,6 +239,7 @@ export const MatchCard = React.memo(function MatchCard({
               ]}
             />
             <Text
+              maxFontSizeMultiplier={maxFontScale}
               style={[
                 styles.watchText,
                 { color: primary ? colors.onPrimary : colors.textPrimary },
@@ -273,8 +298,11 @@ const styles = StyleSheet.create({
   },
   team: {
     alignItems: 'center',
+    // Shares the row with the score instead of a fixed 110: long names
+    // ("Athletico-PR") get the room the score does not use.
+    flex: 1,
     gap: spacing.sm,
-    width: 110,
+    minWidth: 0,
   },
   teamName: {
     fontSize: typography.size.body,
@@ -284,7 +312,9 @@ const styles = StyleSheet.create({
   score: {
     alignItems: 'center',
     flexDirection: 'row',
+    flexShrink: 0,
     gap: spacing.sm,
+    paddingHorizontal: spacing.xs,
   },
   scoreText: {
     fontSize: typography.size.score,
@@ -306,8 +336,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.md + 2,
     flexDirection: 'row',
     gap: spacing.sm + 2,
-    height: 48,
     justifyContent: 'center',
+    // Grows with larger text instead of clipping the label.
+    minHeight: 48,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   watchSecondary: {
     borderWidth: 1,
@@ -317,7 +350,9 @@ const styles = StyleSheet.create({
     width: iconSize.md,
   },
   watchText: {
+    flexShrink: 1,
     fontSize: typography.size.body + 1,
     fontWeight: typography.weight.bold,
+    textAlign: 'center',
   },
 });
