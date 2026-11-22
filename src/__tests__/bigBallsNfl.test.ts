@@ -211,4 +211,25 @@ describe('addNflScores', () => {
     ).resolves.toContain('0 live');
     expect(nfl.matches[0].homeScore).toBeNull();
   });
+
+  it('gives a finished game its final score when ge has none yet', async () => {
+    const nfl = competition([{ ...match, homeScore: null, awayScore: null }]);
+    await addNflScores(nfl, undefined, {
+      key: 'k',
+      now: NOW,
+      fetchText: jest.fn(async () => answer([bbGame({})])),
+    });
+    expect(nfl.matches[0]).toMatchObject({
+      homeScore: 51,
+      awayScore: 30,
+      periodScores: quarters,
+    });
+
+    // Next run ge still has no score: kept from the published file.
+    const fetchText = jest.fn();
+    const next = competition([{ ...match, homeScore: null, awayScore: null }]);
+    await addNflScores(next, nfl, { key: 'k', now: NOW, fetchText });
+    expect(fetchText).not.toHaveBeenCalled();
+    expect(next.matches[0]).toMatchObject({ homeScore: 51, awayScore: 30 });
+  });
 });

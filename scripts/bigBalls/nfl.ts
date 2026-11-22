@@ -180,17 +180,23 @@ export async function addNflScores(
   const kept = new Map(
     (previous?.matches ?? [])
       .filter((m) => m.status === 'finished' && m.periodScores)
-      .map((m) => [m.id, m.periodScores as SetScore[]]),
+      .map((m) => [m.id, m]),
   );
   let reused = 0;
   for (const match of competition.matches) {
-    const periods = kept.get(match.id);
-    if (
-      periods &&
-      match.status === 'finished' &&
-      validFinished(periods, match)
-    ) {
-      match.periodScores = periods;
+    const old = kept.get(match.id);
+    if (!old?.periodScores || match.status !== 'finished') continue;
+    if (match.homeScore === null || match.awayScore === null) {
+      // ge has not published the final score yet: keep the one Big Balls
+      // gave last run, which its quarters already add up to.
+      if (old.homeScore !== null && validFinished(old.periodScores, old)) {
+        match.homeScore = old.homeScore;
+        match.awayScore = old.awayScore;
+        match.periodScores = old.periodScores;
+        reused++;
+      }
+    } else if (validFinished(old.periodScores, match)) {
+      match.periodScores = old.periodScores;
       reused++;
     }
   }
@@ -237,6 +243,15 @@ export async function addNflScores(
         match.awayScore = found.awayScore;
         match.periodScores = found.periods;
         live++;
+      } else if (match.homeScore === null || match.awayScore === null) {
+        // ge marks the game finished by the clock but publishes the final
+        // score later; Big Balls has it, with quarters adding up to it.
+        if (found.finished && found.periods.length >= 4) {
+          match.homeScore = found.homeScore;
+          match.awayScore = found.awayScore;
+          match.periodScores = found.periods;
+          quarters++;
+        }
       } else if (validFinished(found.periods, match)) {
         match.periodScores = found.periods;
         quarters++;
