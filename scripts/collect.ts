@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { CompetitionSlug, Snapshot } from '../src/types/snapshot';
 import { collectSerieA } from './brasileirao/collect.ts';
 import { addNbaQuarters } from './apiSports/nba.ts';
+import { addNflScores } from './bigBalls/nfl.ts';
 import { collectWithFallback, loadPrevious } from './fallback.ts';
 import { fetchText } from './http.ts';
 import { collectNba } from './nba/collect.ts';
@@ -49,9 +50,24 @@ async function main(): Promise<void> {
       {
         name: 'NFL (ge)',
         slugs: ['nfl'],
-        collect: async () => [
-          await collectNfl(fixturesDir, Date.now(), previousOf('nfl')),
-        ],
+        collect: async () => {
+          const nfl = await collectNfl(
+            fixturesDir,
+            Date.now(),
+            previousOf('nfl'),
+          );
+          // Live and quarter scores come from Big Balls (ge has none);
+          // offline runs skip it.
+          console.log(
+            await addNflScores(nfl, previousOf('nfl'), {
+              key: fixturesDir ? undefined : process.env.BIGBALLS_KEY,
+              now: Date.now(),
+              fetchText: (url, key) =>
+                fetchText(url, { headers: { 'x-api-key': key } }),
+            }),
+          );
+          return [nfl];
+        },
       },
       {
         name: 'NBA (ge)',

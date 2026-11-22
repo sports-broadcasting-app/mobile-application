@@ -37,6 +37,9 @@ jobs:
           # NBA quarter scores (API-Sports, free plan: 100 requests a day; the
           # collector asks one date per run at most). Missing key: no quarters.
           API_SPORTS_KEY: ${{ secrets.API_SPORTS_KEY }}
+          # NFL live and quarter scores (Big Balls Sports Data, free plan: one
+          # sport, 1,000 requests a day; at most two dates per run).
+          BIGBALLS_KEY: ${{ secrets.BIGBALLS_KEY }}
       # The artifact service drops the connection now and then ("Failed to
       # FinalizeArtifact: ECONNRESET"); one more try after a pause.
       - id: upload1
