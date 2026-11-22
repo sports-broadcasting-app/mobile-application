@@ -62,6 +62,12 @@ export interface Match {
   venue: string | null;
   city: string | null;
   /**
+   * Basketball: points per quarter, then each overtime, from API-Sports.
+   * Absent until the game is over and its quarters were collected; when
+   * present they add up to the final score.
+   */
+  periodScores?: SetScore[];
+  /**
    * Football: goals and red cards in order. Absent when not collected yet;
    * for a finished match it is only kept when its goals add up to the score.
    */

@@ -14,6 +14,7 @@ import {
   periodName,
   periodShortName,
 } from '../utils/matchEvents';
+import { quarterColumns } from '../utils/periods';
 import { formatRound } from '../utils/roundLabel';
 import { getTeamName } from '../utils/teamName';
 import { spacing, typography } from '../constants/designTokens';
@@ -96,6 +97,23 @@ export default function MatchDetailScreen() {
               away: set.away,
             }))}
             totalLabel="Sets"
+            homeTotal={match.homeScore ?? 0}
+            awayTotal={match.awayScore ?? 0}
+          />
+        </View>
+      )}
+
+      {match.periodScores && hasResult && (
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Placar por quarto
+          </Text>
+          <PeriodScoreboard
+            testID="quarter-scores"
+            homeTeam={homeTeam}
+            awayTeam={awayTeam}
+            periods={quarterColumns(match.periodScores)}
+            totalLabel="Final"
             homeTotal={match.homeScore ?? 0}
             awayTotal={match.awayScore ?? 0}
           />
