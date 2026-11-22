@@ -7,7 +7,7 @@ import { FavoritesProvider } from '../src/contexts/FavoritesContext';
 import { CompetitionProvider } from '../src/contexts/CompetitionContext';
 import { SyncProvider } from '../src/contexts/SyncContext';
 import { NotificationsProvider } from '../src/contexts/NotificationsContext';
-import { AdsProvider } from '../src/contexts/AdsContext';
+import { AdsProvider, AdsStarter } from '../src/contexts/AdsContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { SyncGate } from '../src/components/SyncGate';
 import { AnimatedSplash } from '../src/components/AnimatedSplash';
@@ -72,6 +72,7 @@ export default function RootLayout() {
                         <OnboardingGate>
                           <RootStack />
                           <NotificationResponder />
+                          <AdsStarter />
                         </OnboardingGate>
                       </SyncGate>
                     </NotificationsProvider>
