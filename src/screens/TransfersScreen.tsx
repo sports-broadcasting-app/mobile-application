@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
-  ScrollView,
+  SectionList,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -72,25 +72,6 @@ export default function TransfersScreen() {
     setQuery('');
   };
 
-  const renderSection = (title: string, items: Transfer[]) =>
-    items.length > 0 && (
-      <>
-        <SectionHeader
-          title={title}
-          detail={String(items.length)}
-          testID={`transfers-section-${title}`}
-        />
-        {items.map((transfer) => (
-          <TransferCard
-            key={transfer.id}
-            transfer={transfer}
-            teamsById={teamsById}
-            favoriteDirection={getFavoriteDirection(transfer, favoriteTeamId)}
-          />
-        ))}
-      </>
-    );
-
   let sections: [string, Transfer[]][];
   if (selectedTeam) {
     const { arrivals, departures } = splitByTeam(filtered, selectedTeam.id);
@@ -107,14 +88,15 @@ export default function TransfersScreen() {
   }
   const isEmpty =
     transfers !== undefined && sections.every(([, items]) => !items.length);
+  // Virtualized: the curated list grows all season long.
+  const listSections = sections
+    .filter(([, items]) => items.length > 0)
+    .map(([title, data]) => ({ title, data }));
 
-  return (
-    <ScrollView
-      style={{ backgroundColor: colors.background }}
-      contentContainerStyle={styles.content}
-      contentInsetAdjustmentBehavior="automatic"
-      keyboardShouldPersistTaps="handled"
-    >
+  // An element, not a component: a component defined here would remount on
+  // every keystroke and close the keyboard.
+  const listHeader = (
+    <>
       <Stack.Screen options={{ title: 'Transferências' }} />
       <SegmentedChips
         options={OPTIONS}
@@ -188,19 +170,43 @@ export default function TransfersScreen() {
           ))}
         </>
       )}
+    </>
+  );
 
-      {sections.map(([title, items]) => (
-        <View key={title}>{renderSection(title, items)}</View>
-      ))}
-
-      {isEmpty && (
-        <Text style={[styles.empty, { color: colors.textSecondary }]}>
-          {query || selectedTeam
-            ? 'Nenhuma transferência encontrada'
-            : 'Nenhuma transferência registrada nesta temporada'}
-        </Text>
+  return (
+    <SectionList
+      style={{ backgroundColor: colors.background }}
+      contentContainerStyle={styles.content}
+      contentInsetAdjustmentBehavior="automatic"
+      keyboardShouldPersistTaps="handled"
+      stickySectionHeadersEnabled={false}
+      sections={listSections}
+      keyExtractor={(transfer) => transfer.id}
+      ListHeaderComponent={listHeader}
+      renderSectionHeader={({ section }) => (
+        <SectionHeader
+          title={section.title}
+          detail={String(section.data.length)}
+          testID={`transfers-section-${section.title}`}
+        />
       )}
-    </ScrollView>
+      renderItem={({ item }) => (
+        <TransferCard
+          transfer={item}
+          teamsById={teamsById}
+          favoriteDirection={getFavoriteDirection(item, favoriteTeamId)}
+        />
+      )}
+      ListEmptyComponent={
+        isEmpty ? (
+          <Text style={[styles.empty, { color: colors.textSecondary }]}>
+            {query || selectedTeam
+              ? 'Nenhuma transferência encontrada'
+              : 'Nenhuma transferência registrada nesta temporada'}
+          </Text>
+        ) : undefined
+      }
+    />
   );
 }
 

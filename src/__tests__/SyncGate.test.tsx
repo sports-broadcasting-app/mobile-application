@@ -8,6 +8,13 @@ jest.mock('../data/database', () => ({
   getFavorites: jest.fn(async () => ({})),
 }));
 
+let mockStoreBuild = false;
+jest.mock('../constants/buildInfo', () => ({
+  get IS_STORE_BUILD() {
+    return mockStoreBuild;
+  },
+}));
+
 const mockedUseSync = useSync as jest.Mock;
 
 function renderGate() {
@@ -59,5 +66,19 @@ describe('SyncGate', () => {
     mockedUseSync.mockReturnValue({ phase: 'ready', refreshing: false });
     renderGate();
     expect(await screen.findByText('Conteudo')).toBeTruthy();
+  });
+
+  it('hides the debug details in store builds', async () => {
+    mockStoreBuild = true;
+    mockedUseSync.mockReturnValue({
+      phase: 'failed',
+      refreshing: false,
+      lastError: 'Falha',
+      refresh: jest.fn(),
+    });
+    renderGate();
+    expect(await screen.findByText('Tentar novamente')).toBeTruthy();
+    expect(screen.queryByText('Ver detalhes')).toBeNull();
+    mockStoreBuild = false;
   });
 });

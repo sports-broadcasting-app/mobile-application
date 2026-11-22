@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import * as Updates from 'expo-updates';
 import {
   BannerAd,
   BannerAdSize,
@@ -8,11 +7,12 @@ import {
 } from 'react-native-google-mobile-ads';
 import { useAds } from '../contexts/AdsContext';
 import { BANNER_UNIT_IDS } from '../constants/ads';
+import { IS_STORE_BUILD } from '../constants/buildInfo';
 import { spacing } from '../constants/designTokens';
 
 // Real ads only in store builds: tapping a real ad in development or on a
 // preview build counts as invalid traffic and can get the AdMob account banned.
-const USE_REAL_ADS = !__DEV__ && Updates.channel === 'production';
+const USE_REAL_ADS = IS_STORE_BUILD;
 
 const UNIT_ID = USE_REAL_ADS
   ? Platform.select({

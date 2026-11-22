@@ -1,4 +1,12 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+import { configure } from '@testing-library/react-native';
+
+// findBy*/waitFor give up after 1 s by default. On the cold CI runner the
+// screen tests (which load every screen module) sometimes need more: six of
+// them failed on main with "Unable to find" while the same code passed on the
+// PR run. 5 s still fails fast on a real miss.
+configure({ asyncUtilTimeout: 5_000 });
+
 jest.mock('expo-image', () => {
   const React = require('react');
   const { View } = require('react-native');
