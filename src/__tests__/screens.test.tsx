@@ -521,6 +521,30 @@ describe('MatchDetailScreen', () => {
     expect(screen.queryByTestId('half-scores')).toBeNull();
   });
 
+  it('shows the quarter scores of a basketball game', async () => {
+    (getMatch as jest.Mock).mockResolvedValue({
+      ...finishedMatch,
+      competition: 'nba',
+      homeScore: 97,
+      awayScore: 96,
+      setScores: [],
+      periodScores: [
+        { home: 20, away: 24 },
+        { home: 25, away: 26 },
+        { home: 30, away: 20 },
+        { home: 22, away: 26 },
+      ],
+    });
+    render(<MatchDetailScreen />);
+    expect(await screen.findByText('97 x 96')).toBeTruthy();
+    expect(screen.getByTestId('quarter-scores')).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        'Sada Cruzeiro, 1º quarto: 20, 2º quarto: 25, 3º quarto: 30, 4º quarto: 22, final: 97',
+      ),
+    ).toBeTruthy();
+  });
+
   it('handles an unknown match', async () => {
     (getMatch as jest.Mock).mockResolvedValue(null);
     render(<MatchDetailScreen />);

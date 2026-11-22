@@ -31,6 +31,8 @@ App → EXPO_PUBLIC_DATA_URL (expo.dev env var, production) → SQLite
 - **Rulesets are only enforced on public repos in GitHub Free.** Making the repo private turns them into no-ops unless the org moves to Team, and the CI then spends the 2,000 private minutes.
 - **Secret alert #1 (2026-11-19):** a Google API key in `google-services.json`, committed in `f855806` (2026-03) and removed in `2e2254d` (2026-11-01), still in the public history. It belonged to the Firebase project `notifications-where-to-watch`, used only for FCM, which the app dropped (reminders are local). The fix is revoking it in Google Cloud, not rewriting history (force push is blocked, and clones and GitHub caches keep the old commits); then close the alert as revoked: `gh api -X PATCH repos/sports-broadcasting-app/mobile-application/secret-scanning/alerts/1 -f state=resolved -f resolution=revoked`.
 
+- **API-Sports key:** secret `API_SPORTS_KEY`, passed only to the `collect` step of `data.yml` (NBA quarters, see the `collector` agent). Dashboard https://dashboard.api-football.com › My Access shows the key and per-API usage (free plan: 100 requests/day per API, reset 00:00 UTC). If the run log says "NBA quarters ... skipped" with a `requests`/`token` error, check the quota or rotate: reset the key in the dashboard, then `gh secret set API_SPORTS_KEY` (the user does it; never print or paste the key).
+
 ## Skills to load
 
 If the Expo plugin is installed: `eas-workflows`, `eas-update`, `eas-update-insights`, `eas-observe`, `eas-app-stores`.

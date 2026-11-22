@@ -2,7 +2,9 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { CompetitionSlug, Snapshot } from '../src/types/snapshot';
 import { collectSerieA } from './brasileirao/collect.ts';
+import { addNbaQuarters } from './apiSports/nba.ts';
 import { collectWithFallback, loadPrevious } from './fallback.ts';
+import { fetchText } from './http.ts';
 import { collectNba } from './nba/collect.ts';
 import { collectNfl } from './nfl/collect.ts';
 import { toLegacySnapshot } from './legacy.ts';
@@ -54,9 +56,23 @@ async function main(): Promise<void> {
       {
         name: 'NBA (ge)',
         slugs: ['nba'],
-        collect: async () => [
-          await collectNba(fixturesDir, Date.now(), previousOf('nba')),
-        ],
+        collect: async () => {
+          const nba = await collectNba(
+            fixturesDir,
+            Date.now(),
+            previousOf('nba'),
+          );
+          // Quarters come from API-Sports (ge has none); offline runs skip it.
+          console.log(
+            await addNbaQuarters(nba, previousOf('nba'), {
+              key: fixturesDir ? undefined : process.env.API_SPORTS_KEY,
+              now: Date.now(),
+              fetchText: (url, key) =>
+                fetchText(url, { headers: { 'x-apisports-key': key } }),
+            }),
+          );
+          return [nba];
+        },
       },
     ],
     previous,

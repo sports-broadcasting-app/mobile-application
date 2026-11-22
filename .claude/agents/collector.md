@@ -43,6 +43,14 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - **When pages are read** (`collectSerieA(fixturesDir, now, previous)`): live matches every run; finished matches reuse `previous` events while they still add up to the score; finished ones without events are read at most `EVENTS_BACKFILL_PER_RUN` (20) per run, most recent first, so a new season (or the first 1.4 run) fills in over ~18 runs. A finished feed that does not add up to the score is left out and read again next run. The log says "Brasileirão: n match pages read for events, m kept".
 - **Not available:** quarter scores for the NFL and the NBA. The multisport GraphQL has `detailedScoreboard { firstParticipantScore secondParticipantScore details { level firstParticipantScore secondParticipantScore } }` (introspection is off; names found through validation suggestions), but `details` was null in every round tried (NBA rounds 30–34, NFL weeks 9–12). Re-check before adding another source.
 
+## NBA quarters from API-Sports (`scripts/apiSports/nba.ts`)
+
+- ge has no quarter or live scores for the NBA/NFL (live games: empty `scoreboard`, `hasLiveCoverage: false`; `detailedScoreboard.details` always null). API-NBA v2 is the licensed source: `GET https://v2.nba.api-sports.io/games?date=YYYY-MM-DD` with header `x-apisports-key`. The `date` is a **UTC** day (date=2026-11-22 returned games starting 00:30–23:00 UTC that day, i.e. US evening games of the 21st). Read: `date.start`, `status.long === 'Finished'`, `teams.home|visitors.{name,code}`, `scores.home|visitors.linescore` (strings, one per quarter then overtime).
+- `addNbaQuarters(competition, previous, { key, now, fetchText })` runs inside the NBA source in `scripts/collect.ts` after `collectNba`: keeps `previous` quarters that still add up to the score, then asks at most `MAX_DATES_PER_RUN` (1) date per run for finished games of the last 36 h without quarters, most recent date first. Matching: same two teams (code or full name, either order) within 6 h of the ge start; quarters must add up to the ge score. Never throws: no key, API errors (`errors` object, quota, plan) or a failed fetch log a `::warning` and leave quarters out. Offline/fixture runs pass no key.
+- Quota: free plan 100/day per API (reset 00:00 UTC); worst case 48 requests/day (one per run), normal ~10 on an NBA night. Remaining count is in the `x-ratelimit-requests-remaining` response header.
+- NFL: same API family (`https://v1.american-football.api-sports.io`, league 1) but the free plan refuses the current season; only with the PRO plan. Not wired yet.
+- Do not use ESPN, Google or cdn.nba.com instead: their robots.txt/terms forbid it (ESPN blocks anthropic-ai).
+
 ## Checking your work
 
 ```bash

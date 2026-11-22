@@ -34,6 +34,9 @@ jobs:
         run: node scripts/collect.ts public
         env:
           PREVIOUS_SNAPSHOT_URL: https://dados.onde-passa.app/onde-passa.json
+          # NBA quarter scores (API-Sports, free plan: 100 requests a day; the
+          # collector asks one date per run at most). Missing key: no quarters.
+          API_SPORTS_KEY: ${{ secrets.API_SPORTS_KEY }}
       # The artifact service drops the connection now and then ("Failed to
       # FinalizeArtifact: ECONNRESET"); one more try after a pause.
       - id: upload1
