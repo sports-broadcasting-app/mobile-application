@@ -28,6 +28,7 @@ import {
 } from '../constants/competitions';
 import {
   iconSize,
+  maxFontScale,
   radius,
   spacing,
   typography,
@@ -50,7 +51,11 @@ export default function StandingsScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>
+        <Text
+          // Screen titles are already large; uncapped they broke mid-word.
+          maxFontSizeMultiplier={maxFontScale}
+          style={[styles.title, { color: colors.textPrimary }]}
+        >
           Classificação
         </Text>
       </View>
