@@ -447,11 +447,78 @@ describe('MatchDetailScreen', () => {
     (getMatch as jest.Mock).mockResolvedValue(finishedMatch);
     render(<MatchDetailScreen />);
     expect(await screen.findByText('3 x 1')).toBeTruthy();
-    expect(screen.getByText('1º set: 25 x 20')).toBeTruthy();
+    expect(screen.getByTestId('set-scores')).toBeTruthy();
+    expect(screen.getByLabelText(/^Sada Cruzeiro, 1º set: 25,/)).toBeTruthy();
     fireEvent.press(screen.getByText('Assistir no SporTV 2'));
     expect(Linking.openURL).toHaveBeenCalledWith(
       expect.stringContaining('globoplay'),
     );
+  });
+
+  it('shows the score by half and the goals and red cards of a football match', async () => {
+    (getMatch as jest.Mock).mockResolvedValue({
+      ...finishedMatch,
+      competition: 'serie-a',
+      homeScore: 2,
+      awayScore: 1,
+      setScores: [],
+      events: [
+        {
+          type: 'goal',
+          side: 'away',
+          player: 'Vargas',
+          period: '1T',
+          minute: 10,
+        },
+        {
+          type: 'own-goal',
+          side: 'home',
+          player: 'Léo',
+          period: '1T',
+          minute: 26,
+        },
+        {
+          type: 'red-card',
+          side: 'away',
+          player: 'Zagueiro',
+          period: '2T',
+          minute: 48,
+        },
+        {
+          type: 'goal',
+          side: 'home',
+          player: 'Jorginho',
+          period: '2T',
+          minute: 50,
+        },
+      ],
+    });
+    render(<MatchDetailScreen />);
+    expect(await screen.findByText('2 x 1')).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        'Sada Cruzeiro, 1º tempo: 1, 2º tempo: 1, final: 2',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText('Léo (contra)')).toBeTruthy();
+    expect(screen.getByText("45+3'")).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        'Cartão vermelho para Zagueiro, Vôlei Renata, aos 45 mais 3 minutos do 2º tempo',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('shows no timeline for a match without collected events', async () => {
+    (getMatch as jest.Mock).mockResolvedValue({
+      ...finishedMatch,
+      competition: 'serie-a',
+      setScores: [],
+    });
+    render(<MatchDetailScreen />);
+    expect(await screen.findByText('3 x 1')).toBeTruthy();
+    expect(screen.queryByTestId('match-timeline')).toBeNull();
+    expect(screen.queryByTestId('half-scores')).toBeNull();
   });
 
   it('handles an unknown match', async () => {

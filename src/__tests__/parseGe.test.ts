@@ -1,5 +1,7 @@
 import {
+  eventsMatchScore,
   parseChannels,
+  parseEvents,
   parseRound,
   parseStandings,
   parseTablePage,
@@ -216,5 +218,92 @@ describe('parseGe', () => {
 
   it('has no channels for a page without the list', () => {
     expect(parseChannels('<html>sem transmissão</html>')).toEqual([]);
+  });
+});
+
+/** A post of the ge live feed, trimmed to what the parser reads. */
+function play(
+  id: string,
+  kind: string,
+  teamId: number,
+  player: string,
+  period: string,
+  moment: string,
+) {
+  return {
+    body: { blocks: [{ text: 'texto do lance que não é copiado' }] },
+    details: {
+      athlete: { popularName: player, name: `${player} Nome Completo` },
+      kind,
+      team: { abbreviation: 'XXX', id: teamId },
+    },
+    id,
+    isPinned: false,
+    moment,
+    period: { abbreviation: period, id: 'X', label: 'x' },
+    playType: { id: 'GOAL', label: 'Gol' },
+  };
+}
+
+function feedPage(plays: object[]) {
+  return `<script>window.x = { plays: Array.from(${JSON.stringify(plays)}), other: 1 };</script>`;
+}
+
+describe('parseEvents', () => {
+  const page = feedPage([
+    play('c', 'RED', 293, 'Zagueiro', '2T', '48:16'),
+    play('a', 'REGULAR_GOAL', 293, 'Vargas', '1T', '10:05'),
+    play('b', 'OWN_GOAL', 262, 'Léo', '2T', '03:15'),
+    play('a', 'REGULAR_GOAL', 293, 'Vargas', '1T', '10:05'),
+    play('d', 'YELLOW', 262, 'Pulgar', '1T', '20:00'),
+    play('e', 'MAIN', 262, 'Ninguém', '1T', '00:00'),
+  ]);
+
+  it('keeps goals, own goals and red cards in match order', () => {
+    expect(parseEvents(page, '262', '293')).toEqual([
+      {
+        type: 'goal',
+        side: 'away',
+        player: 'Vargas',
+        period: '1T',
+        minute: 11,
+      },
+      // Filed under Léo's team (home): it counts for the away side.
+      {
+        type: 'own-goal',
+        side: 'away',
+        player: 'Léo',
+        period: '2T',
+        minute: 4,
+      },
+      {
+        type: 'red-card',
+        side: 'away',
+        player: 'Zagueiro',
+        period: '2T',
+        minute: 49,
+      },
+    ]);
+  });
+
+  it('copies only the whitelisted fields', () => {
+    const [event] = parseEvents(page, '262', '293') ?? [];
+    expect(Object.keys(event).sort()).toEqual([
+      'minute',
+      'period',
+      'player',
+      'side',
+      'type',
+    ]);
+  });
+
+  it('is null for a page without a feed', () => {
+    expect(parseEvents('<html>sem lances</html>', '262', '293')).toBeNull();
+  });
+
+  it('checks the goals against the final score', () => {
+    const events = parseEvents(page, '262', '293') ?? [];
+    expect(eventsMatchScore(events, 0, 2)).toBe(true);
+    expect(eventsMatchScore(events, 1, 1)).toBe(false);
   });
 });

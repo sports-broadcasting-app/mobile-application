@@ -34,6 +34,8 @@ export interface ThemeColors {
   /** Knob of an "on" switch, over `primary`: white in both modes, like iOS. */
   controlThumb: string;
   error: string;
+  /** The referee's red card in a match timeline (a fact, not an error). */
+  redCard: string;
   overlayBg: string;
   skeletonBase: string;
   statusBar: 'dark' | 'light';
@@ -60,6 +62,7 @@ export const lightTheme: ThemeColors = {
   controlBorder: '#d1d5db',
   controlThumb: '#fff',
   error: '#dc2626',
+  redCard: '#dc2626',
   overlayBg: 'rgba(0, 0, 0, 0.5)',
   skeletonBase: '#e5e7eb',
   statusBar: 'dark',
@@ -88,6 +91,7 @@ export const darkTheme: ThemeColors = {
   controlBorder: 'rgba(255, 255, 255, 0.08)',
   controlThumb: '#fff',
   error: '#ef4444',
+  redCard: '#ef4444',
   overlayBg: 'rgba(0, 0, 0, 0.7)',
   skeletonBase: '#1b2740',
   statusBar: 'light',
