@@ -62,9 +62,9 @@ export interface Match {
   venue: string | null;
   city: string | null;
   /**
-   * Basketball: points per quarter, then each overtime, from API-Sports.
-   * Absent until the game is over and its quarters were collected; when
-   * present they add up to the final score.
+   * NBA and NFL: points per quarter, then each overtime (NBA from
+   * API-Sports after the game; NFL from Big Balls, also during the game,
+   * one entry per quarter played so far). They add up to the score.
    */
   periodScores?: SetScore[];
   /**

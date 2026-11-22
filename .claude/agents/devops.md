@@ -33,6 +33,8 @@ App → EXPO_PUBLIC_DATA_URL (expo.dev env var, production) → SQLite
 
 - **API-Sports key:** secret `API_SPORTS_KEY`, passed only to the `collect` step of `data.yml` (NBA quarters, see the `collector` agent). Dashboard https://dashboard.api-football.com › My Access shows the key and per-API usage (free plan: 100 requests/day per API, reset 00:00 UTC). If the run log says "NBA quarters ... skipped" with a `requests`/`token` error, check the quota or rotate: reset the key in the dashboard, then `gh secret set API_SPORTS_KEY` (the user does it; never print or paste the key).
 
+- **Big Balls key:** secret `BIGBALLS_KEY`, passed only to the `collect` step of `data.yml` (NFL live and quarter scores). Dashboard and keys: https://bigballsdata.com/dashboard/keys. Free plan: one sport (American football), 1,000 requests/day, 100/minute. A run log "NFL scores ... skipped" with 401/403/429 means key, sport or quota; the user rotates the key and runs `gh secret set BIGBALLS_KEY`.
+
 ## Skills to load
 
 If the Expo plugin is installed: `eas-workflows`, `eas-update`, `eas-update-insights`, `eas-observe`, `eas-app-stores`.
