@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { Sport, Standing, Team } from '../types/snapshot';
+import { describeStanding } from '../utils/accessibility';
 import { getTeamName } from '../utils/teamName';
 import { TeamCircle } from './TeamCircle';
 import { STANDINGS_COLUMNS } from '../constants/competitions';
@@ -52,6 +53,13 @@ export function StandingsList({
     return (
       <View
         key={team.id}
+        accessible
+        accessibilityLabel={describeStanding(
+          standing,
+          team.name,
+          columns,
+          favorite,
+        )}
         testID={`standing-row-${team.id}`}
         style={[
           styles.row,
@@ -94,7 +102,12 @@ export function StandingsList({
 
   return (
     <View>
-      <View style={[styles.row, { borderBottomColor: colors.border }]}>
+      <View
+        // Each row's label names its columns; the codes alone ("P J V") are noise.
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={[styles.row, { borderBottomColor: colors.border }]}
+      >
         <Text
           maxFontSizeMultiplier={maxFontScale}
           style={[styles.position, { color: colors.textTertiary }]}

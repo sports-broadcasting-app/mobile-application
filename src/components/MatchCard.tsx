@@ -13,6 +13,7 @@ import screenPlay from '../../assets/tabs/screen-play.png';
 import { getCompetition } from '../constants/competitions';
 import { useTheme } from '../contexts/ThemeContext';
 import { Match, Team } from '../types/snapshot';
+import { describeMatch } from '../utils/accessibility';
 import { getChannelUrl } from '../utils/broadcast';
 import { formatTime } from '../utils/date';
 import { formatRound } from '../utils/roundLabel';
@@ -114,19 +115,28 @@ export const MatchCard = React.memo(function MatchCard({
   const hasScore = match.homeScore !== null && match.awayScore !== null;
   const channels = match.channels.slice(0, MAX_CHANNEL_BUTTONS);
 
-  const meta = [
+  const metaParts = [
     formatTime(match.startsAt),
     showCompetition ? getCompetition(match.competition).label : '',
     formatRound(match.roundLabel),
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  ].filter(Boolean);
+  const meta = metaParts.join(' · ');
+  const summary = describeMatch({
+    match,
+    homeName: homeTeam.name,
+    awayName: awayTeam.name,
+    favorite,
+    details: metaParts,
+  });
 
   return (
     <TouchableOpacity
       activeOpacity={0.7}
       disabled={!onPress}
       onPress={onPress}
+      // The summary below is the screen-reader element; the watch buttons stay
+      // separate, so the card itself must not group everything.
+      accessible={false}
       testID={`match-card-${match.id}`}
       style={[
         styles.card,
@@ -136,64 +146,80 @@ export const MatchCard = React.memo(function MatchCard({
         },
       ]}
     >
-      <View style={styles.header}>
-        <Text
-          numberOfLines={2}
-          maxFontSizeMultiplier={maxFontScale}
-          style={[styles.meta, { color: colors.textSecondary }]}
-        >
-          {meta}
-        </Text>
-        {favorite && (
-          <MaterialCommunityIcons
-            name="star"
-            size={iconSize.sm}
-            color={colors.primary}
-            testID="favorite-star"
-          />
-        )}
-        {isLive && <LiveBadge />}
-        {match.status === 'postponed' && (
+      <View
+        accessible
+        accessibilityRole={onPress ? 'button' : undefined}
+        accessibilityLabel={summary}
+        accessibilityHint={onPress ? 'Abre os detalhes do jogo' : undefined}
+        accessibilityActions={onPress ? [{ name: 'activate' }] : undefined}
+        onAccessibilityAction={onPress}
+        style={styles.summary}
+        testID={`match-summary-${match.id}`}
+      >
+        <View style={styles.header}>
           <Text
+            numberOfLines={2}
             maxFontSizeMultiplier={maxFontScale}
-            style={[styles.meta, { color: colors.error }]}
+            style={[styles.meta, { color: colors.textSecondary }]}
           >
-            Adiado
+            {meta}
           </Text>
-        )}
-      </View>
-
-      <View style={styles.scoreRow}>
-        <TeamColumn team={homeTeam} />
-        <View style={styles.score}>
-          {hasScore && (
-            <Text
-              maxFontSizeMultiplier={maxFontScale}
-              style={[styles.scoreText, { color: colors.textPrimary }]}
-            >
-              {match.homeScore}
-            </Text>
+          {favorite && (
+            <MaterialCommunityIcons
+              name="star"
+              size={iconSize.sm}
+              color={colors.primary}
+              testID="favorite-star"
+            />
           )}
-          <Text
-            maxFontSizeMultiplier={maxFontScale}
-            style={[styles.versus, { color: colors.versusText }]}
-          >
-            ×
-          </Text>
-          {hasScore && (
+          {isLive && <LiveBadge />}
+          {match.status === 'postponed' && (
             <Text
               maxFontSizeMultiplier={maxFontScale}
-              style={[styles.scoreText, { color: colors.textPrimary }]}
+              style={[styles.meta, { color: colors.error }]}
             >
-              {match.awayScore}
+              Adiado
             </Text>
           )}
         </View>
-        <TeamColumn team={awayTeam} />
+
+        <View style={styles.scoreRow}>
+          <TeamColumn team={homeTeam} />
+          <View style={styles.score}>
+            {hasScore && (
+              <Text
+                maxFontSizeMultiplier={maxFontScale}
+                style={[styles.scoreText, { color: colors.textPrimary }]}
+              >
+                {match.homeScore}
+              </Text>
+            )}
+            <Text
+              maxFontSizeMultiplier={maxFontScale}
+              style={[styles.versus, { color: colors.versusText }]}
+            >
+              ×
+            </Text>
+            {hasScore && (
+              <Text
+                maxFontSizeMultiplier={maxFontScale}
+                style={[styles.scoreText, { color: colors.textPrimary }]}
+              >
+                {match.awayScore}
+              </Text>
+            )}
+          </View>
+          <TeamColumn team={awayTeam} />
+        </View>
       </View>
 
       {channels.length === 0 && (
-        <Text style={[styles.noChannel, { color: colors.textTertiary }]}>
+        <Text
+          // Already in the summary above.
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+          style={[styles.noChannel, { color: colors.textTertiary }]}
+        >
           Transmissão a definir
         </Text>
       )}
@@ -203,6 +229,8 @@ export const MatchCard = React.memo(function MatchCard({
           return (
             <Text
               key={channel}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
               style={[styles.noChannel, { color: colors.textSecondary }]}
             >
               {`Passa na ${channel}`}
@@ -262,6 +290,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     marginHorizontal: spacing.lg,
     padding: spacing.lg,
+  },
+  summary: {
+    gap: spacing.md,
   },
   header: {
     alignItems: 'center',

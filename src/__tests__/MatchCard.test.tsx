@@ -53,7 +53,11 @@ describe('MatchCard', () => {
         favorite
       />,
     );
-    expect(await screen.findByText('Transmissão a definir')).toBeTruthy();
+    expect(
+      await screen.findByText('Transmissão a definir', {
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
     expect(screen.getByText('AO VIVO')).toBeTruthy();
     expect(screen.getByTestId('favorite-star')).toBeTruthy();
   });
@@ -74,7 +78,9 @@ describe('MatchCard', () => {
     expect(Linking.openURL).toHaveBeenCalledWith(
       'https://www.youtube.com/@getv',
     );
-    expect(screen.getByText('Passa na TV Cultura')).toBeTruthy();
+    expect(
+      screen.getByText('Passa na TV Cultura', { includeHiddenElements: true }),
+    ).toBeTruthy();
   });
 
   it('calls onPress', async () => {
@@ -89,5 +95,27 @@ describe('MatchCard', () => {
     );
     fireEvent.press(await screen.findByTestId('match-card-100'));
     expect(onPress).toHaveBeenCalled();
+  });
+
+  it('reads as one sentence and opens the match from the screen reader', async () => {
+    const onPress = jest.fn();
+    render(
+      <MatchCard
+        match={scheduledMatch}
+        homeTeam={homeTeam}
+        awayTeam={awayTeam}
+        onPress={onPress}
+      />,
+    );
+    const summary = await screen.findByLabelText(
+      'Sada Cruzeiro contra Vôlei Renata, 20:30, Superliga M, 3ª rodada, passa no GE TV',
+    );
+    expect(summary.props.accessibilityRole).toBe('button');
+    fireEvent(summary, 'accessibilityAction', {
+      nativeEvent: { actionName: 'activate' },
+    });
+    expect(onPress).toHaveBeenCalled();
+    // The watch button stays its own element.
+    expect(screen.getByRole('button', { name: 'Abrir no GE TV' })).toBeTruthy();
   });
 });
