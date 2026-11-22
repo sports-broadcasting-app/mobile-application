@@ -40,7 +40,9 @@ async function main(): Promise<void> {
       {
         name: 'Brasileirão (ge)',
         slugs: ['serie-a'],
-        collect: async () => [await collectSerieA(fixturesDir)],
+        collect: async () => [
+          await collectSerieA(fixturesDir, Date.now(), previousOf('serie-a')),
+        ],
       },
       {
         name: 'NFL (ge)',

@@ -35,6 +35,14 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - The log line says "`<League>: n rounds asked, m kept`", with "(full refresh)" appended on a full run. Normal sizes: NFL ~3 asked / 15 kept, NBA ~14 / 51; a full run asks every round (NFL 18, NBA 65+).
 - `fullRefreshAt` is an optional field of `CompetitionData` (`src/types/snapshot.ts`); the app ignores it. Tests: the `needsFullRefresh` block in `src/__tests__/parseGeMultisport.test.ts`.
 
+## Brasileirão goals and red cards (1.4, `Match.events`)
+
+- **Source:** each ge match page embeds its live feed as a JS literal, `plays: Array.from([...])`; `parseEvents` (`scripts/brasileirao/parseGe.ts`) reads it with `readJsonAfter(html, 'plays: Array.from(')`. A play with `details.kind` `REGULAR_GOAL` → `goal`, `OWN_GOAL` → `own-goal`, `RED` → `red-card` (also seen: `YELLOW`, `MAIN`, `CLUB`; ignored). Copied: kind, `details.team.id` (→ side), `details.athlete.popularName`, `period.abbreviation` (`1T`, `2T`; extra time `1P`/`2P`/`PEN` assumed, not seen yet) and `moment` (`"26:29"`). Never the post text, photos or videos. Plays repeat on the page; dedupe by `play.id`.
+- **Own goals:** ge files them under the player's team, so the side is flipped (they count for the opponent). With that rule, goals added up to the official score in 30/30 matches of rounds 33–35 (checked 2026-11-22).
+- **Minute:** counted from 1 like football (`floor(mm:ss / 60) + 1`: 00:30 → 1', 26:29 → 27'); stoppage time stays above 45 and the app shows it as 45+n.
+- **When pages are read** (`collectSerieA(fixturesDir, now, previous)`): live matches every run; finished matches reuse `previous` events while they still add up to the score; finished ones without events are read at most `EVENTS_BACKFILL_PER_RUN` (20) per run, most recent first, so a new season (or the first 1.4 run) fills in over ~18 runs. A finished feed that does not add up to the score is left out and read again next run. The log says "Brasileirão: n match pages read for events, m kept".
+- **Not available:** quarter scores for the NFL and the NBA. The multisport GraphQL has `detailedScoreboard { firstParticipantScore secondParticipantScore details { level firstParticipantScore secondParticipantScore } }` (introspection is off; names found through validation suggestions), but `details` was null in every round tried (NBA rounds 30–34, NFL weeks 9–12). Re-check before adding another source.
+
 ## Checking your work
 
 ```bash

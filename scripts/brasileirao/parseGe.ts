@@ -1,6 +1,8 @@
 import type {
   CompetitionSlug,
   Match,
+  MatchEvent,
+  MatchEventType,
   MatchStatus,
   Standing,
   Team,
@@ -253,4 +255,93 @@ export function parseChannels(html: string): string[] {
   const sources = readJsonAfter(html, '"liveWatchSources":');
   if (!Array.isArray(sources)) return [];
   return toChannels((sources as RawObject[]).map((source) => source.name));
+}
+
+/** ge live-feed kinds that become events; everything else is ignored. */
+const EVENT_KINDS: Record<string, MatchEventType> = {
+  REGULAR_GOAL: 'goal',
+  OWN_GOAL: 'own-goal',
+  RED: 'red-card',
+};
+
+/** Regular time first, then extra time and penalties; unknown codes last. */
+const PERIOD_ORDER: Record<string, number> = {
+  '1T': 1,
+  '2T': 2,
+  '1P': 3,
+  '2P': 4,
+  PEN: 5,
+};
+
+function toSeconds(moment: string): number {
+  const [minutes, seconds] = moment.split(':').map(Number);
+  return (minutes || 0) * 60 + (seconds || 0);
+}
+
+/**
+ * Goals and red cards from a ge match page, from the live feed the page
+ * embeds (`plays: Array.from([...])`). Only kind, team, player name, period
+ * and minute are copied: the posts also carry article text, photos and
+ * videos. Null when the page has no feed (yet).
+ */
+export function parseEvents(
+  html: string,
+  homeTeamId: string,
+  awayTeamId: string,
+): MatchEvent[] | null {
+  const plays = readJsonAfter(html, 'plays: Array.from(');
+  if (!Array.isArray(plays)) return null;
+
+  const seen = new Set<string>();
+  const events: (MatchEvent & { order: number })[] = [];
+  for (const play of plays as RawObject[]) {
+    const details = (play.details ?? {}) as RawObject;
+    const type = EVENT_KINDS[toText(details.kind) ?? ''];
+    const id = toText(play.id);
+    if (!type || !id || seen.has(id)) continue;
+    seen.add(id);
+
+    const teamId = String((details.team as RawObject | undefined)?.id ?? '');
+    const playerSide =
+      teamId === homeTeamId ? 'home' : teamId === awayTeamId ? 'away' : null;
+    const player = toText(
+      (details.athlete as RawObject | undefined)?.popularName,
+    );
+    const period = toText((play.period as RawObject | undefined)?.abbreviation);
+    const moment = toText(play.moment);
+    if (!playerSide || !player || !period || !moment?.includes(':')) continue;
+
+    // ge files an own goal under the player's team; it counts for the other.
+    const side =
+      type === 'own-goal'
+        ? playerSide === 'home'
+          ? 'away'
+          : 'home'
+        : playerSide;
+    const seconds = toSeconds(moment);
+    events.push({
+      type,
+      side,
+      player,
+      period,
+      // Football counts minutes from 1: 00:30 is the 1st minute, 26:29 the 27th.
+      minute: Math.floor(seconds / 60) + 1,
+      order: (PERIOD_ORDER[period] ?? 9) * 100_000 + seconds,
+    });
+  }
+
+  return events
+    .sort((a, b) => a.order - b.order)
+    .map(({ order: _order, ...event }) => event);
+}
+
+/** Whether the goals in `events` add up to the final score. */
+export function eventsMatchScore(
+  events: MatchEvent[],
+  homeScore: number | null,
+  awayScore: number | null,
+): boolean {
+  const goals = (side: 'home' | 'away') =>
+    events.filter((e) => e.type !== 'red-card' && e.side === side).length;
+  return goals('home') === homeScore && goals('away') === awayScore;
 }

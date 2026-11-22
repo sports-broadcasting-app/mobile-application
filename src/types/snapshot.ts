@@ -17,6 +17,32 @@ export interface SetScore {
   away: number;
 }
 
+export type MatchEventType = 'goal' | 'own-goal' | 'red-card';
+
+/**
+ * A goal or a sending-off, from the ge live feed of a football match.
+ * Football only; nothing else in the feed is kept.
+ */
+export interface MatchEvent {
+  type: MatchEventType;
+  /**
+   * The side the event counts for. A goal counts for the side that scored,
+   * so an own goal counts for the opponent of the player; a red card belongs
+   * to the player's side.
+   */
+  side: 'home' | 'away';
+  /** The player's popular name, as ge shows it ("Jorginho"). */
+  player: string;
+  /** ge's period code: "1T" and "2T", or extra time codes in knockouts. */
+  period: string;
+  /**
+   * The minute of the period counted from 1, as football does: 00:30 is the
+   * 1st minute and 26:29 the 27th. Stoppage time runs past 45 (49 in the
+   * 2nd half is shown as 45+4).
+   */
+  minute: number;
+}
+
 export interface Match {
   id: string;
   competition: CompetitionSlug;
@@ -35,6 +61,11 @@ export interface Match {
   channels: string[];
   venue: string | null;
   city: string | null;
+  /**
+   * Football: goals and red cards in order. Absent when not collected yet;
+   * for a finished match it is only kept when its goals add up to the score.
+   */
+  events?: MatchEvent[];
 }
 
 export interface Standing {
