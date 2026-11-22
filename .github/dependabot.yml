@@ -1,7 +1,10 @@
 version: 2
 updates:
-  # Grouped, so a week of updates is one PR instead of dozens. Expo pins its
-  # own packages (~58.x); jumps to a new SDK go through expo-upgrade, not here.
+  # Libraries outside the Expo SDK, grouped so a week of updates is one PR.
+  # Packages the Expo SDK pins (expo, expo-*, react, react-native, the native
+  # react-native-* modules, typescript) are ignored here: Expo expects exact
+  # versions (react 19.3.0, not 19.3.1), so they move together with
+  # `npx expo install --check` / `--fix`, or an SDK upgrade (expo-upgrade skill).
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -17,15 +20,21 @@ updates:
         update-types: [minor, patch]
     ignore:
       - dependency-name: 'expo'
-        update-types: ['version-update:semver-major']
       - dependency-name: 'expo-*'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'react-native'
-        update-types:
-          ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: '@expo/*'
+      - dependency-name: 'jest-expo'
       - dependency-name: 'react'
-        update-types:
-          ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: 'react-dom'
+      - dependency-name: 'react-test-renderer'
+      - dependency-name: 'react-native'
+      # Named one by one: react-native-google-mobile-ads is not pinned by Expo
+      # and keeps its updates (native code: needs a new build to test).
+      - dependency-name: 'react-native-safe-area-context'
+      - dependency-name: 'react-native-screens'
+      - dependency-name: 'react-native-svg'
+      - dependency-name: '@react-native/*'
+      - dependency-name: '@react-native-async-storage/*'
+      - dependency-name: 'typescript'
   # The workflows' actions (would have flagged the Node 20 deprecation).
   - package-ecosystem: github-actions
     directory: /

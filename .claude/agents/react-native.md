@@ -10,6 +10,7 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 ## Skills to load
 
 - **Expo plugin** (if installed): load the matching skill with the Skill tool before you start — `expo-router` (routes, stacks, tabs, modals), `expo-native-ui` and `expo-design-system` (styling, controls), `expo-data-fetching` (React Query, offline), `expo-animation` (Reanimated, gestures), `expo-upgrade` (SDK bumps), `eas-update` (OTA).
+- **Versions of Expo-managed packages** (`expo*`, `react`, `react-dom`, `react-test-renderer`, `react-native*`, `typescript`) come from the SDK: add or update them with `npx expo install <pkg>` and check with `npx expo install --check` (it must say "Dependencies are up to date"); never `yarn add` a newer version by hand. `react-test-renderer` must equal `react` or Jest refuses to run. Dependabot ignores these packages on purpose.
 - **expo-sqlite** ships its own skill inside the package: read `node_modules/expo-sqlite/skills/expo-sqlite/SKILL.md` (and its `references/`) before touching `src/data/database.ts`.
 
 ## Rules of this app
@@ -32,6 +33,8 @@ yarn type-check
 yarn lint --max-warnings 0
 yarn format:check
 ```
+
+A test that passes locally but fails on CI with "Exceeded timeout of 5000 ms" is usually the cold CI runner transforming every module a screen imports in the file's first test; `jest.config.js` sets `testTimeout: 15_000` for that (dependency-updates PR). Raise it only with evidence from the CI timings (`gh run view <id> --log | grep '<file>.test.tsx ('`); a real hang still fails at 15 s.
 
 These are the same gates the CI job `checks` runs on every PR (`.github/workflows/ci.yml`, PR #22); `main` only takes PRs with it green, and a single lint warning fails it. Run them before saying the work is done.
 

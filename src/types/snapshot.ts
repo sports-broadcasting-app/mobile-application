@@ -1,11 +1,7 @@
 export type Sport = 'volei' | 'futebol' | 'futebol-americano' | 'basquete';
 
 export type CompetitionSlug =
-  | 'masculina'
-  | 'feminina'
-  | 'serie-a'
-  | 'nfl'
-  | 'nba';
+  'masculina' | 'feminina' | 'serie-a' | 'nfl' | 'nba';
 
 export type MatchStatus = 'scheduled' | 'live' | 'finished' | 'postponed';
 
