@@ -65,19 +65,50 @@ export async function requestExactAlarms(): Promise<boolean> {
   return (await Notifications.requestExactAlarmPermissionsAsync()).granted;
 }
 
-/** The app schedules nothing else, so the whole pending list is replaced. */
+/** Whether a pending request is exactly this reminder (same text and time). */
+function isSameReminder(
+  request: Notifications.NotificationRequest,
+  reminder: Reminder,
+): boolean {
+  const { title, body, data } = request.content;
+  return (
+    title === reminder.title &&
+    body === reminder.body &&
+    data?.matchId === reminder.matchId &&
+    data?.fireAt === reminder.fireAt
+  );
+}
+
+/**
+ * Makes the pending list equal to `reminders` (the app schedules nothing
+ * else). Only what changed is cancelled or scheduled: cancelling everything
+ * and adding up to 60 back one by one left a gap with no reminders, and lost
+ * them all if the app was closed in the middle.
+ */
 export async function replaceScheduledReminders(
   reminders: Reminder[],
 ): Promise<void> {
-  await Notifications.cancelAllScheduledNotificationsAsync();
-  for (const reminder of reminders) {
+  const missing = new Map(reminders.map((reminder) => [reminder.id, reminder]));
+  const pending = await Notifications.getAllScheduledNotificationsAsync();
+
+  for (const request of pending) {
+    const wanted = missing.get(request.identifier);
+    if (wanted && isSameReminder(request, wanted)) {
+      missing.delete(request.identifier);
+    } else {
+      await Notifications.cancelScheduledNotificationAsync(request.identifier);
+    }
+  }
+
+  for (const reminder of missing.values()) {
     await Notifications.scheduleNotificationAsync({
       identifier: reminder.id,
       content: {
         title: reminder.title,
         body: reminder.body,
         sound: true,
-        data: { matchId: reminder.matchId },
+        // fireAt lets the next run tell an unchanged reminder apart.
+        data: { matchId: reminder.matchId, fireAt: reminder.fireAt },
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,

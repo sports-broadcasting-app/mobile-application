@@ -3,11 +3,14 @@ import * as Notifications from 'expo-notifications';
 import { NotificationResponder } from '../components/NotificationResponder';
 
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
 let mockNavigationKey: string | undefined = 'root';
+let mockPathname = '/';
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace }),
   useRootNavigationState: () => ({ key: mockNavigationKey }),
+  usePathname: () => mockPathname,
 }));
 jest.mock('expo-notifications', () => ({
   DEFAULT_ACTION_IDENTIFIER: 'expo.modules.notifications.actions.DEFAULT',
@@ -28,6 +31,7 @@ function mockResponse(
 beforeEach(() => {
   jest.clearAllMocks();
   mockNavigationKey = 'root';
+  mockPathname = '/';
 });
 
 describe('NotificationResponder', () => {
@@ -57,6 +61,14 @@ describe('NotificationResponder', () => {
       'expo.modules.notifications.actions.DISMISS',
     );
     rerender(<NotificationResponder />);
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('swaps the open match instead of stacking a second one', () => {
+    mockPathname = '/match/99';
+    mockResponse({ matchId: '100' });
+    render(<NotificationResponder />);
+    expect(mockReplace).toHaveBeenCalledWith('/match/100');
     expect(mockPush).not.toHaveBeenCalled();
   });
 });

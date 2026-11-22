@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { IS_STORE_BUILD } from '../constants/buildInfo';
 import { HAS_DATA_URL_ENV, DATA_URL } from '../constants/config';
 import { useSync } from '../contexts/SyncContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -35,7 +36,15 @@ export function SyncGate({ children }: { children: ReactNode }) {
             Não foi possível carregar os dados. Verifique sua conexão.
           </Text>
           <Button label="Tentar novamente" onPress={refresh} />
-          <Button label="Ver detalhes" variant="plain" onPress={showDetails} />
+          {/* The data URL and env flags help us debug; store users get
+              nothing from them. */}
+          {!IS_STORE_BUILD && (
+            <Button
+              label="Ver detalhes"
+              variant="plain"
+              onPress={showDetails}
+            />
+          )}
         </>
       )}
     </View>
