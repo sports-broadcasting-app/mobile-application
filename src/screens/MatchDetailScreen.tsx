@@ -44,6 +44,8 @@ export default function MatchDetailScreen() {
   const hasResult = match.homeScore !== null && match.awayScore !== null;
   const place = [match.venue, match.city].filter(Boolean).join(' - ');
   const events = match.events;
+  // A live game has no final score yet: the last column is the running total.
+  const totalLabel = match.status === 'live' ? 'Total' : 'Final';
 
   return (
     <ScrollView
@@ -113,7 +115,7 @@ export default function MatchDetailScreen() {
             homeTeam={homeTeam}
             awayTeam={awayTeam}
             periods={quarterColumns(match.periodScores)}
-            totalLabel="Final"
+            totalLabel={totalLabel}
             homeTotal={match.homeScore ?? 0}
             awayTotal={match.awayScore ?? 0}
           />
@@ -136,7 +138,7 @@ export default function MatchDetailScreen() {
                 home,
                 away,
               }))}
-              totalLabel="Final"
+              totalLabel={totalLabel}
               homeTotal={match.homeScore ?? 0}
               awayTotal={match.awayScore ?? 0}
             />

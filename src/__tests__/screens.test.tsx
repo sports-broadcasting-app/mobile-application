@@ -545,6 +545,27 @@ describe('MatchDetailScreen', () => {
     ).toBeTruthy();
   });
 
+  it('labels the running total of a live game as Total', async () => {
+    (getMatch as jest.Mock).mockResolvedValue({
+      ...finishedMatch,
+      competition: 'nfl',
+      status: 'live',
+      homeScore: 3,
+      awayScore: 17,
+      setScores: [],
+      periodScores: [
+        { home: 3, away: 3 },
+        { home: 0, away: 14 },
+      ],
+    });
+    render(<MatchDetailScreen />);
+    expect(
+      await screen.findByLabelText(
+        'Sada Cruzeiro, 1º quarto: 3, 2º quarto: 0, total: 3',
+      ),
+    ).toBeTruthy();
+  });
+
   it('handles an unknown match', async () => {
     (getMatch as jest.Mock).mockResolvedValue(null);
     render(<MatchDetailScreen />);
