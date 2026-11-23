@@ -85,7 +85,7 @@ export const MatchRow = React.memo(function MatchRow({
             {channel}
           </Text>
         </View>
-      ) : (
+      ) : match.status === 'live' || match.status === 'finished' ? null : (
         <Text
           maxFontSizeMultiplier={maxFontScale}
           style={[styles.tbd, { color: colors.textTertiary }]}

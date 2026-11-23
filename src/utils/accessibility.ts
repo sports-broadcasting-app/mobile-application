@@ -38,10 +38,13 @@ export function describeMatch({
         : match.status === 'finished'
           ? 'encerrado'
           : '';
+  const started = match.status === 'live' || match.status === 'finished';
   const channels =
     match.channels.length > 0
       ? `passa no ${match.channels.join(' e no ')}`
-      : 'transmissão a definir';
+      : started
+        ? ''
+        : 'transmissão a definir';
 
   return [
     clubs,

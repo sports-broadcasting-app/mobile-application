@@ -213,14 +213,18 @@ export const MatchCard = React.memo(function MatchCard({
         </View>
       </View>
 
-      {channels.length === 0 && (
+      {/* Without a channel: "a definir" only before kickoff; a finished game
+          says so, a live one shows nothing (the AO VIVO badge says it). */}
+      {channels.length === 0 && !isLive && (
         <Text
           // Already in the summary above.
           accessibilityElementsHidden
           importantForAccessibility="no"
           style={[styles.noChannel, { color: colors.textTertiary }]}
         >
-          Transmissão a definir
+          {match.status === 'finished'
+            ? 'Jogo encerrado'
+            : 'Transmissão a definir'}
         </Text>
       )}
       {channels.map((channel) => {

@@ -566,6 +566,30 @@ describe('MatchDetailScreen', () => {
     ).toBeTruthy();
   });
 
+  it('hides "Onde assistir" for a started game without a channel', async () => {
+    (getMatch as jest.Mock).mockResolvedValue({
+      ...finishedMatch,
+      channels: [],
+    });
+    render(<MatchDetailScreen />);
+    expect(await screen.findByText('3 x 1')).toBeTruthy();
+    expect(screen.queryByText('Onde assistir')).toBeNull();
+    expect(screen.queryByText('Transmissão a definir')).toBeNull();
+  });
+
+  it('keeps "Transmissão a definir" before kickoff', async () => {
+    (getMatch as jest.Mock).mockResolvedValue({
+      ...finishedMatch,
+      status: 'scheduled',
+      homeScore: null,
+      awayScore: null,
+      setScores: [],
+      channels: [],
+    });
+    render(<MatchDetailScreen />);
+    expect(await screen.findByText('Transmissão a definir')).toBeTruthy();
+  });
+
   it('handles an unknown match', async () => {
     (getMatch as jest.Mock).mockResolvedValue(null);
     render(<MatchDetailScreen />);
