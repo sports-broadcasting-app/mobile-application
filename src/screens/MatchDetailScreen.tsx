@@ -42,6 +42,7 @@ export default function MatchDetailScreen() {
   }
 
   const hasResult = match.homeScore !== null && match.awayScore !== null;
+  const hasStarted = match.status === 'live' || match.status === 'finished';
   const place = [match.venue, match.city].filter(Boolean).join(' - ');
   const events = match.events;
   // A live game has no final score yet: the last column is the running total.
@@ -162,29 +163,33 @@ export default function MatchDetailScreen() {
         </>
       )}
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-          Onde assistir
-        </Text>
-        {match.channels.length === 0 && (
-          <Text style={[styles.info, { color: colors.textSecondary }]}>
-            Transmissão a definir
+      {/* A game that started without a known channel has nothing to show
+          here: "a definir" only makes sense before kickoff. */}
+      {(match.channels.length > 0 || !hasStarted) && (
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Onde assistir
           </Text>
-        )}
-        {match.channels.map((channel) => {
-          const url = getChannelUrl(channel);
-          return (
-            <Button
-              key={channel}
-              label={url ? `Assistir no ${channel}` : channel}
-              disabled={!url}
-              onPress={() => {
-                if (url) Linking.openURL(url).catch(() => {});
-              }}
-            />
-          );
-        })}
-      </View>
+          {match.channels.length === 0 && (
+            <Text style={[styles.info, { color: colors.textSecondary }]}>
+              Transmissão a definir
+            </Text>
+          )}
+          {match.channels.map((channel) => {
+            const url = getChannelUrl(channel);
+            return (
+              <Button
+                key={channel}
+                label={url ? `Assistir no ${channel}` : channel}
+                disabled={!url}
+                onPress={() => {
+                  if (url) Linking.openURL(url).catch(() => {});
+                }}
+              />
+            );
+          })}
+        </View>
+      )}
     </ScrollView>
   );
 }

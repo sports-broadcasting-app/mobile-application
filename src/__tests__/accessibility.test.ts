@@ -29,14 +29,21 @@ describe('describeMatch', () => {
     );
   });
 
-  it('marks live and unknown broadcasts', () => {
+  it('says an unknown broadcast only before kickoff', () => {
+    expect(
+      describeMatch({
+        match: { ...scheduledMatch, channels: [] },
+        homeName: 'A',
+        awayName: 'B',
+      }),
+    ).toBe('A contra B, transmissão a definir');
     expect(
       describeMatch({
         match: { ...scheduledMatch, status: 'live', channels: [] },
         homeName: 'A',
         awayName: 'B',
       }),
-    ).toBe('A contra B, ao vivo, transmissão a definir');
+    ).toBe('A contra B, ao vivo');
   });
 });
 

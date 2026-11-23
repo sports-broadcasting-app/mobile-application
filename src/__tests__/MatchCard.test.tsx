@@ -44,7 +44,22 @@ describe('MatchCard', () => {
     expect(screen.getByText('Abrir no SporTV 2')).toBeTruthy();
   });
 
-  it('warns when the channel is unknown and flags live favorites', async () => {
+  it('says the channel is unknown only before kickoff', async () => {
+    render(
+      <MatchCard
+        match={{ ...scheduledMatch, channels: [] }}
+        homeTeam={homeTeam}
+        awayTeam={awayTeam}
+      />,
+    );
+    expect(
+      await screen.findByText('Transmissão a definir', {
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
+  });
+
+  it('shows nothing about the channel of a live game and flags favorites', async () => {
     render(
       <MatchCard
         match={{ ...scheduledMatch, channels: [], status: 'live' }}
@@ -53,13 +68,33 @@ describe('MatchCard', () => {
         favorite
       />,
     );
+    expect(await screen.findByText('AO VIVO')).toBeTruthy();
     expect(
-      await screen.findByText('Transmissão a definir', {
+      screen.queryByText('Transmissão a definir', {
+        includeHiddenElements: true,
+      }),
+    ).toBeNull();
+    expect(screen.getByTestId('favorite-star')).toBeTruthy();
+  });
+
+  it('says a finished game without a channel is over', async () => {
+    render(
+      <MatchCard
+        match={{ ...finishedMatch, channels: [] }}
+        homeTeam={homeTeam}
+        awayTeam={awayTeam}
+      />,
+    );
+    expect(
+      await screen.findByText('Jogo encerrado', {
         includeHiddenElements: true,
       }),
     ).toBeTruthy();
-    expect(screen.getByText('AO VIVO')).toBeTruthy();
-    expect(screen.getByTestId('favorite-star')).toBeTruthy();
+    expect(
+      screen.queryByText('Transmissão a definir', {
+        includeHiddenElements: true,
+      }),
+    ).toBeNull();
   });
 
   it('names the live channel as a call to watch and opens its app', async () => {
