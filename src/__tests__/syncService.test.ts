@@ -5,7 +5,9 @@ import {
 } from '../services/snapshotService';
 import {
   DEFAULT_MAX_AGE_MS,
+  isGameOn,
   isStale,
+  LIVE_MAX_AGE_MS,
   MATCH_DAY_MAX_AGE_MS,
   shouldSync,
   syncSnapshot,
@@ -172,5 +174,55 @@ describe('syncSnapshot', () => {
     fetchMock.mockRejectedValueOnce(new TypeError('Network request failed'));
     await expect(syncSnapshot()).rejects.toThrow('Network');
     expect(await getLastSyncAt()).toBe(syncedAt);
+  });
+});
+
+describe('live freshness', () => {
+  const now = Date.parse('2026-11-22T20:00:00-03:00');
+
+  it('uses 5 minutes while a game is on', () => {
+    expect(isStale(now - LIVE_MAX_AGE_MS, true, now, true)).toBe(true);
+    expect(isStale(now - LIVE_MAX_AGE_MS + 1, true, now, true)).toBe(false);
+  });
+
+  it('counts live games and games around kickoff, not finished ones', () => {
+    const base = {
+      id: '1',
+      competition: 'nfl' as const,
+      round: 1,
+      roundLabel: '',
+      homeTeamId: 'a',
+      awayTeamId: 'b',
+      homeScore: null,
+      awayScore: null,
+      setScores: [],
+      channels: [],
+      venue: null,
+      city: null,
+    };
+    expect(
+      isGameOn(
+        { ...base, status: 'live', startsAt: '2026-11-22T15:00:00-03:00' },
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      isGameOn(
+        { ...base, status: 'scheduled', startsAt: '2026-11-22T20:10:00-03:00' },
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      isGameOn(
+        { ...base, status: 'scheduled', startsAt: '2026-11-22T22:00:00-03:00' },
+        now,
+      ),
+    ).toBe(false);
+    expect(
+      isGameOn(
+        { ...base, status: 'finished', startsAt: '2026-11-22T19:00:00-03:00' },
+        now,
+      ),
+    ).toBe(false);
   });
 });

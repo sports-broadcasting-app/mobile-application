@@ -1,12 +1,24 @@
 name: Match data
 
 on:
-  # Every 30 min the Cloudflare Worker in infra/cloudflare/data-trigger starts
-  # this through workflow_dispatch: GitHub's cron is best effort and ran it
-  # only every 6-9 hours. The cron below is a backup, off the busy minutes.
+  # The Cloudflare Worker in infra/cloudflare/data-trigger starts this through
+  # workflow_dispatch: a "full" run at 06:00 Brasília and "live" runs about
+  # every 10 minutes during game windows (see the Worker). GitHub's cron is
+  # best effort, so it only backs up the morning run: it runs when the
+  # published file is over 2 hours old.
   schedule:
-    - cron: '17 */3 * * *'
+    - cron: '40 9 * * *'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'full: everything; live: only the competitions listed'
+        type: choice
+        options: [full, live]
+        default: full
+      competitions:
+        description: 'live mode: comma-separated slugs (nfl,nba,...)'
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -18,7 +30,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The backup cron only runs when the Worker's morning run did not happen.
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          generated=$(curl -s "https://dados.onde-passa.app/onde-passa.json?t=$(date +%s)" | jq -r '.generatedAt // empty')
+          age=$(( $(date +%s) - $(date -d "${generated:-1970-01-01}" +%s) ))
+          echo "published file is ${age}s old"
+          if [ "$age" -gt 7200 ]; then echo "run=true"; else echo "run=false"; fi >> "$GITHUB_OUTPUT"
+
   publish:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -34,6 +65,9 @@ jobs:
         run: node scripts/collect.ts public
         env:
           PREVIOUS_SNAPSHOT_URL: https://dados.onde-passa.app/onde-passa.json
+          # full (default, scheduled runs) or live (Worker, game windows).
+          COLLECT_MODE: ${{ inputs.mode || 'full' }}
+          COLLECT_COMPETITIONS: ${{ inputs.competitions || '' }}
           # NBA quarter scores (API-Sports, free plan: 100 requests a day; the
           # collector asks one date per run at most). Missing key: no quarters.
           API_SPORTS_KEY: ${{ secrets.API_SPORTS_KEY }}

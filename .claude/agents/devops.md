@@ -8,7 +8,7 @@ model: sonnet
 You run the infrastructure of Onde Passa. CLAUDE.md "Data Flow" describes the pipeline; read it first.
 
 ```
-Cloudflare Worker onde-passa-trigger (cron */30) → workflow_dispatch
+Cloudflare Worker onde-passa-trigger (cron */5: full at 06:00 BRT, live in game windows) → workflow_dispatch(mode, competitions)
 GitHub Action data.yml (main; own cron every 3 h as backup) → node scripts/collect.ts public
   → GitHub Pages (onde-passa.json + legacy superliga.json, for builds 1.0–1.1)
   → Cloudflare R2 bucket onde-passa-data → https://dados.onde-passa.app/onde-passa.json (app 1.2+)
@@ -34,6 +34,8 @@ App → EXPO_PUBLIC_DATA_URL (expo.dev env var, production) → SQLite
 - **API-Sports key:** secret `API_SPORTS_KEY`, passed only to the `collect` step of `data.yml` (NBA quarters, see the `collector` agent). Dashboard https://dashboard.api-football.com › My Access shows the key and per-API usage (free plan: 100 requests/day per API, reset 00:00 UTC). If the run log says "NBA quarters ... skipped" with a `requests`/`token` error, check the quota or rotate: reset the key in the dashboard, then `gh secret set API_SPORTS_KEY` (the user does it; never print or paste the key).
 
 - **Big Balls key:** secret `BIGBALLS_KEY`, passed only to the `collect` step of `data.yml` (NFL live and quarter scores). Dashboard and keys: https://bigballsdata.com/dashboard/keys. Free plan: one sport (American football), 1,000 requests/day, 100/minute. A run log "NFL scores ... skipped" with 401/403/429 means key, sport or quota; the user rotates the key and runs `gh secret set BIGBALLS_KEY`.
+
+- **Schedule-aware trigger (Worker `decide`):** cron `*/5`; `full` at 09:00 UTC (06:00 BRT) or when the file is over 26 h old; `live` (with the competitions in a game window) when the file is ≥ 8 min old; otherwise nothing. Expected pattern in `gh run list --workflow data.yml`: one `full` run around 06:00, then runs about every 10 min only during games, none at night. No run during a game: check the Worker logs ("dispatched ..." lines, 401 = token) and that the published file is readable. The backup cron `40 9 * * *` runs only if the file is over 2 h old (`gate` job). Changing the Worker file needs a paste in the dashboard; the cron must be `*/5 * * * *`.
 
 ## Skills to load
 

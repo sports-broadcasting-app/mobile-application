@@ -133,6 +133,12 @@ export interface CompetitionData {
    * settled rounds in between and ask for all of them again once a day.
    */
   fullRefreshAt?: string;
+  /**
+   * Collector bookkeeping, ignored by the app: when each paid-API date was
+   * last asked ("2026-11-22" → ISO instant), so frequent live runs do not
+   * spend the daily quota asking the same date again and again.
+   */
+  sourceChecks?: Record<string, string>;
 }
 
 export interface Snapshot {

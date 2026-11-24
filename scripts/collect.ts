@@ -4,11 +4,12 @@ import type { CompetitionSlug, Snapshot } from '../src/types/snapshot';
 import { collectSerieA } from './brasileirao/collect.ts';
 import { addNbaQuarters } from './apiSports/nba.ts';
 import { addNflScores } from './bigBalls/nfl.ts';
-import { collectWithFallback, loadPrevious } from './fallback.ts';
+import { collectWithFallback, loadPrevious, type Source } from './fallback.ts';
 import { fetchText } from './http.ts';
 import { collectNba } from './nba/collect.ts';
 import { collectNfl } from './nfl/collect.ts';
 import { toLegacySnapshot } from './legacy.ts';
+import { liveCompetitions, planSources } from './schedule.ts';
 import { collectSuperliga } from './superliga/collect.ts';
 import { assertValidSnapshot } from './validate.ts';
 
@@ -33,65 +34,93 @@ async function main(): Promise<void> {
   const previousOf = (slug: CompetitionSlug) =>
     previous?.competitions.find((c) => c.slug === slug);
 
-  const { competitions } = await collectWithFallback(
-    [
-      {
-        name: 'Superliga (CBV)',
-        slugs: ['masculina', 'feminina'],
-        collect: () => collectSuperliga(fixturesDir),
+  // Live runs (game windows, started by the Worker) only refresh the listed
+  // competitions and only around their games; full runs refresh everything.
+  const live = fixturesDir
+    ? null
+    : liveCompetitions(
+        process.env.COLLECT_MODE,
+        process.env.COLLECT_COMPETITIONS,
+      );
+  const liveOptions = { live: live !== null };
+  console.log(
+    live ? `Live run: ${[...live].join(', ')}` : 'Full run: every competition',
+  );
+
+  const sources: Source[] = [
+    {
+      name: 'Superliga (CBV)',
+      slugs: ['masculina', 'feminina'],
+      collect: () => collectSuperliga(fixturesDir),
+    },
+    {
+      name: 'Brasileirão (ge)',
+      slugs: ['serie-a'],
+      collect: async () => [
+        await collectSerieA(
+          fixturesDir,
+          Date.now(),
+          previousOf('serie-a'),
+          liveOptions,
+        ),
+      ],
+    },
+    {
+      name: 'NFL (ge)',
+      slugs: ['nfl'],
+      collect: async () => {
+        const nfl = await collectNfl(
+          fixturesDir,
+          Date.now(),
+          previousOf('nfl'),
+          liveOptions,
+        );
+        // Live and quarter scores come from Big Balls (ge has none);
+        // offline runs skip it.
+        console.log(
+          await addNflScores(nfl, previousOf('nfl'), {
+            key: fixturesDir ? undefined : process.env.BIGBALLS_KEY,
+            now: Date.now(),
+            fetchText: (url, key) =>
+              fetchText(url, { headers: { 'x-api-key': key } }),
+          }),
+        );
+        return [nfl];
       },
-      {
-        name: 'Brasileirão (ge)',
-        slugs: ['serie-a'],
-        collect: async () => [
-          await collectSerieA(fixturesDir, Date.now(), previousOf('serie-a')),
-        ],
+    },
+    {
+      name: 'NBA (ge)',
+      slugs: ['nba'],
+      collect: async () => {
+        const nba = await collectNba(
+          fixturesDir,
+          Date.now(),
+          previousOf('nba'),
+          liveOptions,
+        );
+        // Quarters come from API-Sports (ge has none); offline runs skip it.
+        console.log(
+          await addNbaQuarters(nba, previousOf('nba'), {
+            key: fixturesDir ? undefined : process.env.API_SPORTS_KEY,
+            now: Date.now(),
+            fetchText: (url, key) =>
+              fetchText(url, { headers: { 'x-apisports-key': key } }),
+          }),
+        );
+        return [nba];
       },
-      {
-        name: 'NFL (ge)',
-        slugs: ['nfl'],
-        collect: async () => {
-          const nfl = await collectNfl(
-            fixturesDir,
-            Date.now(),
-            previousOf('nfl'),
-          );
-          // Live and quarter scores come from Big Balls (ge has none);
-          // offline runs skip it.
-          console.log(
-            await addNflScores(nfl, previousOf('nfl'), {
-              key: fixturesDir ? undefined : process.env.BIGBALLS_KEY,
-              now: Date.now(),
-              fetchText: (url, key) =>
-                fetchText(url, { headers: { 'x-api-key': key } }),
-            }),
-          );
-          return [nfl];
-        },
-      },
-      {
-        name: 'NBA (ge)',
-        slugs: ['nba'],
-        collect: async () => {
-          const nba = await collectNba(
-            fixturesDir,
-            Date.now(),
-            previousOf('nba'),
-          );
-          // Quarters come from API-Sports (ge has none); offline runs skip it.
-          console.log(
-            await addNbaQuarters(nba, previousOf('nba'), {
-              key: fixturesDir ? undefined : process.env.API_SPORTS_KEY,
-              now: Date.now(),
-              fetchText: (url, key) =>
-                fetchText(url, { headers: { 'x-apisports-key': key } }),
-            }),
-          );
-          return [nba];
-        },
-      },
-    ],
+    },
+  ];
+
+  const plan = planSources(sources, live, previous);
+  const { competitions: collected } = await collectWithFallback(
+    plan.collect,
     previous,
+  );
+  // Same order as the sources, whichever were asked.
+  const order = sources.flatMap((s) => s.slugs as string[]);
+  const competitions = [...collected, ...plan.kept].sort(
+    (a, b) => order.indexOf(a.slug) - order.indexOf(b.slug),
   );
 
   const snapshot: Snapshot = {

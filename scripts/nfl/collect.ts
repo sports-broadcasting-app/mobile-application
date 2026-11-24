@@ -35,6 +35,7 @@ export function collectNfl(
   fixturesDir?: string,
   now = Date.now(),
   previous?: CompetitionData,
+  options: { live?: boolean } = {},
 ): Promise<CompetitionData> {
-  return collectMultisport(NFL, fixturesDir, now, previous);
+  return collectMultisport(NFL, fixturesDir, now, previous, options);
 }

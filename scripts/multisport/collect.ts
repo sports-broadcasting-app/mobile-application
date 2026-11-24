@@ -8,6 +8,7 @@ import type {
   Team,
 } from '../../src/types/snapshot';
 import { download, postJson } from '../http.ts';
+import { anyInLiveWindow } from '../schedule.ts';
 import {
   parseMatches,
   parseStandingsPage,
@@ -43,8 +44,12 @@ const DAY_MS = 24 * HOUR_MS;
 const SETTLED_AFTER_MS = 36 * HOUR_MS;
 /** Broadcasters are announced days before; rounds further out can wait. */
 const LOOKAHEAD_MS = 10 * DAY_MS;
-/** Every round is fetched again once the last full pass is this old. */
-const FULL_REFRESH_EVERY_MS = 24 * HOUR_MS;
+/**
+ * Every round is fetched again once the last full pass is this old. Under a
+ * day so the 06:00 full run (once a day, give or take GitHub's start delay)
+ * always does it; live runs never do.
+ */
+const FULL_REFRESH_EVERY_MS = 20 * HOUR_MS;
 
 /** Only the fields the parser reads, so a schema change elsewhere is harmless. */
 const MATCHES_QUERY = `
@@ -147,7 +152,10 @@ export async function collectMultisport(
   fixturesDir?: string,
   now = Date.now(),
   previous?: CompetitionData,
+  { live = false }: { live?: boolean } = {},
 ): Promise<CompetitionData> {
+  // Live run: only the rounds with a game in its window; never a full pass.
+  const liveRun = live && previous !== undefined && !fixturesDir;
   const { slug, codes, matchLengthMs } = league;
   const pageHtml = fixturesDir
     ? await readFile(join(fixturesDir, `${slug}-classificacao.html`), 'utf8')
@@ -155,7 +163,8 @@ export async function collectMultisport(
   const page = parseStandingsPage(pageHtml, codes);
   const knownTeams = new Map(page.teams.map((team) => [team.id, team]));
 
-  const full = fixturesDir !== undefined || needsFullRefresh(previous, now);
+  const full =
+    !liveRun && (fixturesDir !== undefined || needsFullRefresh(previous, now));
   const reusable = new Map<string, Match[]>();
   if (previous && !full) {
     for (const match of previous.matches) {
@@ -176,7 +185,9 @@ export async function collectMultisport(
     for (let round = 1; round <= rounds; round++) {
       const label = league.roundLabel(phase, round);
       const old = reusable.get(roundKey(label, round)) ?? [];
-      if (canReuse(old, now)) {
+      const keepForLive = liveRun && !anyInLiveWindow(old, league.sport, now);
+      if (keepForLive && old.length === 0) continue;
+      if (keepForLive || canReuse(old, now)) {
         for (const match of old) reused.set(match.id, match);
         kept++;
         continue;

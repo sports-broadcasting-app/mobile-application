@@ -13,6 +13,11 @@ import type {
 const BASE_URL = 'https://v2.nba.api-sports.io';
 /** One request per run: even asking every run stays under 100 a day. */
 const MAX_DATES_PER_RUN = 1;
+/**
+ * Live runs come every ~10 minutes on game nights: a date whose quarters are
+ * not out yet is asked again only after this, so the free 100 a day hold.
+ */
+const ASK_AGAIN_AFTER_MS = 30 * 60 * 1000;
 /** Games older than this are no longer asked for (bounds wasted requests). */
 const LOOKBACK_MS = 36 * 60 * 60 * 1000;
 /** ge and API-Sports start times of the same game differ by minutes. */
@@ -192,12 +197,23 @@ export async function addNbaQuarters(
       !m.periodScores &&
       now - Date.parse(m.startsAt) < LOOKBACK_MS,
   );
+  // Dates asked recently, carried over from the published file (pruned).
+  const checks: Record<string, string> = {};
+  for (const [date, at] of Object.entries(previous?.sourceChecks ?? {})) {
+    if (now - Date.parse(at) < LOOKBACK_MS) checks[date] = at;
+  }
+  competition.sourceChecks = checks;
+
   if (!key) return `NBA quarters: no API key, ${reused} kept`;
   if (missing.length === 0)
     return `NBA quarters: 0 dates asked, ${reused} kept`;
 
   // Most recent date first: the game that just ended matters most.
   const dates = [...new Set(missing.map((m) => utcDate(m.startsAt)))]
+    .filter(
+      (date) =>
+        !checks[date] || now - Date.parse(checks[date]) >= ASK_AGAIN_AFTER_MS,
+    )
     .sort()
     .reverse()
     .slice(0, MAX_DATES_PER_RUN);
@@ -205,6 +221,7 @@ export async function addNbaQuarters(
   let added = 0;
   for (const date of dates) {
     let games: NbaGame[];
+    checks[date] = new Date(now).toISOString();
     try {
       games = parseNbaGames(
         await fetchText(`${BASE_URL}/games?date=${date}`, key),

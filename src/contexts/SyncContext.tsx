@@ -12,6 +12,9 @@ import { AppState } from 'react-native';
 import { getLastSyncAt } from '../data/database';
 import { shouldSync, syncSnapshot } from '../services/syncService';
 
+/** How often an open app asks shouldSync whether to download again. */
+const CHECK_EVERY_MS = 60 * 1000;
+
 type SyncPhase = 'loading' | 'ready' | 'failed';
 
 interface SyncContextValue {
@@ -92,7 +95,18 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         refreshIfNeeded().catch(() => {});
       }
     });
-    return () => subscription.remove();
+    // While the app stays open (a game on screen), check again every minute;
+    // shouldSync only downloads once the data is old for the moment (5 min
+    // with a game on, 15 on match days, 6 h otherwise).
+    const timer = setInterval(() => {
+      if (AppState.currentState === 'active' && lastSyncRef.current !== null) {
+        refreshIfNeeded().catch(() => {});
+      }
+    }, CHECK_EVERY_MS);
+    return () => {
+      subscription.remove();
+      clearInterval(timer);
+    };
   }, [refreshIfNeeded]);
 
   const value = useMemo(
