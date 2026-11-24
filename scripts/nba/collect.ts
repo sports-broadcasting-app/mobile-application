@@ -26,6 +26,7 @@ export function collectNba(
   fixturesDir?: string,
   now = Date.now(),
   previous?: CompetitionData,
+  options: { live?: boolean } = {},
 ): Promise<CompetitionData> {
-  return collectMultisport(NBA, fixturesDir, now, previous);
+  return collectMultisport(NBA, fixturesDir, now, previous, options);
 }

@@ -59,6 +59,13 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - Terms (https://bigballsdata.com/legal/terms): displaying the data in the app is fine; republishing raw fields as an API, file or feed is not. Keep only the fields above in the snapshot; never add a passthrough of their payloads.
 - Why ge stays the base for the NFL (schedule, standings, broadcasters, team ids, Portuguese labels): broadcasters only exist on ge, switching team ids would break saved favorites and reminders, and Big Balls lists no NFL standings. Big Balls only adds what ge lacks.
 
+## Live runs (`COLLECT_MODE=live`, `scripts/schedule.ts`)
+
+- `liveCompetitions(mode, list)` → the slugs to refresh (null = full run); `planSources` keeps unlisted sources from the published file (own `updatedAt`); a source never published is always collected.
+- `inLiveWindow(match, sport, now)`: live, or from 30 min before kickoff to 30 min after kickoff + `MATCH_LENGTH_MS[sport]` (volei/futebol 2.5 h, NFL 4 h, NBA 3 h). Mirrored in the Worker (`infra/cloudflare/data-trigger/worker.js`); change both.
+- Collectors take `{ live: true }` (only with `previous`, never offline): `collectMultisport` asks only rounds whose published games are in the window (`anyInLiveWindow`) and never does the full refresh; `collectSerieA` asks page + standings + those rounds, copies the published broadcasters into fetched games and reads match pages only for window games. Measured 2026-11-24: Brasileirão at 18:30 = 4 requests, NBA at 21:30 = 2.
+- Paid APIs in frequent runs: API-NBA asks a date again only after 30 min (`sourceChecks` on the competition, collector bookkeeping ignored by the app); Big Balls stays at ≤ 2 dates per run (≤ 1,000/day).
+
 ## Checking your work
 
 ```bash

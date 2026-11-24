@@ -6,6 +6,7 @@ import type {
   Team,
 } from '../../src/types/snapshot';
 import { download } from '../http.ts';
+import { inLiveWindow } from '../schedule.ts';
 import {
   eventsMatchScore,
   parseChannels,
@@ -71,13 +72,24 @@ function matchPageFile(id: string): string {
  * `serie-a-tabela.html`, `serie-a-classificacao.json`,
  * `serie-a-rodada-{n}.json` and the optional `serie-a-jogo-{id}.html`.
  * `previous` (the published competition) lends the events of finished
- * matches, so their pages are read once.
+ * matches, so their pages are read once. With `live` (and `previous`), only
+ * the rounds with a game in its window are asked and only those games' pages
+ * read; every other round, and the broadcasters already found, come from
+ * `previous`.
  */
 export async function collectSerieA(
   fixturesDir?: string,
   now = Date.now(),
   previous?: CompetitionData,
+  { live = false }: { live?: boolean } = {},
 ): Promise<CompetitionData> {
+  const liveRun = live && previous !== undefined && !fixturesDir;
+  const previousById = new Map(previous?.matches.map((m) => [m.id, m]) ?? []);
+  const liveRounds = new Set(
+    (previous?.matches ?? [])
+      .filter((m) => inLiveWindow(m, 'futebol', now))
+      .map((m) => m.round),
+  );
   const pageHtml = fixturesDir
     ? await readFile(join(fixturesDir, `${SLUG}-tabela.html`), 'utf8')
     : await download(PAGE_URL);
@@ -92,11 +104,25 @@ export async function collectSerieA(
 
   const rounds: RoundMatch[] = [];
   for (let round = 1; round <= page.lastRound; round++) {
+    if (liveRun && !liveRounds.has(round)) {
+      // Kept as published; no page to read (pageUrl null).
+      for (const match of previous?.matches ?? []) {
+        if (match.round === round)
+          rounds.push({ match: { ...match }, pageUrl: null });
+      }
+      continue;
+    }
     const json = fixturesDir
       ? await readFixture(fixturesDir, `${SLUG}-rodada-${round}.json`)
       : await download(`${phaseUrl}/rodada/${round}/jogos/`);
     if (json === null) continue;
     const parsed = parseRound(json, round, SLUG, now);
+    if (liveRun) {
+      // Broadcasters of games outside the window are not read again.
+      for (const { match } of parsed.matches) {
+        match.channels = previousById.get(match.id)?.channels ?? [];
+      }
+    }
     rounds.push(...parsed.matches);
     for (const team of parsed.teams) {
       if (!knownTeams.has(team.id)) knownTeams.set(team.id, team);
@@ -133,7 +159,9 @@ export async function collectSerieA(
       keptEvents++;
     }
 
-    const channels = needsChannels(entry, now);
+    const channels =
+      needsChannels(entry, now) &&
+      (!liveRun || inLiveWindow(match, 'futebol', now));
     const events =
       !match.events &&
       Boolean(entry.pageUrl) &&
