@@ -6,6 +6,13 @@
       "away": "GB",
       "channels": ["Netflix"],
       "source": "https://ncnews.com.br/2026/11/24/nfl-netflix-jogo-packers-rams-horario-u2/"
+    },
+    {
+      "date": "2026-11-27",
+      "home": "PIT",
+      "away": "DEN",
+      "channels": ["Prime Video"],
+      "source": "https://www.goal.com/br/not%C3%ADcias/onde-assistir-ao-vivo-a-pittsburgh-steelers-x-denver-broncos-pela-nfl-na-black-friday-transmissao-canais-e-horario-do-jogo/blt72237975ac14f652"
     }
   ]
 }
