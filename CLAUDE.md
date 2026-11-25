@@ -78,6 +78,22 @@ Stack over tabs:
 }
 ```
 
+- **Streaming broadcasters (curated)**: ge only lists Globo's channels and its partners, so games streamed in Brazil by Netflix or Prime Video (NFL Thanksgiving Eve, Black Friday, Christmas) come with no broadcaster. They are hand-curated in `scripts/broadcasts.json` (per competition slug: `date` = Brasília day of the kickoff, `home`/`away` = standings codes or full names in either order, `channels`, `source` = article URL saying it is shown **in Brazil**) and `applyBroadcasts` adds them after the source's channels on every run (kept competitions too, since a live run asks ge for the round again). A bad line rejects the run; a line whose game is not found is a `::warning`. Never derive Brazilian broadcasters from US ones (Big Balls `broadcast`): Thursday Night Football is Prime Video in the US only.
+
+```json
+{
+  "nfl": [
+    {
+      "date": "2026-11-25",
+      "home": "LAR",
+      "away": "GB",
+      "channels": ["Netflix"],
+      "source": "https://..."
+    }
+  ]
+}
+```
+
 ## Data Flow
 
 ```
