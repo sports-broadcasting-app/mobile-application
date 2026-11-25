@@ -1,4 +1,13 @@
 const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+const WEEKDAY_NAMES = [
+  'domingo',
+  'segunda-feira',
+  'terça-feira',
+  'quarta-feira',
+  'quinta-feira',
+  'sexta-feira',
+  'sábado',
+];
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function pad(value: number): string {
@@ -40,4 +49,17 @@ export function formatRelativeSync(syncedAt: number, now: number): string {
     return `Atualizado há ${Math.floor(minutes / 60)} h`;
   }
   return `Atualizado em ${formatDay(new Date(syncedAt))}`;
+}
+
+/** The top line of a day in the week strip: "Ontem", "Hoje" or "Qui". */
+export function formatStripDay(date: Date, offset: number): string {
+  if (offset === 0) return 'Hoje';
+  if (offset === -1) return 'Ontem';
+  const short = WEEKDAYS[date.getDay()];
+  return short.charAt(0).toUpperCase() + short.slice(1);
+}
+
+/** "quinta-feira, 26/11", for screen readers. */
+export function formatLongDay(date: Date): string {
+  return `${WEEKDAY_NAMES[date.getDay()]}, ${pad(date.getDate())}/${pad(date.getMonth() + 1)}`;
 }

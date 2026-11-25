@@ -59,6 +59,8 @@ curl -s https://dados.onde-passa.app/onde-passa.json | python3 -c 'import json,s
 
 Report: last success, real interval between scheduled runs vs the cron, age of `generatedAt`, any competition whose `updatedAt` lags (a source on fallback), fallback warnings.
 
+- **Worker and Formula 1 (PR #46):** `decide()` reads `[...snapshot.competitions, ...snapshot.series]` and treats F1 sessions (`c.sessions`) like games (`MATCH_LENGTH_MS.automobilismo` = 2 h). The change only takes effect once the file is pasted again in the dashboard; until then F1 gets no live runs (only the 06:00 full run), nothing breaks. The F1 source adds 16 ge agenda requests to a full run and ~1 to a live one.
+
 ## Known behaviors and past incidents
 
 - **GitHub cron is best effort.** Scheduled runs get delayed or dropped under load; this repo saw gaps of 6–9 h on a 30-min cron. That is why the Worker `onde-passa-trigger` (`infra/cloudflare/data-trigger/worker.js`) dispatches the workflow every 30 min. Runs with event `workflow_dispatch` about every 30 min mean it works; only `schedule` runs mean the Worker stopped — check its logs in the Cloudflare dashboard. A 401 there means the fine-grained token in its secret `GITHUB_TOKEN` expired: the user creates a new one (this repo only, Actions read/write) and replaces the secret.

@@ -14,9 +14,18 @@ export const MATCH_LENGTH_MS: Record<Sport, number> = {
   futebol: 2.5 * HOUR_MS,
   'futebol-americano': 4 * HOUR_MS,
   basquete: 3 * HOUR_MS,
+  // A Formula 1 race takes about 2 h; practice and qualifying less.
+  automobilismo: 2 * HOUR_MS,
 };
 
-export function inLiveWindow(match: Match, sport: Sport, now: number): boolean {
+/** A game or a race session: what the window needs from either. */
+type Scheduled = Pick<Match, 'status' | 'startsAt'>;
+
+export function inLiveWindow(
+  match: Scheduled,
+  sport: Sport,
+  now: number,
+): boolean {
   if (match.status === 'live') return true;
   if (match.status === 'postponed' || match.status === 'finished') {
     return false;
@@ -30,7 +39,7 @@ export function inLiveWindow(match: Match, sport: Sport, now: number): boolean {
 
 /** Whether any of these games is in its window (a round to ask in a live run). */
 export function anyInLiveWindow(
-  games: Match[],
+  games: Scheduled[],
   sport: Sport,
   now: number,
 ): boolean {

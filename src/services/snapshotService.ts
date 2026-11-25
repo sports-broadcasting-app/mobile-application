@@ -19,8 +19,30 @@ function isValidSnapshot(data: unknown): data is Snapshot {
     snapshot.competitions.every(
       (competition) =>
         competition.teams?.length > 0 && Array.isArray(competition.matches),
-    )
+    ) &&
+    (snapshot.series === undefined ||
+      (Array.isArray(snapshot.series) &&
+        snapshot.series.every((series) => Array.isArray(series.sessions))))
   );
+}
+
+/**
+ * Series (Formula 1) are published apart from the competitions, which older
+ * builds require to have teams; from here on they are competitions too,
+ * with sessions instead of teams and matches.
+ */
+export function withSeries(snapshot: Snapshot): Snapshot {
+  const series = (snapshot.series ?? []).map((entry) => ({
+    ...entry,
+    teams: entry.teams ?? [],
+    matches: entry.matches ?? [],
+    standings: entry.standings ?? [],
+  }));
+  return {
+    ...snapshot,
+    competitions: [...snapshot.competitions, ...series],
+    series: undefined,
+  };
 }
 
 /**
@@ -97,7 +119,7 @@ export async function fetchSnapshot(): Promise<Snapshot> {
       });
       throw new Error('Dados inválidos');
     }
-    return withBundledTransfers(keepKnownCompetitions(data));
+    return withBundledTransfers(keepKnownCompetitions(withSeries(data)));
   } catch (error) {
     logSync('download failed', {
       url: DATA_URL,

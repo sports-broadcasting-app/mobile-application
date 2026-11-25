@@ -1,5 +1,5 @@
 import { getCompetition } from '../constants/competitions';
-import { Match, Team } from '../types/snapshot';
+import { Match, RaceSession, Team } from '../types/snapshot';
 import { formatTime } from './date';
 import { getTeamName } from './teamName';
 
@@ -13,6 +13,8 @@ export interface Reminder {
   /** Stable per match, so rescheduling replaces instead of duplicating. */
   id: string;
   matchId: string;
+  /** The screen a tap opens ("/match/123", "/grand-prix/gp-do-catar-2026"). */
+  path: string;
   fireAt: number;
   title: string;
   body: string;
@@ -46,11 +48,49 @@ export function buildReminders(
     reminders.push({
       id: `match-${match.id}`,
       matchId: match.id,
+      path: `/match/${match.id}`,
       fireAt,
       title: `${getTeamName(home.name)} x ${getTeamName(away.name)} em ${REMINDER_LEAD_MINUTES} min`,
       body: `${getCompetition(match.competition).label} · ${formatTime(match.startsAt)} · ${where}`,
     });
   }
 
-  return reminders.sort((a, b) => a.fireAt - b.fireAt).slice(0, MAX_REMINDERS);
+  return sortReminders(reminders);
+}
+
+/** Soonest first, within what iOS keeps pending. */
+export function sortReminders(reminders: Reminder[]): Reminder[] {
+  return [...reminders]
+    .sort((a, b) => a.fireAt - b.fireAt)
+    .slice(0, MAX_REMINDERS);
+}
+
+/**
+ * One reminder per scheduled race session (of the kinds the user chose,
+ * already filtered by the query) still far enough ahead. A tap opens the
+ * weekend.
+ */
+export function buildSessionReminders(
+  sessions: RaceSession[],
+  now: number,
+): Reminder[] {
+  const reminders: Reminder[] = [];
+  for (const session of sessions) {
+    if (session.status !== 'scheduled') continue;
+    const fireAt = Date.parse(session.startsAt) - REMINDER_LEAD_MS;
+    if (Number.isNaN(fireAt) || fireAt <= now) continue;
+    const where =
+      session.channels.length > 0
+        ? `Onde passa: ${session.channels.join(', ')}`
+        : 'Transmissão a confirmar';
+    reminders.push({
+      id: `session-${session.id}`,
+      matchId: `session-${session.id}`,
+      path: `/grand-prix/${session.grandPrixId}`,
+      fireAt,
+      title: `${session.grandPrix}: ${session.name} em ${REMINDER_LEAD_MINUTES} min`,
+      body: `${getCompetition(session.competition).label} · ${formatTime(session.startsAt)} · ${where}`,
+    });
+  }
+  return sortReminders(reminders);
 }

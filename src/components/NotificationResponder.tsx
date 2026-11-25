@@ -1,8 +1,13 @@
 import { useEffect, useRef } from 'react';
-import { usePathname, useRootNavigationState, useRouter } from 'expo-router';
+import {
+  Href,
+  usePathname,
+  useRootNavigationState,
+  useRouter,
+} from 'expo-router';
 import * as Notifications from 'expo-notifications';
 
-/** Opens the match of a tapped reminder, also when it launched the app. */
+/** Opens the screen of a tapped reminder, also when it launched the app. */
 export function NotificationResponder() {
   const router = useRouter();
   const navigationReady = Boolean(useRootNavigationState()?.key);
@@ -20,13 +25,23 @@ export function NotificationResponder() {
     }
     // Cleared first: the response survives restarts until it is consumed.
     Notifications.clearLastNotificationResponse();
-    const matchId = response.notification.request.content.data?.matchId;
-    if (typeof matchId !== 'string') return;
-    // Over another match, swap it: pushing stacked a second detail screen.
-    if (pathname.current.startsWith('/match/')) {
-      router.replace(`/match/${matchId}`);
+    const data = response.notification.request.content.data;
+    // Reminders scheduled before 1.5 carry only the match id.
+    const path =
+      typeof data?.path === 'string'
+        ? data.path
+        : typeof data?.matchId === 'string'
+          ? `/match/${data.matchId}`
+          : null;
+    if (!path) return;
+    // Over another detail screen, swap it: pushing stacked a second one.
+    if (
+      pathname.current.startsWith('/match/') ||
+      pathname.current.startsWith('/grand-prix/')
+    ) {
+      router.replace(path as Href);
     } else {
-      router.push(`/match/${matchId}`);
+      router.push(path as Href);
     }
   }, [navigationReady, response, router]);
 

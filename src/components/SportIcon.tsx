@@ -40,6 +40,14 @@ const VOLLEY_TURNS = ['0', '120', '240'];
 const BASKETBALL_SEAMS =
   'M12 3v18M3 12h18M6.2 5.2c2.6 3.2 2.6 10.4 0 13.6M17.8 5.2c-2.6 3.2-2.6 10.4 0 13.6';
 
+// A checkered flag on its pole: 3 by 2 squares.
+const FLAG_POLE = 'M5 21V3.5';
+const FLAG_CLOTH = 'M5 4h14v9H5z';
+const FLAG_GRID = 'M9.67 4v9M14.33 4v9M5 8.5h14';
+/** The squares cut out of the solid flag, every other one. */
+const FLAG_SQUARES =
+  'M9.67 4h4.67v4.5H9.67z M5 8.5h4.67V13H5z M14.33 8.5H19V13h-4.67z';
+
 function SoccerBall({ color, clipId }: { color: string; clipId: string }) {
   return (
     <>
@@ -152,6 +160,39 @@ export function SportIcon({
             strokeWidth={filled ? DETAIL : 1.5}
             strokeLinecap="round"
           />
+        </>
+      )}
+
+      {sport === 'automobilismo' && (
+        <>
+          <Path
+            d={FLAG_POLE}
+            stroke={color}
+            strokeWidth={STROKE}
+            strokeLinecap="round"
+          />
+          {filled ? (
+            <>
+              <Path
+                d={FLAG_CLOTH}
+                fill={color}
+                stroke={color}
+                strokeWidth={STROKE}
+                strokeLinejoin="round"
+              />
+              <Path d={FLAG_SQUARES} fill={knockoutColor} />
+            </>
+          ) : (
+            <>
+              <Path
+                d={FLAG_CLOTH}
+                stroke={color}
+                strokeWidth={STROKE}
+                strokeLinejoin="round"
+              />
+              <Path d={FLAG_GRID} stroke={color} strokeWidth={DETAIL} />
+            </>
+          )}
         </>
       )}
 

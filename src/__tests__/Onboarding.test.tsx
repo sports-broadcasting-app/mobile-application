@@ -33,32 +33,45 @@ describe('Onboarding', () => {
     );
     renderGate();
     expect(await screen.findByText('App')).toBeTruthy();
-    expect(screen.queryByText('O que você acompanha?')).toBeNull();
+    expect(screen.queryByText('Quais esportes você acompanha?')).toBeNull();
   });
 
-  it('asks for at least one competition', async () => {
+  it('asks for at least one sport', async () => {
     renderGate();
-    const start = await screen.findByTestId('onboarding-start');
-    expect(start).toHaveTextContent('Escolha pelo menos uma');
-    fireEvent.press(start);
+    const next = await screen.findByTestId('onboarding-next');
+    expect(next).toHaveTextContent('Escolha pelo menos um');
+    fireEvent.press(next);
     expect(screen.queryByText('App')).toBeNull();
     expect(AsyncStorage.setItem).not.toHaveBeenCalled();
   });
 
-  it('follows the chosen competitions and opens the app', async () => {
+  it('picks sports, then their competitions, already marked', async () => {
     renderGate();
-    fireEvent.press(await screen.findByTestId('onboarding-nfl'));
-    fireEvent.press(screen.getByTestId('onboarding-serie-a'));
+    fireEvent.press(await screen.findByTestId('onboarding-sport-volei'));
+    fireEvent.press(screen.getByTestId('onboarding-sport-automobilismo'));
+    expect(screen.getByTestId('onboarding-next')).toHaveTextContent(
+      'Continuar',
+    );
+    fireEvent.press(screen.getByTestId('onboarding-next'));
+
+    // Step 2: both Superligas marked; the Formula 1 needs no choice but
+    // is listed too.
     expect(
-      screen.getByTestId('onboarding-nfl').props.accessibilityState.checked,
+      screen.getByTestId('onboarding-feminina').props.accessibilityState
+        .checked,
     ).toBe(true);
+    fireEvent.press(screen.getByTestId('onboarding-feminina'));
 
     fireEvent.press(screen.getByTestId('onboarding-start'));
     expect(await screen.findByText('App')).toBeTruthy();
-    // Stored in the app's order, not the tapping order.
     expect(AsyncStorage.setItem).toHaveBeenCalledWith(
       '@followed_competitions',
-      JSON.stringify(['serie-a', 'nfl']),
+      JSON.stringify(['masculina', 'f1']),
+    );
+    // Everything in this version was offered: no "Novidade" card later.
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+      '@known_competitions',
+      expect.stringContaining('f1'),
     );
     await waitFor(() =>
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
@@ -66,5 +79,27 @@ describe('Onboarding', () => {
         'true',
       ),
     );
+  });
+
+  it('skips the second step when each sport has a single competition', async () => {
+    renderGate();
+    fireEvent.press(await screen.findByTestId('onboarding-sport-futebol'));
+    fireEvent.press(screen.getByTestId('onboarding-sport-basquete'));
+    expect(screen.getByTestId('onboarding-next')).toHaveTextContent('Começar');
+    fireEvent.press(screen.getByTestId('onboarding-next'));
+    expect(await screen.findByText('App')).toBeTruthy();
+    // Stored in the app's order, not the tapping order.
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+      '@followed_competitions',
+      JSON.stringify(['serie-a', 'nba']),
+    );
+  });
+
+  it('goes back from the competitions to the sports', async () => {
+    renderGate();
+    fireEvent.press(await screen.findByTestId('onboarding-sport-volei'));
+    fireEvent.press(screen.getByTestId('onboarding-next'));
+    fireEvent.press(screen.getByTestId('onboarding-back'));
+    expect(screen.getByText('Quais esportes você acompanha?')).toBeTruthy();
   });
 });

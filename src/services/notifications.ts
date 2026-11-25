@@ -75,6 +75,7 @@ function isSameReminder(
     title === reminder.title &&
     body === reminder.body &&
     data?.matchId === reminder.matchId &&
+    data?.path === reminder.path &&
     data?.fireAt === reminder.fireAt
   );
 }
@@ -108,7 +109,11 @@ export async function replaceScheduledReminders(
         body: reminder.body,
         sound: true,
         // fireAt lets the next run tell an unchanged reminder apart.
-        data: { matchId: reminder.matchId, fireAt: reminder.fireAt },
+        data: {
+          matchId: reminder.matchId,
+          path: reminder.path,
+          fireAt: reminder.fireAt,
+        },
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,

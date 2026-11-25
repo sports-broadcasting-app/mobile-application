@@ -87,10 +87,35 @@ export async function loadPrevious(url: string): Promise<Snapshot | null> {
     if (snapshot.version !== 2 || !Array.isArray(snapshot.competitions)) {
       throw new Error(`unexpected snapshot version ${snapshot.version}`);
     }
-    return snapshot;
+    // Series are published apart (see toPublished) but are competitions
+    // like the others inside the collector.
+    return {
+      ...snapshot,
+      competitions: [...snapshot.competitions, ...(snapshot.series ?? [])],
+      series: undefined,
+    };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
     console.log(`::warning title=No previous snapshot::${reason}`);
     return null;
   }
+}
+
+/**
+ * The file as published: competitions without teams (Formula 1) go to
+ * `series`, since builds before 1.5 reject the whole file when an entry of
+ * `competitions` has no teams.
+ */
+export function toPublished(
+  generatedAt: string,
+  all: CompetitionData[],
+): Snapshot {
+  const competitions = all.filter((c) => !c.sessions);
+  const series = all.filter((c) => c.sessions);
+  return {
+    version: 2,
+    generatedAt,
+    competitions,
+    ...(series.length > 0 ? { series } : {}),
+  };
 }

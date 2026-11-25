@@ -14,8 +14,11 @@ import {
   Favorites,
   getTeams,
   getUpcomingFavoriteMatches,
+  getUpcomingSessions,
 } from '../data/database';
-import { CompetitionSlug } from '../types/snapshot';
+import { CompetitionSlug, SessionKind } from '../types/snapshot';
+import { getCompetition } from '../constants/competitions';
+import { DEFAULT_REMINDER_KINDS, REMINDER_KINDS } from '../utils/sessions';
 import {
   getNotificationPermission,
   hasExactAlarms,
@@ -27,14 +30,18 @@ import {
 } from '../services/notifications';
 import {
   buildReminders,
+  buildSessionReminders,
   MAX_REMINDERS,
   REMINDER_LEAD_MS,
+  sortReminders,
 } from '../utils/reminders';
 import { useCompetition } from './CompetitionContext';
 import { useFavorites } from './FavoritesContext';
 import { useSync } from './SyncContext';
 
 const STORAGE_KEY = '@match_reminders';
+/** The Formula 1 session kinds to warn about (no team to follow there). */
+export const SESSION_KINDS_KEY = '@session_reminder_kinds';
 
 interface NotificationsContextValue {
   supported: boolean;
@@ -52,6 +59,9 @@ interface NotificationsContextValue {
   exactAlarms: boolean;
   /** Opens the system screen to allow exact alarms; resolves on return. */
   requestExactAlarms: () => Promise<boolean>;
+  /** Race session kinds with a reminder (Formula 1). */
+  sessionKinds: SessionKind[];
+  setSessionKind: (kind: SessionKind, on: boolean) => void;
 }
 
 const NotificationsContext = createContext<NotificationsContextValue>({
@@ -60,6 +70,8 @@ const NotificationsContext = createContext<NotificationsContextValue>({
   setEnabled: async () => false,
   exactAlarms: true,
   requestExactAlarms: async () => true,
+  sessionKinds: DEFAULT_REMINDER_KINDS,
+  setSessionKind: () => {},
 });
 
 /**
@@ -85,6 +97,15 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [permission, setPermission] =
     useState<NotificationPermission>('undetermined');
   const [exactAlarms, setExactAlarms] = useState(true);
+  const [sessionKinds, setSessionKinds] = useState<SessionKind[]>(
+    DEFAULT_REMINDER_KINDS,
+  );
+  // Followed series (Formula 1): their reminders go by session kind.
+  const series = useMemo(
+    () =>
+      followed.filter((slug) => getCompetition(slug).sport === 'automobilismo'),
+    [followed],
+  );
   const queue = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
@@ -92,6 +113,18 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     AsyncStorage.getItem(STORAGE_KEY)
       .then((stored) => setPreference(stored === 'on'))
       .catch(() => setPreference(false));
+    AsyncStorage.getItem(SESSION_KINDS_KEY)
+      .then((stored) => {
+        if (!stored) return;
+        const parsed = JSON.parse(stored) as unknown;
+        if (!Array.isArray(parsed)) return;
+        setSessionKinds(
+          REMINDER_KINDS.map(({ kind }) => kind).filter((kind) =>
+            parsed.includes(kind),
+          ),
+        );
+      })
+      .catch(() => {});
 
     const readPermission = () => {
       getNotificationPermission()
@@ -121,18 +154,29 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         return;
       }
       const now = Date.now();
-      const [matches, teams] = await Promise.all([
+      const [matches, teams, sessions] = await Promise.all([
         getUpcomingFavoriteMatches(
           favorites,
           now + REMINDER_LEAD_MS,
           MAX_REMINDERS,
         ),
         getTeams(),
+        getUpcomingSessions(
+          series,
+          sessionKinds,
+          now + REMINDER_LEAD_MS,
+          MAX_REMINDERS,
+        ),
       ]);
       // A newer run is queued: let it schedule instead.
       if (cancelled) return;
       const teamsById = new Map(teams.map((team) => [team.id, team]));
-      await replaceScheduledReminders(buildReminders(matches, teamsById, now));
+      await replaceScheduledReminders(
+        sortReminders([
+          ...buildReminders(matches, teamsById, now),
+          ...buildSessionReminders(sessions, now),
+        ]),
+      );
     };
 
     // One run at a time, so an older list never lands after a newer one.
@@ -143,7 +187,15 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
     // exactAlarms: alarms set while it was off stay inexact until replaced.
-  }, [preference, enabled, exactAlarms, favorites, lastSyncAt]);
+  }, [
+    preference,
+    enabled,
+    exactAlarms,
+    favorites,
+    series,
+    sessionKinds,
+    lastSyncAt,
+  ]);
 
   const setEnabled = useCallback(async (next: boolean) => {
     if (!next) {
@@ -162,6 +214,18 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     return true;
   }, []);
 
+  const setSessionKind = useCallback((kind: SessionKind, on: boolean) => {
+    setSessionKinds((current) => {
+      const next = REMINDER_KINDS.map((entry) => entry.kind).filter((k) =>
+        k === kind ? on : current.includes(k),
+      );
+      AsyncStorage.setItem(SESSION_KINDS_KEY, JSON.stringify(next)).catch(
+        () => {},
+      );
+      return next;
+    });
+  }, []);
+
   const requestExactAlarms = useCallback(async () => {
     const granted = await requestExactAlarmsPermission();
     setExactAlarms(granted);
@@ -175,8 +239,17 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       setEnabled,
       exactAlarms,
       requestExactAlarms,
+      sessionKinds,
+      setSessionKind,
     }),
-    [enabled, setEnabled, exactAlarms, requestExactAlarms],
+    [
+      enabled,
+      setEnabled,
+      exactAlarms,
+      requestExactAlarms,
+      sessionKinds,
+      setSessionKind,
+    ],
   );
 
   return (

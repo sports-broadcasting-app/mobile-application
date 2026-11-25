@@ -29,6 +29,8 @@ function mockNotifications(enabled: boolean) {
     setEnabled,
     exactAlarms: true,
     requestExactAlarms: jest.fn(async () => true),
+    sessionKinds: ['race', 'qualifying'],
+    setSessionKind: jest.fn(),
   });
 }
 

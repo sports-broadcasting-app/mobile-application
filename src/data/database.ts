@@ -2,6 +2,8 @@ import * as SQLite from 'expo-sqlite';
 import {
   CompetitionSlug,
   Match,
+  RaceSession,
+  SessionKind,
   Standing,
   Snapshot,
   Team,
@@ -12,7 +14,7 @@ const DB_NAME = 'superliga.db';
 const LAST_SYNC_KEY = 'lastSyncAt';
 const SCHEMA_KEY = 'schemaVersion';
 /** Bump when the stored payloads change shape; favorites are always kept. */
-const SCHEMA_VERSION = '3';
+const SCHEMA_VERSION = '4';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -38,6 +40,14 @@ const DATA_TABLES = `
     payload TEXT NOT NULL,
     PRIMARY KEY (competition, teamId)
   );
+  CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    competition TEXT NOT NULL,
+    grandPrixId TEXT NOT NULL,
+    startsAtMs INTEGER NOT NULL,
+    payload TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_sessions_startsAtMs ON sessions (startsAtMs);
   CREATE TABLE IF NOT EXISTS transfers (
     id TEXT NOT NULL,
     competition TEXT NOT NULL,
@@ -75,6 +85,7 @@ async function openDb(): Promise<SQLite.SQLiteDatabase> {
       DROP TABLE IF EXISTS matches;
       DROP TABLE IF EXISTS standings;
       DROP TABLE IF EXISTS transfers;
+      DROP TABLE IF EXISTS sessions;
       DELETE FROM meta;
     `);
     await db.runAsync('INSERT INTO meta (key, value) VALUES (?, ?)', [
@@ -112,6 +123,7 @@ export async function saveSnapshot(
     await db.runAsync('DELETE FROM matches');
     await db.runAsync('DELETE FROM standings');
     await db.runAsync('DELETE FROM transfers');
+    await db.runAsync('DELETE FROM sessions');
 
     for (const competition of snapshot.competitions) {
       for (const team of competition.teams) {
@@ -146,6 +158,20 @@ export async function saveSnapshot(
             standing.position,
             index,
             JSON.stringify(standing),
+          ],
+        );
+      }
+
+      for (const session of competition.sessions ?? []) {
+        await db.runAsync(
+          `INSERT OR REPLACE INTO sessions (id, competition, grandPrixId, startsAtMs, payload)
+            VALUES (?, ?, ?, ?, ?)`,
+          [
+            session.id,
+            competition.slug,
+            session.grandPrixId,
+            Date.parse(session.startsAt),
+            JSON.stringify(session),
           ],
         );
       }
@@ -268,6 +294,97 @@ export async function getUpcomingFavoriteMatches(
     ],
   );
   return parseRows<Match>(rows);
+}
+
+export async function getSessionsBetween(
+  fromMs: number,
+  toMs: number,
+): Promise<RaceSession[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ payload: string }>(
+    `SELECT payload FROM sessions
+      WHERE startsAtMs >= ? AND startsAtMs < ?
+      ORDER BY startsAtMs ASC`,
+    [fromMs, toMs],
+  );
+  return parseRows<RaceSession>(rows);
+}
+
+/** The next sessions from `fromMs` on of these competitions, soonest first. */
+export async function getNextSessions(
+  fromMs: number,
+  limit: number,
+  competitions: CompetitionSlug[],
+): Promise<RaceSession[]> {
+  if (competitions.length === 0) return [];
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ payload: string }>(
+    `SELECT payload FROM sessions
+      WHERE startsAtMs >= ? AND competition IN (${competitions.map(() => '?').join(', ')})
+      ORDER BY startsAtMs ASC LIMIT ?`,
+    [fromMs, ...competitions, limit],
+  );
+  return parseRows<RaceSession>(rows);
+}
+
+/** Every session of one race weekend, in order. */
+export async function getGrandPrix(
+  grandPrixId: string,
+): Promise<RaceSession[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ payload: string }>(
+    `SELECT payload FROM sessions WHERE grandPrixId = ?
+      ORDER BY startsAtMs ASC`,
+    [grandPrixId],
+  );
+  return parseRows<RaceSession>(rows);
+}
+
+/**
+ * Scheduled sessions of these kinds from `fromMs` on, soonest first: the
+ * Formula 1 reminders, which go by session kind instead of a team.
+ */
+export async function getUpcomingSessions(
+  competitions: CompetitionSlug[],
+  kinds: SessionKind[],
+  fromMs: number,
+  limit: number,
+): Promise<RaceSession[]> {
+  if (competitions.length === 0 || kinds.length === 0) return [];
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ payload: string }>(
+    `SELECT payload FROM sessions
+      WHERE startsAtMs >= ?
+        AND competition IN (${competitions.map(() => '?').join(', ')})
+        AND json_extract(payload, '$.status') = 'scheduled'
+        AND json_extract(payload, '$.kind') IN (${kinds.map(() => '?').join(', ')})
+      ORDER BY startsAtMs ASC LIMIT ?`,
+    [fromMs, ...competitions, ...kinds, limit],
+  );
+  return parseRows<RaceSession>(rows);
+}
+
+/**
+ * When the games and sessions of these competitions start between the two
+ * instants: the week strip marks the days that have something.
+ */
+export async function getEventStarts(
+  fromMs: number,
+  toMs: number,
+  competitions: CompetitionSlug[],
+): Promise<number[]> {
+  if (competitions.length === 0) return [];
+  const db = await getDb();
+  const list = competitions.map(() => '?').join(', ');
+  const rows = await db.getAllAsync<{ startsAtMs: number }>(
+    `SELECT startsAtMs FROM matches
+        WHERE startsAtMs >= ? AND startsAtMs < ? AND competition IN (${list})
+      UNION ALL
+      SELECT startsAtMs FROM sessions
+        WHERE startsAtMs >= ? AND startsAtMs < ? AND competition IN (${list})`,
+    [fromMs, toMs, ...competitions, fromMs, toMs, ...competitions],
+  );
+  return rows.map((row) => row.startsAtMs);
 }
 
 export async function getMatch(id: string): Promise<Match | null> {

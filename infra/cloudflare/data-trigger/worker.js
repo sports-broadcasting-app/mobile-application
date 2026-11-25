@@ -9,7 +9,8 @@
  *   broadcasters and the daily full refresh, for the whole day;
  * - mode "live" during game windows (30 min before kickoff until 30 min after
  *   the expected end, or while a game is live), about every 10 minutes, only
- *   for the competitions with a game in the window;
+ *   for the competitions with a game in the window (Formula 1 sessions, in
+ *   `series`, count as games);
  * - nothing otherwise.
  * The window rule mirrors scripts/schedule.ts; keep both in sync.
  *
@@ -40,6 +41,7 @@ const MATCH_LENGTH_MS = {
   futebol: 2.5 * HOUR_MS,
   'futebol-americano': 4 * HOUR_MS,
   basquete: 3 * HOUR_MS,
+  automobilismo: 2 * HOUR_MS,
 };
 
 /** Whether a game is live or around its kickoff (mirror of scripts/schedule.ts). */
@@ -78,12 +80,15 @@ export function decide(snapshot, now) {
   const age = now - Date.parse(snapshot.generatedAt);
   if (!(age < MISSED_MORNING_MS)) return { mode: 'full', competitions: '' };
 
-  const live = snapshot.competitions
-    .filter((c) =>
-      c.matches.some(
-        (m) =>
-          inLiveWindow(m, c.sport, now) || waitingForScore(m, c.sport, now),
-      ),
+  // Formula 1 is published in `series`, with sessions instead of matches.
+  const all = [...snapshot.competitions, ...(snapshot.series ?? [])];
+  const live = all
+    .filter(
+      (c) =>
+        (c.matches ?? []).some(
+          (m) =>
+            inLiveWindow(m, c.sport, now) || waitingForScore(m, c.sport, now),
+        ) || (c.sessions ?? []).some((s) => inLiveWindow(s, c.sport, now)),
     )
     .map((c) => c.slug);
   if (live.length > 0 && age >= LIVE_MIN_AGE_MS) {

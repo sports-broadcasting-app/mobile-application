@@ -1,6 +1,7 @@
 import {
   CompetitionData,
   Match,
+  RaceSession,
   Snapshot,
   Team,
   Transfer,
@@ -207,5 +208,61 @@ export function buildSnapshot(matches: Match[]): Snapshot {
         standings: [],
       },
     ],
+  };
+}
+
+/** A Formula 1 weekend: Friday practice, Saturday qualifying, Sunday race. */
+export const raceSessions: RaceSession[] = [
+  {
+    id: '7234',
+    competition: 'f1',
+    grandPrixId: 'gp-do-catar-2026',
+    grandPrix: 'GP do Catar',
+    name: '1º treino livre',
+    kind: 'practice',
+    startsAt: '2026-11-27T10:30:00-03:00',
+    status: 'scheduled',
+    channels: ['SporTV', 'Globoplay'],
+    circuit: 'Circuito Internacional de Lusail',
+  },
+  {
+    id: '7237',
+    competition: 'f1',
+    grandPrixId: 'gp-do-catar-2026',
+    grandPrix: 'GP do Catar',
+    name: 'Classificação',
+    kind: 'qualifying',
+    startsAt: '2026-11-28T15:00:00-03:00',
+    status: 'scheduled',
+    channels: ['SporTV', 'Globoplay'],
+    circuit: 'Circuito Internacional de Lusail',
+  },
+  {
+    id: '7238',
+    competition: 'f1',
+    grandPrixId: 'gp-do-catar-2026',
+    grandPrix: 'GP do Catar',
+    name: 'Corrida',
+    kind: 'race',
+    startsAt: '2026-11-29T13:00:00-03:00',
+    status: 'scheduled',
+    channels: [],
+    circuit: 'Circuito Internacional de Lusail',
+  },
+];
+
+/** The Formula 1 entry as published: in `series`, without teams. */
+export function buildF1Series(
+  sessions: RaceSession[] = raceSessions,
+): CompetitionData {
+  return {
+    slug: 'f1',
+    sport: 'automobilismo',
+    name: 'Fórmula 1',
+    season: '2026',
+    teams: [],
+    matches: [],
+    standings: [],
+    sessions,
   };
 }

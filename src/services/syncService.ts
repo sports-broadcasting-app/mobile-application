@@ -1,4 +1,8 @@
-import { getMatchesBetween, saveSnapshot } from '../data/database';
+import {
+  getMatchesBetween,
+  getSessionsBetween,
+  saveSnapshot,
+} from '../data/database';
 import type { Match } from '../types/snapshot';
 import { getDayBounds } from '../utils/date';
 import { logSync } from '../utils/syncLog';
@@ -29,8 +33,11 @@ export function isStale(
   return now - lastSyncAt >= maxAge;
 }
 
-/** Whether a game of today is live or around its kickoff. */
-export function isGameOn(match: Match, now: number): boolean {
+/** Whether a game (or race session) of today is live or around its start. */
+export function isGameOn(
+  match: Pick<Match, 'status' | 'startsAt'>,
+  now: number,
+): boolean {
   if (match.status === 'live') return true;
   if (match.status !== 'scheduled') return false;
   const start = Date.parse(match.startsAt);
@@ -46,9 +53,13 @@ export async function shouldSync(
     return true;
   }
   const { start, end } = getDayBounds(new Date(now));
-  const todayMatches = await getMatchesBetween(start, end);
-  const isMatchDay = todayMatches.length > 0;
-  const hasLiveGame = todayMatches.some((m) => isGameOn(m, now));
+  const [todayMatches, todaySessions] = await Promise.all([
+    getMatchesBetween(start, end),
+    getSessionsBetween(start, end),
+  ]);
+  const today = [...todayMatches, ...todaySessions];
+  const isMatchDay = today.length > 0;
+  const hasLiveGame = today.some((m) => isGameOn(m, now));
   const stale = isStale(lastSyncAt, isMatchDay, now, hasLiveGame);
   logSync('freshness checked', {
     ageMinutes: Math.floor((now - lastSyncAt) / 60000),

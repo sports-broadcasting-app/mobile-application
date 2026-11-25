@@ -66,6 +66,13 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - Why not automatic: Big Balls `broadcast` is the US network; mapping "Prime Video" would mark every Thursday Night Football game, which is not on Prime in Brazil. Every line needs a Brazilian source.
 - Check: `yarn jest src/__tests__/broadcasts.test.ts` (also validates the real file's format).
 
+## Formula 1 (`scripts/f1/`, published in `series`, PR #46)
+
+- Source: the ge agenda GraphQL (`multisportTabAgenda(filter:{date})`, operation `GetMotorsportAgenda`, `AGENDA_QUERY` in `scripts/f1/parseGe.ts`), the query ge.globo.com/agenda makes. Each session is a `DisputeEventKind` with modality "Fórmula 1": `dispute.id`, `startDate` + `startHour` (Brasília wall clock → `toInstant`), `moment` PAST/NOW/FUTURE → finished/live/scheduled, `phase.name` ("1º treino livre", "Classificação Sprint", "Corrida"…) → `toKind`, `location.popularName`, `liveWatchSources` → `toChannels`. Championship "Grande Prêmio do Catar - Fórmula 1" → `toGrandPrix` "GP do Catar"; `toGrandPrixId` = slug + year. No results or standings anywhere on ge; jolpi.ca blocks Claude, OpenF1 is non-commercial (see memory).
+- `collectF1` (`scripts/f1/collect.ts`): `datesToAsk` = yesterday..+27 days, Thu–Sun only (16 requests) in a full run; in a live run the Brasília dates of published sessions in `inLiveWindow(…, 'automobilismo')` (2 h). Dates answered replace their published sessions; others are kept (closed as finished 6 h after start, dropped after 400 days). Zero sessions for dates that had published ones throws (fallback keeps the file).
+- **`series`, never `competitions`:** builds up to 1.4 reject the whole file when an entry of `competitions` has no teams. `loadPrevious` merges `series` into `competitions`; `toPublished` (`scripts/fallback.ts`) splits teamless ones out; `assertValidSnapshot` throws if one lands in `competitions`; `assertValidCompetition` validates a series by sessions (unique ids, dates, weekend).
+- Check: `yarn jest src/__tests__/collectF1.test.ts`; real run of the F1 part only (no CBV): import `collectF1` with `postJson` and a fixed `now`.
+
 ## Live runs (`COLLECT_MODE=live`, `scripts/schedule.ts`)
 
 - `liveCompetitions(mode, list)` → the slugs to refresh (null = full run); `planSources` keeps unlisted sources from the published file (own `updatedAt`); a source never published is always collected.

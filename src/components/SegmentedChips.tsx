@@ -1,12 +1,15 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import {
   ScrollView,
+  ScrollViewInstance,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { Sport } from '../types/snapshot';
+import { SportIcon } from './SportIcon';
 import {
   maxFontScale,
   radius,
@@ -17,6 +20,8 @@ import {
 interface ChipOption<T extends string> {
   value: T;
   label: string;
+  /** Draws the sport's icon before the label. */
+  sport?: Sport;
 }
 
 interface SegmentedChipsProps<T extends string> {
@@ -43,9 +48,24 @@ export function SegmentedChips<T extends string>({
   trailing,
 }: SegmentedChipsProps<T>) {
   const { colors } = useTheme();
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  const chipX = useRef(new Map<string, number>());
 
-  const chips = options.map(({ value, label }) => {
+  // A chip picked elsewhere (the Home picks the Standings competition and
+  // the other way round) may sit past the edge: bring it into view.
+  useEffect(() => {
+    const x = chipX.current.get(selected);
+    if (scrollable && x !== undefined) {
+      scrollRef.current?.scrollTo({
+        x: Math.max(0, x - spacing.lg),
+        animated: true,
+      });
+    }
+  }, [scrollable, selected]);
+
+  const chips = options.map(({ value, label, sport }) => {
     const active = value === selected;
+    const textColor = active ? colors.onPrimary : colors.controlText;
     return (
       <TouchableOpacity
         key={value}
@@ -53,6 +73,15 @@ export function SegmentedChips<T extends string>({
         accessibilityState={{ selected: active }}
         hitSlop={HIT_SLOP}
         style={styles.touch}
+        onLayout={(event) => {
+          chipX.current.set(value, event.nativeEvent.layout.x);
+          if (scrollable && value === selected) {
+            scrollRef.current?.scrollTo({
+              x: Math.max(0, event.nativeEvent.layout.x - spacing.lg),
+              animated: false,
+            });
+          }
+        }}
         onPress={() => onSelect(value)}
       >
         <View
@@ -64,14 +93,10 @@ export function SegmentedChips<T extends string>({
             },
           ]}
         >
+          {sport && <SportIcon sport={sport} size={16} color={textColor} />}
           <Text
             maxFontSizeMultiplier={maxFontScale}
-            style={[
-              styles.label,
-              {
-                color: active ? colors.onPrimary : colors.controlText,
-              },
-            ]}
+            style={[styles.label, { color: textColor }]}
           >
             {label}
           </Text>
@@ -86,6 +111,7 @@ export function SegmentedChips<T extends string>({
   if (scrollable) {
     return (
       <ScrollView
+        ref={scrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         // A ScrollView grows by default: in a column it took the free height
@@ -130,8 +156,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   chip: {
+    alignItems: 'center',
     borderRadius: radius.pill,
     borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.xs + 2,
     height: CHIP_HEIGHT,
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
