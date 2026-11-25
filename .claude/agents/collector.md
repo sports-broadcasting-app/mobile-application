@@ -59,6 +59,13 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - Terms (https://bigballsdata.com/legal/terms): displaying the data in the app is fine; republishing raw fields as an API, file or feed is not. Keep only the fields above in the snapshot; never add a passthrough of their payloads.
 - Why ge stays the base for the NFL (schedule, standings, broadcasters, team ids, Portuguese labels): broadcasters only exist on ge, switching team ids would break saved favorites and reminders, and Big Balls lists no NFL standings. Big Balls only adds what ge lacks.
 
+## Curated streaming broadcasters (`scripts/broadcasts.ts`)
+
+- Problem: ge's `liveWatchSources` is empty for NFL games streamed by Netflix/Prime Video in Brazil (checked 2026-11-25 on the ge agenda GraphQL: LAR x GB and PIT x DEN both `[]`); `toChannels` drops nothing, the source simply lacks them.
+- `scripts/broadcasts.json` (slug → `{date, home, away, channels, source}`), applied in `scripts/collect.ts` after collected + kept competitions are merged, before `assertValidSnapshot`. `applyBroadcasts` matches by `brasiliaDate(startsAt)` and team code/name (`normalizeForSearch`, either order), appends channels without repeats; throws on bad date/source/channels/team, warns on a missing game.
+- Why not automatic: Big Balls `broadcast` is the US network; mapping "Prime Video" would mark every Thursday Night Football game, which is not on Prime in Brazil. Every line needs a Brazilian source.
+- Check: `yarn jest src/__tests__/broadcasts.test.ts` (also validates the real file's format).
+
 ## Live runs (`COLLECT_MODE=live`, `scripts/schedule.ts`)
 
 - `liveCompetitions(mode, list)` → the slugs to refresh (null = full run); `planSources` keeps unlisted sources from the published file (own `updatedAt`); a source never published is always collected.

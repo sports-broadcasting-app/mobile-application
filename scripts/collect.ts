@@ -1,9 +1,10 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { CompetitionSlug, Snapshot } from '../src/types/snapshot';
 import { collectSerieA } from './brasileirao/collect.ts';
 import { addNbaQuarters } from './apiSports/nba.ts';
 import { addNflScores } from './bigBalls/nfl.ts';
+import { applyBroadcasts, type BroadcastFile } from './broadcasts.ts';
 import { collectWithFallback, loadPrevious, type Source } from './fallback.ts';
 import { fetchText } from './http.ts';
 import { collectNba } from './nba/collect.ts';
@@ -16,6 +17,8 @@ import { assertValidSnapshot } from './validate.ts';
 export const SNAPSHOT_FILE = 'onde-passa.json';
 /** Read by the first app release; see legacy.ts. */
 export const LEGACY_FILE = 'superliga.json';
+/** Broadcasters the sources miss (Netflix, Prime Video), curated by hand. */
+const BROADCASTS_FILE = new URL('./broadcasts.json', import.meta.url);
 
 /**
  * Usage: collect.ts <output dir> [dir with saved pages, skips the network]
@@ -122,6 +125,14 @@ async function main(): Promise<void> {
   const competitions = [...collected, ...plan.kept].sort(
     (a, b) => order.indexOf(a.slug) - order.indexOf(b.slug),
   );
+  // On every run, kept competitions included: a live run asks ge for the
+  // round again, and ge has no streaming broadcasters.
+  const broadcasts = JSON.parse(
+    await readFile(BROADCASTS_FILE, 'utf8'),
+  ) as BroadcastFile;
+  for (const line of applyBroadcasts(competitions, broadcasts)) {
+    console.log(line);
+  }
 
   const snapshot: Snapshot = {
     version: 2,
