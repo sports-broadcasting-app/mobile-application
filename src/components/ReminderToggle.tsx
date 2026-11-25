@@ -1,5 +1,6 @@
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Linking from 'expo-linking';
+import { useCompetition } from '../contexts/CompetitionContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useNotifications } from '../contexts/NotificationsContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -14,7 +15,15 @@ export function ReminderToggle() {
   const { favorites } = useFavorites();
   const { enabled, setEnabled, exactAlarms, requestExactAlarms } =
     useNotifications();
+  const { followed } = useCompetition();
   const hasFavorite = Object.keys(favorites).length > 0;
+  const followsF1 = followed.includes('f1');
+  const what = [
+    hasFavorite ? 'dos jogos dos seus times' : null,
+    followsF1 ? 'das sessões da F1 que você escolher' : null,
+  ]
+    .filter(Boolean)
+    .join(' e ');
 
   const onChange = async (next: boolean) => {
     const done = await setEnabled(next);
@@ -45,8 +54,8 @@ export function ReminderToggle() {
             Avisar antes dos jogos
           </Text>
           <Text style={[styles.hint, { color: colors.textSecondary }]}>
-            {hasFavorite
-              ? `${REMINDER_LEAD_MINUTES} minutos antes dos jogos dos seus times, com o canal que transmite`
+            {what
+              ? `${REMINDER_LEAD_MINUTES} minutos antes ${what}, com o canal que transmite`
               : 'Escolha um time favorito abaixo para receber avisos'}
           </Text>
         </View>

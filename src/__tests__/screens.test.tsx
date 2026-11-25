@@ -51,6 +51,11 @@ jest.mock('../data/database', () => ({
   getMatch: jest.fn(),
   getMatchesBetween: jest.fn(async () => []),
   getNextMatches: jest.fn(async () => []),
+  getSessionsBetween: jest.fn(async () => []),
+  getNextSessions: jest.fn(async () => []),
+  getEventStarts: jest.fn(async () => []),
+  getGrandPrix: jest.fn(async () => []),
+  getUpcomingSessions: jest.fn(async () => []),
   getStandings: jest.fn(async () => []),
   getTeams: jest.fn(async () => []),
   getTransfers: jest.fn(async () => []),
@@ -106,7 +111,9 @@ describe('HomeScreen', () => {
     mockDayMatches([scheduledMatch]);
     render(<HomeScreen />);
     await screen.findByTestId('match-card-100');
-    fireEvent.press(screen.getByText('Superliga F'));
+    // Two volleyball competitions: the sport chip, then one of them.
+    fireEvent.press(screen.getByText('Vôlei'));
+    fireEvent.press(await screen.findByText('Superliga F'));
     await waitFor(() =>
       expect(screen.queryByTestId('match-card-100')).toBeNull(),
     );
@@ -116,7 +123,9 @@ describe('HomeScreen', () => {
     mockDayMatches([scheduledMatch]);
     render(<HomeScreen />);
     expect(screen.getByText('Jogos')).toBeTruthy();
-    fireEvent.press(screen.getByText('Superliga M'));
+    fireEvent.press(screen.getByText('Vôlei'));
+    expect(await screen.findAllByText('Vôlei')).toHaveLength(2);
+    fireEvent.press(await screen.findByText('Superliga M'));
     expect(await screen.findByText('Superliga Masculina')).toBeTruthy();
   });
 
@@ -124,7 +133,7 @@ describe('HomeScreen', () => {
     render(<HomeScreen />);
     await screen.findByText('Nenhum jogo neste dia');
     const calls = (getMatchesBetween as jest.Mock).mock.calls.length;
-    fireEvent.press(screen.getByText('Amanhã'));
+    fireEvent.press(screen.getByTestId('day-1'));
     await waitFor(() =>
       expect(
         (getMatchesBetween as jest.Mock).mock.calls.length,
@@ -198,9 +207,11 @@ describe('HomeScreen', () => {
     fireEvent.press(screen.getByTestId('follow-feminina'));
     expect(AsyncStorage.setItem).toHaveBeenCalledWith(
       '@followed_competitions',
-      JSON.stringify(['masculina', 'serie-a', 'nfl', 'nba']),
+      JSON.stringify(['masculina', 'serie-a', 'nfl', 'nba', 'f1']),
     );
-    await waitFor(() => expect(screen.queryByText('Superliga F')).toBeNull());
+    // Volleyball is down to one competition: its chip names it.
+    expect(await screen.findByText('Superliga M')).toBeTruthy();
+    expect(screen.queryByText('Superliga F')).toBeNull();
   });
 
   it('fills a day with few games with the next ones', async () => {
@@ -209,6 +220,7 @@ describe('HomeScreen', () => {
       { ...scheduledMatch, id: '102' },
     ]);
     render(<HomeScreen />);
+    fireEvent.press(await screen.findByText('Vôlei'));
     fireEvent.press(await screen.findByText('Superliga M'));
     expect(
       await screen.findByText('Próximos jogos · Superliga M'),
@@ -386,14 +398,24 @@ describe('SettingsScreen', () => {
     await waitFor(() =>
       expect(screen.queryByTestId('pick-team-feminina')).toBeNull(),
     );
-    fireEvent(screen.getByTestId('follow-nfl'), 'valueChange', false);
+    // The NFL is the only competition of its sport: its switch is the sport's.
+    fireEvent(
+      screen.getByTestId('follow-sport-futebol-americano'),
+      'valueChange',
+      false,
+    );
     expect(AsyncStorage.setItem).toHaveBeenCalledWith(
       '@followed_competitions',
       JSON.stringify(['masculina']),
     );
     await waitFor(() =>
-      expect(screen.getByTestId('follow-masculina').props.disabled).toBe(true),
+      expect(screen.getByTestId('follow-sport-volei').props.disabled).toBe(
+        true,
+      ),
     );
+    expect(
+      screen.getByTestId('follow-masculina').props.accessibilityState.disabled,
+    ).toBe(true);
     (AsyncStorage.getItem as jest.Mock).mockImplementation(async () => null);
   });
 });

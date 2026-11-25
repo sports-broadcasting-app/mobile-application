@@ -27,6 +27,7 @@ jest.mock('../data/database', () => ({
   getFavorites: jest.fn(),
   getTeams: jest.fn(),
   getUpcomingFavoriteMatches: jest.fn(),
+  getUpcomingSessions: jest.fn(async () => []),
   saveFavorite: jest.fn(async () => {}),
   deleteFavorite: jest.fn(async () => {}),
 }));

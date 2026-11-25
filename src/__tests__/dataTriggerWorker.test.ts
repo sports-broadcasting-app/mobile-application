@@ -68,4 +68,26 @@ describe('data trigger Worker', () => {
       ),
     ).toEqual({ mode: 'live', competitions: 'nfl' });
   });
+  it('runs live around Formula 1 sessions, published in series', () => {
+    const file = {
+      generatedAt: '2026-11-29T15:40:00Z',
+      competitions: [{ slug: 'nfl', sport: 'futebol-americano', matches: [] }],
+      series: [
+        {
+          slug: 'f1',
+          sport: 'automobilismo',
+          sessions: [
+            { status: 'scheduled', startsAt: '2026-11-29T13:00:00-03:00' },
+          ],
+        },
+      ],
+    };
+    // 13:30 Brasília, during the race.
+    expect(decide(file, at('2026-11-29T16:30:00Z'))).toEqual({
+      mode: 'live',
+      competitions: 'f1',
+    });
+    // 16:00 Brasília: past the 2 h race and the 30 min margin.
+    expect(decide(file, at('2026-11-29T19:00:00Z'))).toBeNull();
+  });
 });

@@ -1,7 +1,8 @@
-export type Sport = 'volei' | 'futebol' | 'futebol-americano' | 'basquete';
+export type Sport =
+  'volei' | 'futebol' | 'futebol-americano' | 'basquete' | 'automobilismo';
 
 export type CompetitionSlug =
-  'masculina' | 'feminina' | 'serie-a' | 'nfl' | 'nba';
+  'masculina' | 'feminina' | 'serie-a' | 'nfl' | 'nba' | 'f1';
 
 export type MatchStatus = 'scheduled' | 'live' | 'finished' | 'postponed';
 
@@ -74,6 +75,34 @@ export interface Match {
   events?: MatchEvent[];
 }
 
+/** What a motorsport session is, read from its ge name. */
+export type SessionKind =
+  'practice' | 'sprint-qualifying' | 'sprint' | 'qualifying' | 'race' | 'other';
+
+/**
+ * One session of a race weekend (Formula 1): no teams and no score, only
+ * when it starts and where it is shown. Sessions of one Grand Prix share
+ * `grandPrixId`.
+ */
+export interface RaceSession {
+  /** ge's id of the session. */
+  id: string;
+  competition: CompetitionSlug;
+  /** The weekend it belongs to, stable across runs ("gp-do-catar-2026"). */
+  grandPrixId: string;
+  /** "GP do Catar". */
+  grandPrix: string;
+  /** As ge names it: "1º treino livre", "Classificação Sprint", "Corrida". */
+  name: string;
+  kind: SessionKind;
+  /** ISO 8601 with offset. Always compare as an instant, never as text. */
+  startsAt: string;
+  status: MatchStatus;
+  channels: string[];
+  /** "Circuito Internacional de Lusail". */
+  circuit: string | null;
+}
+
 export interface Standing {
   teamId: string;
   position: number;
@@ -139,10 +168,22 @@ export interface CompetitionData {
    * spend the daily quota asking the same date again and again.
    */
   sourceChecks?: Record<string, string>;
+  /**
+   * Motorsport: the sessions of each race weekend. A competition with
+   * sessions has no teams, matches or standings.
+   */
+  sessions?: RaceSession[];
 }
 
 export interface Snapshot {
   version: 2;
   generatedAt: string;
+  /** Competitions with teams. Builds before 1.5 read only these. */
   competitions: CompetitionData[];
+  /**
+   * Competitions without teams (Formula 1), published apart: builds before
+   * 1.5 reject the whole file when an entry of `competitions` has no teams,
+   * and ignore this key.
+   */
+  series?: CompetitionData[];
 }

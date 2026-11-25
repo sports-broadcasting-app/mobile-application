@@ -25,6 +25,10 @@ By default review what changed: `git diff main...HEAD -- src/` plus uncommitted 
 8. **Keyboard and safe areas:** sheets or screens with a text field stay usable with the keyboard open (see `BottomSheet` `fullHeight`).
 9. **Tests:** a new component or hook has a test in `src/__tests__/`.
 
+## Blocks added with Formula 1 (PR #46)
+
+- `DayStrip` (week strip, `day-<offset>` test ids, dot = `primary`, selected day `primary`/`onPrimary`), `GrandPrixCard` (a weekend in the day list: no "×", one row per session, `BroadcasterPill`), `SessionRow` (the `MatchRow` of a session), `NewsCard` (a new competition, `primarySoft` with `primary` border, two `Button`s), `SessionRemindersSheet` (`ThemedSwitch` per session kind), `SegmentedChips` options with `sport` draw a `SportIcon` in the chip's text color. The flag icon (`automobilismo`) follows the sport icon rules: 2 pt stroke, filled = solid cloth with knocked-out squares.
+
 ## Report
 
 Group findings by severity — **Must fix** (broken in dark mode, unreadable contrast, untappable, inaccessible), **Should fix** (token or building block not used), **Nit**. For each: `file:line`, what is wrong, and the token or component to use. End with a one-line verdict. If nothing is wrong, say so plainly.

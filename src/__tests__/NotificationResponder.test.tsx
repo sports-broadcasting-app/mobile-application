@@ -71,4 +71,12 @@ describe('NotificationResponder', () => {
     expect(mockReplace).toHaveBeenCalledWith('/match/100');
     expect(mockPush).not.toHaveBeenCalled();
   });
+  it('opens the weekend of a Formula 1 reminder', () => {
+    mockResponse({
+      matchId: 'session-7238',
+      path: '/grand-prix/gp-do-catar-2026',
+    });
+    render(<NotificationResponder />);
+    expect(mockPush).toHaveBeenCalledWith('/grand-prix/gp-do-catar-2026');
+  });
 });

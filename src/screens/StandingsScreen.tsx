@@ -105,12 +105,21 @@ export default function StandingsScreen() {
             />
           </TouchableOpacity>
         )}
-        <StandingsList
-          sport={sport}
-          standings={standings ?? []}
-          teamsById={teamsById}
-          isFavorite={isFavorite}
-        />
+        {STANDINGS_COLUMNS[sport].length === 0 ? (
+          <Text
+            testID="standings-unavailable"
+            style={[styles.unavailable, { color: colors.textSecondary }]}
+          >
+            {`A classificação da ${getCompetition(competition).name} ainda não está no app. O calendário e onde passa cada sessão estão em Jogos.`}
+          </Text>
+        ) : (
+          <StandingsList
+            sport={sport}
+            standings={standings ?? []}
+            teamsById={teamsById}
+            isFavorite={isFavorite}
+          />
+        )}
         <View style={styles.legend} testID="standings-legend">
           {STANDINGS_COLUMNS[sport].map(({ code, label }) => (
             <Text
@@ -160,6 +169,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: typography.size.body,
     fontWeight: typography.weight.semibold,
+  },
+  unavailable: {
+    fontSize: typography.size.body,
+    lineHeight: 20,
+    padding: spacing.lg,
+    textAlign: 'center',
   },
   legend: {
     flexDirection: 'row',

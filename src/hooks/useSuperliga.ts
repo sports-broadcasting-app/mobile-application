@@ -3,9 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useSync } from '../contexts/SyncContext';
 import {
   countTransfers,
+  getEventStarts,
+  getGrandPrix,
   getMatch,
   getMatchesBetween,
   getNextMatches,
+  getNextSessions,
+  getSessionsBetween,
   getStandings,
   getTeams,
   getTransfers,
@@ -109,4 +113,58 @@ export function useStandings(competition: CompetitionSlug) {
     queryKey: ['standings', competition, lastSyncAt],
     queryFn: () => getStandings(competition),
   });
+}
+
+export function useDaySessions(day: Date) {
+  const { lastSyncAt } = useSync();
+  const { start, end } = getDayBounds(day);
+  return useQuery({
+    queryKey: ['sessions', start, lastSyncAt],
+    queryFn: () => getSessionsBetween(start, end),
+  });
+}
+
+export function useNextSessions(
+  fromMs: number,
+  competitions: CompetitionSlug[],
+  enabled: boolean,
+  limit = NEXT_MATCHES_LIMIT,
+) {
+  const { lastSyncAt } = useSync();
+  return useQuery({
+    queryKey: [
+      'nextSessions',
+      fromMs,
+      competitions.join(','),
+      limit,
+      lastSyncAt,
+    ],
+    queryFn: () => getNextSessions(fromMs, limit, competitions),
+    enabled,
+  });
+}
+
+export function useGrandPrix(grandPrixId: string) {
+  const { lastSyncAt } = useSync();
+  return useQuery({
+    queryKey: ['grandPrix', grandPrixId, lastSyncAt],
+    queryFn: () => getGrandPrix(grandPrixId),
+  });
+}
+
+/** Local day starts (ms) between the two instants with a game or session. */
+export function useEventDays(
+  fromMs: number,
+  toMs: number,
+  competitions: CompetitionSlug[],
+): Set<number> {
+  const { lastSyncAt } = useSync();
+  const { data } = useQuery({
+    queryKey: ['eventDays', fromMs, toMs, competitions.join(','), lastSyncAt],
+    queryFn: () => getEventStarts(fromMs, toMs, competitions),
+  });
+  return useMemo(
+    () => new Set((data ?? []).map((ms) => getDayBounds(new Date(ms)).start)),
+    [data],
+  );
 }

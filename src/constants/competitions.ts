@@ -41,10 +41,17 @@ export const COMPETITIONS: CompetitionInfo[] = [
     name: 'NBA',
     label: 'NBA',
   },
+  {
+    slug: 'f1',
+    sport: 'automobilismo',
+    name: 'Fórmula 1',
+    label: 'F1',
+  },
 ];
 
 /** Sport names, in the order the pickers group them. Icons: SportIcon. */
 export const SPORTS: { sport: Sport; name: string }[] = [
+  { sport: 'automobilismo', name: 'Automobilismo' },
   { sport: 'basquete', name: 'Basquete' },
   { sport: 'futebol', name: 'Futebol' },
   { sport: 'futebol-americano', name: 'Futebol americano' },
@@ -117,6 +124,8 @@ export const STANDINGS_COLUMNS: Record<Sport, StandingsColumn[]> = {
       value: (s) => s.scoredFor - s.scoredAgainst,
     },
   ],
+  // Formula 1 has no standings source yet (see CLAUDE.md): no table.
+  automobilismo: [],
   // The league's own table: no draws, ranked by winning percentage. Season
   // points run into four digits, too wide for the columns, so only the
   // difference is shown.

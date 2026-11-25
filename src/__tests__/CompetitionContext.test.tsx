@@ -44,6 +44,7 @@ describe('CompetitionContext', () => {
       'serie-a',
       'nfl',
       'nba',
+      'f1',
     ]);
   });
 

@@ -20,7 +20,14 @@ const cancelAll =
 const schedule = Notifications.scheduleNotificationAsync as jest.Mock;
 
 function reminder(id: string, fireAt = 1_000): Reminder {
-  return { id, matchId: id, fireAt, title: `t-${id}`, body: `b-${id}` };
+  return {
+    id,
+    matchId: id,
+    path: `/match/${id}`,
+    fireAt,
+    title: `t-${id}`,
+    body: `b-${id}`,
+  };
 }
 
 /** A pending request as the app scheduled it. */
@@ -30,7 +37,7 @@ function pending(r: Reminder) {
     content: {
       title: r.title,
       body: r.body,
-      data: { matchId: r.matchId, fireAt: r.fireAt },
+      data: { matchId: r.matchId, path: r.path, fireAt: r.fireAt },
     },
     trigger: null,
   };

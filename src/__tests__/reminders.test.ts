@@ -25,6 +25,7 @@ describe('buildReminders', () => {
     expect(reminder).toEqual({
       id: 'match-100',
       matchId: '100',
+      path: '/match/100',
       fireAt: kickoff - REMINDER_LEAD_MS,
       title: 'Sada Cruzeiro x Vôlei Renata em 30 min',
       body: 'Superliga M · 20:30 · Onde passa: GE TV',

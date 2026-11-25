@@ -7,6 +7,8 @@ import {
   View,
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { Sport } from '../types/snapshot';
+import { SportIcon } from './SportIcon';
 import {
   maxFontScale,
   radius,
@@ -17,6 +19,8 @@ import {
 interface ChipOption<T extends string> {
   value: T;
   label: string;
+  /** Draws the sport's icon before the label. */
+  sport?: Sport;
 }
 
 interface SegmentedChipsProps<T extends string> {
@@ -44,8 +48,9 @@ export function SegmentedChips<T extends string>({
 }: SegmentedChipsProps<T>) {
   const { colors } = useTheme();
 
-  const chips = options.map(({ value, label }) => {
+  const chips = options.map(({ value, label, sport }) => {
     const active = value === selected;
+    const textColor = active ? colors.onPrimary : colors.controlText;
     return (
       <TouchableOpacity
         key={value}
@@ -64,14 +69,10 @@ export function SegmentedChips<T extends string>({
             },
           ]}
         >
+          {sport && <SportIcon sport={sport} size={16} color={textColor} />}
           <Text
             maxFontSizeMultiplier={maxFontScale}
-            style={[
-              styles.label,
-              {
-                color: active ? colors.onPrimary : colors.controlText,
-              },
-            ]}
+            style={[styles.label, { color: textColor }]}
           >
             {label}
           </Text>
@@ -130,8 +131,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   chip: {
+    alignItems: 'center',
     borderRadius: radius.pill,
     borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.xs + 2,
     height: CHIP_HEIGHT,
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,

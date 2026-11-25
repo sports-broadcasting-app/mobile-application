@@ -1,9 +1,11 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import * as Linking from 'expo-linking';
 import { fireEvent, render, screen, waitFor } from '../test-utils';
 import { ReminderToggle } from '../components/ReminderToggle';
 import SettingsScreen from '../screens/SettingsScreen';
 import { useNotifications } from '../contexts/NotificationsContext';
+import { FOLLOWED_KEY } from '../contexts/CompetitionContext';
 import { getFavorites } from '../data/database';
 
 jest.mock('expo-linking', () => ({
@@ -36,11 +38,14 @@ function mockNotifications(
     setEnabled,
     exactAlarms,
     requestExactAlarms,
+    sessionKinds: ['race', 'qualifying'],
+    setSessionKind: jest.fn(),
   });
 }
 
 beforeEach(() => {
   jest.clearAllMocks();
+  (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
   (getFavorites as jest.Mock).mockResolvedValue({ masculina: '1' });
   setEnabled.mockResolvedValue(true);
   requestExactAlarms.mockResolvedValue(true);
@@ -79,12 +84,25 @@ describe('ReminderToggle', () => {
 
   it('asks for a favorite before there is one', async () => {
     (getFavorites as jest.Mock).mockResolvedValue({});
+    // Formula 1 not followed: no team, nothing to warn about.
+    (AsyncStorage.getItem as jest.Mock).mockImplementation(async (key) =>
+      key === FOLLOWED_KEY ? JSON.stringify(['masculina']) : null,
+    );
     mockNotifications(false);
     render(<ReminderToggle />);
     expect(
       await screen.findByText(
         'Escolha um time favorito abaixo para receber avisos',
       ),
+    ).toBeTruthy();
+  });
+
+  it('counts the Formula 1 sessions without a favorite team', async () => {
+    (getFavorites as jest.Mock).mockResolvedValue({});
+    mockNotifications(false);
+    render(<ReminderToggle />);
+    expect(
+      await screen.findByText(/antes das sessões da F1 que você escolher/),
     ).toBeTruthy();
   });
 

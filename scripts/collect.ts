@@ -1,12 +1,19 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { CompetitionSlug, Snapshot } from '../src/types/snapshot';
+import type { CompetitionSlug } from '../src/types/snapshot';
 import { collectSerieA } from './brasileirao/collect.ts';
 import { addNbaQuarters } from './apiSports/nba.ts';
 import { addNflScores } from './bigBalls/nfl.ts';
 import { applyBroadcasts, type BroadcastFile } from './broadcasts.ts';
-import { collectWithFallback, loadPrevious, type Source } from './fallback.ts';
-import { fetchText } from './http.ts';
+import { collectF1 } from './f1/collect.ts';
+import { AGENDA_QUERY } from './f1/parseGe.ts';
+import {
+  collectWithFallback,
+  loadPrevious,
+  toPublished,
+  type Source,
+} from './fallback.ts';
+import { fetchText, postJson } from './http.ts';
 import { collectNba } from './nba/collect.ts';
 import { collectNfl } from './nfl/collect.ts';
 import { toLegacySnapshot } from './legacy.ts';
@@ -113,6 +120,30 @@ async function main(): Promise<void> {
         return [nba];
       },
     },
+    {
+      name: 'Fórmula 1 (ge agenda)',
+      slugs: ['f1'],
+      collect: async () => [
+        await collectF1({
+          now: Date.now(),
+          previous: previousOf('f1'),
+          live: live !== null,
+          // Offline runs read f1-agenda-YYYY-MM-DD.json; a missing date is
+          // a date without sessions.
+          fetchAgenda: (date) =>
+            fixturesDir
+              ? readFile(
+                  join(fixturesDir, `f1-agenda-${date}.json`),
+                  'utf8',
+                ).catch(() => null)
+              : postJson('https://geql.globo.com/graphql', {
+                  operationName: 'GetMotorsportAgenda',
+                  variables: { date },
+                  query: AGENDA_QUERY,
+                }),
+        }),
+      ],
+    },
   ];
 
   const plan = planSources(sources, live, previous);
@@ -134,11 +165,7 @@ async function main(): Promise<void> {
     console.log(line);
   }
 
-  const snapshot: Snapshot = {
-    version: 2,
-    generatedAt: new Date().toISOString(),
-    competitions,
-  };
+  const snapshot = toPublished(new Date().toISOString(), competitions);
   assertValidSnapshot(snapshot);
 
   await mkdir(outputDir, { recursive: true });
@@ -150,7 +177,9 @@ async function main(): Promise<void> {
 
   for (const c of competitions) {
     console.log(
-      `${c.name}: ${c.teams.length} teams, ${c.matches.length} matches, ${c.transfers?.length ?? 0} transfers, updated ${c.updatedAt}`,
+      c.sessions
+        ? `${c.name}: ${c.sessions.length} sessions, updated ${c.updatedAt}`
+        : `${c.name}: ${c.teams.length} teams, ${c.matches.length} matches, ${c.transfers?.length ?? 0} transfers, updated ${c.updatedAt}`,
     );
   }
 }
