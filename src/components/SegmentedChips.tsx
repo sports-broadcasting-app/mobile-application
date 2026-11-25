@@ -1,6 +1,7 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import {
   ScrollView,
+  ScrollViewInstance,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -47,6 +48,20 @@ export function SegmentedChips<T extends string>({
   trailing,
 }: SegmentedChipsProps<T>) {
   const { colors } = useTheme();
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  const chipX = useRef(new Map<string, number>());
+
+  // A chip picked elsewhere (the Home picks the Standings competition and
+  // the other way round) may sit past the edge: bring it into view.
+  useEffect(() => {
+    const x = chipX.current.get(selected);
+    if (scrollable && x !== undefined) {
+      scrollRef.current?.scrollTo({
+        x: Math.max(0, x - spacing.lg),
+        animated: true,
+      });
+    }
+  }, [scrollable, selected]);
 
   const chips = options.map(({ value, label, sport }) => {
     const active = value === selected;
@@ -58,6 +73,15 @@ export function SegmentedChips<T extends string>({
         accessibilityState={{ selected: active }}
         hitSlop={HIT_SLOP}
         style={styles.touch}
+        onLayout={(event) => {
+          chipX.current.set(value, event.nativeEvent.layout.x);
+          if (scrollable && value === selected) {
+            scrollRef.current?.scrollTo({
+              x: Math.max(0, event.nativeEvent.layout.x - spacing.lg),
+              animated: false,
+            });
+          }
+        }}
         onPress={() => onSelect(value)}
       >
         <View
@@ -87,6 +111,7 @@ export function SegmentedChips<T extends string>({
   if (scrollable) {
     return (
       <ScrollView
+        ref={scrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         // A ScrollView grows by default: in a column it took the free height

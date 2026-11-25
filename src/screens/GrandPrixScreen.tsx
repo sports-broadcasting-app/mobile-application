@@ -15,6 +15,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useGrandPrix } from '../hooks/useSuperliga';
 import { RaceSession } from '../types/snapshot';
 import { getChannelUrl } from '../utils/broadcast';
+import { promptExactAlarms } from '../utils/exactAlarmPrompt';
 import { formatDay, formatTime } from '../utils/date';
 import {
   describeSession,
@@ -58,6 +59,8 @@ export default function GrandPrixScreen() {
     supported: remindersSupported,
     enabled: remindersOn,
     setEnabled,
+    exactAlarms,
+    requestExactAlarms,
     sessionKinds,
     setSessionKind,
   } = useNotifications();
@@ -80,8 +83,17 @@ export default function GrandPrixScreen() {
   const toggleKind = (session: RaceSession) => {
     const on = !(remindersOn && sessionKinds.includes(session.kind));
     setSessionKind(session.kind, on);
-    // Asking for a reminder means wanting them: ask for the permission.
-    if (on && !remindersOn) setEnabled(true).catch(() => {});
+    // Asking for a reminder means wanting them: ask for the permission,
+    // then for exact alarms (Android 14+), as the settings switch does.
+    if (on && !remindersOn) {
+      setEnabled(true)
+        .then(async (granted) => {
+          if (granted && !exactAlarms) {
+            await promptExactAlarms(requestExactAlarms);
+          }
+        })
+        .catch(() => {});
+    }
   };
 
   return (

@@ -5,6 +5,7 @@ import { ThemedSwitch } from './ThemedSwitch';
 import { useNotifications } from '../contexts/NotificationsContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { SessionKind } from '../types/snapshot';
+import { promptExactAlarms } from '../utils/exactAlarmPrompt';
 import { REMINDER_KINDS } from '../utils/sessions';
 import { REMINDER_LEAD_MINUTES } from '../utils/reminders';
 import { spacing, typography } from '../constants/designTokens';
@@ -24,12 +25,26 @@ export function SessionRemindersSheet({
   onClose,
 }: SessionRemindersSheetProps) {
   const { colors } = useTheme();
-  const { enabled, setEnabled, sessionKinds, setSessionKind } =
-    useNotifications();
+  const {
+    enabled,
+    setEnabled,
+    exactAlarms,
+    requestExactAlarms,
+    sessionKinds,
+    setSessionKind,
+  } = useNotifications();
 
   const toggle = (kind: SessionKind, on: boolean) => {
     setSessionKind(kind, on);
-    if (on && !enabled) setEnabled(true).catch(() => {});
+    if (on && !enabled) {
+      setEnabled(true)
+        .then(async (granted) => {
+          if (granted && !exactAlarms) {
+            await promptExactAlarms(requestExactAlarms);
+          }
+        })
+        .catch(() => {});
+    }
   };
 
   return (

@@ -1,3 +1,4 @@
+import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams } from 'expo-router';
@@ -218,6 +219,29 @@ describe('GrandPrixScreen', () => {
     fireEvent.press(await screen.findByTestId('bell-7238'));
     expect(setSessionKind).toHaveBeenCalledWith('race', true);
     expect(setEnabled).toHaveBeenCalledWith(true);
+  });
+
+  it('explains exact alarms after a bell turned the reminders on', async () => {
+    (useNotifications as jest.Mock).mockReturnValue({
+      supported: true,
+      enabled: false,
+      setEnabled,
+      exactAlarms: false,
+      requestExactAlarms: jest.fn(async () => true),
+      sessionKinds: ['race', 'qualifying'],
+      setSessionKind,
+    });
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    render(<GrandPrixScreen />);
+    fireEvent.press(await screen.findByTestId('bell-7238'));
+    await waitFor(() =>
+      expect(alert).toHaveBeenCalledWith(
+        'Avisos na hora certa',
+        expect.any(String),
+        expect.any(Array),
+        expect.any(Object),
+      ),
+    );
   });
 
   it('says so when the weekend is not in the data', async () => {

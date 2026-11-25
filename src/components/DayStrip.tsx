@@ -1,10 +1,5 @@
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { useTheme } from '../contexts/ThemeContext';
 import {
   addDays,
@@ -19,6 +14,9 @@ import {
   touchTarget,
   typography,
 } from '../constants/designTokens';
+
+/** Size of the dot under a day with something on. */
+const DOT = 6;
 
 /** Days before today the strip starts at (yesterday's results). */
 export const STRIP_FIRST_OFFSET = -1;
@@ -93,14 +91,22 @@ export function DayStrip({
             >
               {date.getDate()}
             </Text>
-            <View
-              style={[
-                styles.dot,
-                hasEvents && {
-                  backgroundColor: active ? colors.onPrimary : colors.primary,
-                },
-              ]}
-            />
+            {/* SVG: Android drew a View this small as a square. */}
+            <Svg
+              width={DOT}
+              height={DOT}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              {hasEvents && (
+                <Circle
+                  cx={DOT / 2}
+                  cy={DOT / 2}
+                  r={DOT / 2}
+                  fill={active ? colors.onPrimary : colors.primary}
+                />
+              )}
+            </Svg>
           </TouchableOpacity>
         );
       })}
@@ -134,10 +140,5 @@ const styles = StyleSheet.create({
   number: {
     fontSize: typography.size.md + 1,
     fontWeight: typography.weight.bold,
-  },
-  dot: {
-    borderRadius: 3,
-    height: 5,
-    width: 5,
   },
 });
