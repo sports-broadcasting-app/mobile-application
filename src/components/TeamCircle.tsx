@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Team } from '../types/snapshot';
-import { getTeamColor } from '../utils/teamColor';
+import { getTeamColor, TEAM_TEXT_COLOR } from '../utils/teamColor';
 
 interface TeamCircleProps {
   team: Team;
@@ -38,7 +38,12 @@ export const TeamCircle = React.memo(function TeamCircle({
           testID={`team-logo-${team.id}`}
         />
       ) : size >= 32 ? (
-        <Text style={[styles.acronym, { fontSize: size * 0.3 }]}>
+        <Text
+          style={[
+            styles.acronym,
+            { color: TEAM_TEXT_COLOR, fontSize: size * 0.3 },
+          ]}
+        >
           {team.code}
         </Text>
       ) : null}
@@ -52,7 +57,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   acronym: {
-    color: '#fff',
     fontWeight: '800',
   },
 });
