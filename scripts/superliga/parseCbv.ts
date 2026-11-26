@@ -215,9 +215,14 @@ export function buildCompetition(
 
 /**
  * A game with a club outside the table cannot be shown (the app needs both
- * teams). One such game on the agenda page froze the women's Superliga for a
- * night (match 2609562, Nov 2026), so a few are left out with a warning;
- * more than that means the page changed, and the source is rejected.
+ * teams). In Nov 2026 the women's agenda gave one club a new id: its 22 games
+ * pointed to a team the standings page did not have, and the Superliga froze.
+ * - One unknown id on the agenda and one club of the table with no game:
+ *   the same club under two ids, so its games take the table's id.
+ * - Otherwise a few games (another event on the page) are left out.
+ * - More than that means the page changed: the source is rejected, with the
+ *   ids in the message so the run log tells what moved.
+ * Every case leaves a `::warning` on the run.
  */
 export const MAX_FOREIGN_MATCHES = 3;
 
@@ -227,12 +232,39 @@ export function withoutForeignMatches(
   teams: Team[],
 ): Match[] {
   const ids = new Set(teams.map((team) => team.id));
+  const unknown = new Map<string, number>();
+  const used = new Set<string>();
+  for (const m of matches) {
+    for (const id of [m.homeTeamId, m.awayTeamId]) {
+      used.add(id);
+      if (!ids.has(id)) unknown.set(id, (unknown.get(id) ?? 0) + 1);
+    }
+  }
+  if (unknown.size === 0) return matches;
+
+  const idle = teams.filter((team) => !used.has(team.id));
+  if (unknown.size === 1 && idle.length === 1) {
+    const [[from, count]] = [...unknown];
+    const [to] = idle;
+    console.log(
+      `::warning title=${name}::agenda team ${from} (${count} matches) taken as ${to.name} (${to.id}), the only club of the table without a game`,
+    );
+    const swap = (id: string) => (id === from ? to.id : id);
+    return matches.map((m) => ({
+      ...m,
+      homeTeamId: swap(m.homeTeamId),
+      awayTeamId: swap(m.awayTeamId),
+    }));
+  }
+
   const foreign = matches.filter(
     (m) => !ids.has(m.homeTeamId) || !ids.has(m.awayTeamId),
   );
   if (foreign.length > MAX_FOREIGN_MATCHES) {
+    const agenda = [...unknown].map(([id, n]) => `${id} (${n})`).join(', ');
+    const table = idle.map((t) => `${t.name} (${t.id})`).join(', ') || 'none';
     throw new Error(
-      `${name}: ${foreign.length} matches with teams outside the table`,
+      `${name}: ${foreign.length} matches with teams outside the table; agenda ids not in the table: ${agenda}; table clubs without a game: ${table}`,
     );
   }
   for (const m of foreign) {

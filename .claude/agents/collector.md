@@ -73,10 +73,10 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - **`series`, never `competitions`:** builds up to 1.4 reject the whole file when an entry of `competitions` has no teams. `loadPrevious` merges `series` into `competitions`; `toPublished` (`scripts/fallback.ts`) splits teamless ones out; `assertValidSnapshot` throws if one lands in `competitions`; `assertValidCompetition` validates a series by sessions (unique ids, dates, weekend).
 - Check: `yarn jest src/__tests__/collectF1.test.ts`; real run of the F1 part only (no CBV): import `collectF1` with `postJson` and a fixed `now`.
 
-## CBV games with a club outside the table (PR #47)
+## CBV games with a club outside the table (PRs #47, #48)
 
-- 2026-11-26: the women's agenda page listed match 2609562 with a team id missing from the standings page; `assertValidCompetition` threw "unknown team", so the source fell back every run and the feminina data froze from 25/11 21:26 (live runs with only `feminina` then failed with "Every source failed").
-- `withoutForeignMatches` in `scripts/superliga/parseCbv.ts` (called by `buildCompetition`) drops such games with a `::warning title=Superliga …::match <id> (<startsAt>, <roundLabel>) left out: team <id> not in the table`; more than `MAX_FOREIGN_MATCHES` (3) throws, since then the page changed. Same idea as the multisport exhibition filter. The validator stays strict. Tests in `parseCbv.test.ts`. Read the warning in the run log to learn which team it was (never fetch cbv.com.br from a session).
+- 2026-11-26: the women's agenda page listed games with a team id missing from the standings page; `assertValidCompetition` threw "unknown team" (it names only the first game, 2609562), so the source fell back every run and the feminina data froze from 25/11 21:26 (live runs with only `feminina` then failed with "Every source failed"). With PR #47 the log showed the real size: 22 games, i.e. all the games of one club (12 clubs, double round robin), so the agenda renumbered one club.
+- `withoutForeignMatches` in `scripts/superliga/parseCbv.ts` (called by `buildCompetition`): one unknown agenda id + exactly one table club without a game → same club, games take the table id (`::warning … agenda team <id> (<n> matches) taken as <name> (<id>)`); otherwise up to `MAX_FOREIGN_MATCHES` (3) games are dropped with a warning each; more throws with the unknown ids and counts and the idle table clubs. The table id wins so app favorites keep working. The validator stays strict. Tests in `parseCbv.test.ts`. Read the warning/error in the run log to learn what moved (never fetch cbv.com.br from a session).
 
 ## Live runs (`COLLECT_MODE=live`, `scripts/schedule.ts`)
 

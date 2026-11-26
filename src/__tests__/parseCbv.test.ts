@@ -161,6 +161,33 @@ describe('parseCbv', () => {
     log.mockRestore();
   });
 
+  it('gives the table id to a club the agenda lists under another id', () => {
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const games = [11, 12, 13, 14, 15].map((id) => ({
+      ...finishedRaw,
+      ChampionshipMatch_ID: id,
+      GuestTeam_ID: 9,
+    }));
+    const competition = buildCompetition(
+      'feminina',
+      'Superliga Feminina',
+      '2026/27',
+      toHtml(JSON.stringify(games)),
+      toHtml(
+        JSON.stringify([
+          standingRow,
+          { ...standingRow, teamId: '2', teamName: 'TIME B' },
+        ]),
+      ),
+    );
+    expect(competition.matches).toHaveLength(5);
+    expect(competition.matches.every((m) => m.awayTeamId === '2')).toBe(true);
+    expect(log.mock.calls[0][0]).toContain(
+      'agenda team 9 (5 matches) taken as TIME B (2)',
+    );
+    log.mockRestore();
+  });
+
   it('rejects the page when many games have clubs outside the table', () => {
     const log = jest.spyOn(console, 'log').mockImplementation(() => {});
     const foreign = [11, 12, 13, 14].map((id) => ({
@@ -176,7 +203,9 @@ describe('parseCbv', () => {
         toHtml(JSON.stringify(foreign)),
         toHtml(JSON.stringify([standingRow])),
       ),
-    ).toThrow(/4 matches with teams outside the table/);
+    ).toThrow(
+      /4 matches with teams outside the table; agenda ids not in the table: 9 \(4\)/,
+    );
     log.mockRestore();
   });
 
