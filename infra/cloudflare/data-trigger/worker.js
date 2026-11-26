@@ -21,6 +21,18 @@
  * Settings → Trigger Events → Cron Trigger "*\/5 * * * *".
  */
 
+/**
+ * Types for `yarn type-check` only; as comments, the paste stays plain
+ * JavaScript. They tie the Worker to the snapshot contract of the app.
+ * @typedef {import('../../../src/types/snapshot').Sport} Sport
+ * @typedef {Pick<import('../../../src/types/snapshot').Match, 'status' | 'startsAt'>} Scheduled
+ * @typedef {Scheduled & { homeScore: number | null }} Game
+ * @typedef {{ slug: string, sport: Sport, matches?: Game[], sessions?: Scheduled[] }} Entry
+ * @typedef {{ generatedAt: string, competitions: Entry[], series?: Entry[] }} PublishedFile
+ * @typedef {{ mode: 'full' | 'live', competitions: string }} Decision
+ * @typedef {{ GITHUB_TOKEN: string }} Env
+ */
+
 const WORKFLOW_URL =
   'https://api.github.com/repos/sports-broadcasting-app/mobile-application/actions/workflows/data.yml/dispatches';
 const SNAPSHOT_URL = 'https://dados.onde-passa.app/onde-passa.json';
@@ -37,6 +49,7 @@ const LIVE_MIN_AGE_MS = 8 * MINUTE_MS;
 /** Without a morning run for this long (Worker down at 09:00), run one. */
 const MISSED_MORNING_MS = 26 * HOUR_MS;
 const WINDOW_MARGIN_MS = 30 * MINUTE_MS;
+/** @type {Record<Sport, number>} */
 const MATCH_LENGTH_MS = {
   volei: 2.5 * HOUR_MS,
   futebol: 2.5 * HOUR_MS,
@@ -48,7 +61,13 @@ const MATCH_LENGTH_MS = {
 /** A game still "live" this long after its expected end is stuck at the source. */
 const STALE_LIVE_MS = 6 * HOUR_MS;
 
-/** Whether a game is live or around its kickoff (mirror of scripts/schedule.ts). */
+/**
+ * Whether a game is live or around its kickoff (mirror of scripts/schedule.ts;
+ * src/__tests__/windowMirror.test.ts runs both over the same games).
+ * @param {Scheduled} match
+ * @param {Sport} sport
+ * @param {number} now
+ */
 function inLiveWindow(match, sport, now) {
   const start = Date.parse(match.startsAt);
   const length = MATCH_LENGTH_MS[sport] ?? 3 * HOUR_MS;
@@ -61,7 +80,12 @@ function inLiveWindow(match, sport, now) {
   );
 }
 
-/** Live games marked finished by the clock but still without a score. */
+/**
+ * Live games marked finished by the clock but still without a score.
+ * @param {Game} match
+ * @param {Sport} sport
+ * @param {number} now
+ */
 function waitingForScore(match, sport, now) {
   if (match.status !== 'finished' || match.homeScore !== null) return false;
   const end =
@@ -69,7 +93,12 @@ function waitingForScore(match, sport, now) {
   return now <= end + 3 * HOUR_MS;
 }
 
-/** What to run now: { mode, competitions } or null. Exported for tests. */
+/**
+ * What to run now, or null. Exported for tests.
+ * @param {PublishedFile | null} snapshot
+ * @param {number} now
+ * @returns {Decision | null}
+ */
 export function decide(snapshot, now) {
   const date = new Date(now);
   if (date.getUTCHours() === MORNING_UTC_HOUR && date.getUTCMinutes() < 5) {
@@ -101,6 +130,7 @@ export function decide(snapshot, now) {
   return null;
 }
 
+/** @returns {Promise<PublishedFile | null>} */
 async function loadSnapshot() {
   try {
     // A query string skips the 5-minute edge cache: the age must be exact.
@@ -112,6 +142,10 @@ async function loadSnapshot() {
   }
 }
 
+/**
+ * @param {Env} env
+ * @param {Decision} decision
+ */
 async function dispatch(env, { mode, competitions }) {
   const response = await fetch(WORKFLOW_URL, {
     method: 'POST',
@@ -135,6 +169,11 @@ async function dispatch(env, { mode, competitions }) {
 }
 
 export default {
+  /**
+   * @param {{ scheduledTime: number }} event
+   * @param {Env} env
+   * @param {{ waitUntil(promise: Promise<unknown>): void }} ctx
+   */
   async scheduled(event, env, ctx) {
     ctx.waitUntil(
       (async () => {

@@ -85,6 +85,12 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - Collectors take `{ live: true }` (only with `previous`, never offline): `collectMultisport` asks only rounds whose published games are in the window (`anyInLiveWindow`) and never does the full refresh; `collectSerieA` asks page + standings + those rounds, copies the published broadcasters into fetched games and reads match pages only for window games. Measured 2026-11-24: Brasileirão at 18:30 = 4 requests, NBA at 21:30 = 2.
 - Paid APIs in frequent runs: API-NBA asks a date again only after 30 min (`sourceChecks` on the competition, collector bookkeeping ignored by the app); Big Balls stays at ≤ 2 dates per run (≤ 1,000/day).
 
+## Guards on what a run publishes (PR #50)
+
+- `assertOldBuildsRead` (`scripts/oldBuilds.ts`), called in `scripts/collect.ts` after `assertValidSnapshot`: frozen readers of the released builds (`OLD_BUILDS`: first release on `superliga.json`, 1.0 to 1.2 and 1.3 to 1.4 on `onde-passa.json`, copied from `snapshotService.ts` at each version bump; 1.1 to 1.4 share the same checks, only the known slugs differ). A run that would publish something one of them rejects throws, so nothing is written. Frozen on purpose: change the snapshot, never the reader.
+- `staleCompetitions` (`scripts/freshness.ts`): `STALE_IN_WINDOW_MS` 1 h (only for games whose window opened over 1 h ago, since a Worker decision made just before the window may not have asked that source), `STALE_MS` 26 h. `collect.ts` logs `::warning title=Stale data::…` and appends `stale=…` to `GITHUB_OUTPUT`; the publish still happens. Tests: `freshness.test.ts`, `oldBuilds.test.ts`.
+- The window rule: `windowMirror.test.ts` compares `inLiveWindow` with the Worker's `decide` on a 5-minute grid of 15 h for every status and sport (`MATCH_LENGTH_MS` keys). A sport added to one side only fails it.
+
 ## Checking your work
 
 ```bash
