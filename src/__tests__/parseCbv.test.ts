@@ -133,10 +133,51 @@ describe('parseCbv', () => {
       'Superliga Feminina',
       '2026/27',
       toHtml(JSON.stringify([finishedRaw])),
-      toHtml(JSON.stringify([standingRow])),
+      toHtml(JSON.stringify([standingRow, { ...standingRow, teamId: '2' }])),
     );
     expect(competition.matches).toHaveLength(1);
-    expect(competition.teams).toHaveLength(1);
+    expect(competition.teams).toHaveLength(2);
+  });
+
+  it('leaves out a few games with a club outside the table', () => {
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const foreign = {
+      ...finishedRaw,
+      ChampionshipMatch_ID: 11,
+      GuestTeam_ID: 9,
+    };
+    const competition = buildCompetition(
+      'feminina',
+      'Superliga Feminina',
+      '2026/27',
+      toHtml(JSON.stringify([finishedRaw, foreign])),
+      toHtml(JSON.stringify([standingRow, { ...standingRow, teamId: '2' }])),
+    );
+    expect(competition.matches.map((m) => m.id)).toEqual(['10']);
+    expect(log).toHaveBeenCalledWith(
+      expect.stringContaining('match 11 (2026-10-21T02:00:00+02:00'),
+    );
+    expect(log.mock.calls[0][0]).toContain('team 9 not in the table');
+    log.mockRestore();
+  });
+
+  it('rejects the page when many games have clubs outside the table', () => {
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const foreign = [11, 12, 13, 14].map((id) => ({
+      ...finishedRaw,
+      ChampionshipMatch_ID: id,
+      GuestTeam_ID: 9,
+    }));
+    expect(() =>
+      buildCompetition(
+        'feminina',
+        'Superliga Feminina',
+        '2026/27',
+        toHtml(JSON.stringify(foreign)),
+        toHtml(JSON.stringify([standingRow])),
+      ),
+    ).toThrow(/4 matches with teams outside the table/);
+    log.mockRestore();
   });
 
   describe('assertValidSnapshot', () => {

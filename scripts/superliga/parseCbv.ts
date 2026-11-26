@@ -202,5 +202,44 @@ export function buildCompetition(
   const { teams, standings } = parseStandings(
     extractFlightPayload(standingsHtml),
   );
-  return { slug, sport: 'volei', name, season, teams, matches, standings };
+  return {
+    slug,
+    sport: 'volei',
+    name,
+    season,
+    teams,
+    matches: withoutForeignMatches(name, matches, teams),
+    standings,
+  };
+}
+
+/**
+ * A game with a club outside the table cannot be shown (the app needs both
+ * teams). One such game on the agenda page froze the women's Superliga for a
+ * night (match 2609562, Nov 2026), so a few are left out with a warning;
+ * more than that means the page changed, and the source is rejected.
+ */
+export const MAX_FOREIGN_MATCHES = 3;
+
+export function withoutForeignMatches(
+  name: string,
+  matches: Match[],
+  teams: Team[],
+): Match[] {
+  const ids = new Set(teams.map((team) => team.id));
+  const foreign = matches.filter(
+    (m) => !ids.has(m.homeTeamId) || !ids.has(m.awayTeamId),
+  );
+  if (foreign.length > MAX_FOREIGN_MATCHES) {
+    throw new Error(
+      `${name}: ${foreign.length} matches with teams outside the table`,
+    );
+  }
+  for (const m of foreign) {
+    const missing = [m.homeTeamId, m.awayTeamId].filter((id) => !ids.has(id));
+    console.log(
+      `::warning title=${name}::match ${m.id} (${m.startsAt}, ${m.roundLabel}) left out: team ${missing.join(', ')} not in the table`,
+    );
+  }
+  return matches.filter((m) => !foreign.includes(m));
 }

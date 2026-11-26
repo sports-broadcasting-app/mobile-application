@@ -55,6 +55,27 @@ describe('data trigger Worker', () => {
     ).toEqual({ mode: 'full', competitions: '' });
   });
 
+  it('stops for a game left live at the source long after its end', () => {
+    const game = {
+      status: 'live',
+      startsAt: '2026-11-24T18:30:00-03:00',
+      homeScore: 1,
+    };
+    // NFL: 4 h, plus 6 h of grace, ends 04:30 Brasília.
+    expect(
+      decide(
+        snapshot('2026-11-25T07:00:00Z', [game]),
+        at('2026-11-25T07:20:00Z'),
+      ),
+    ).toEqual({ mode: 'live', competitions: 'nfl' });
+    expect(
+      decide(
+        snapshot('2026-11-25T07:40:00Z', [game]),
+        at('2026-11-25T07:50:00Z'),
+      ),
+    ).toBeNull();
+  });
+
   it('keeps going for a game marked finished while its score is missing', () => {
     const game = {
       status: 'finished',
