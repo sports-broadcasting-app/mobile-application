@@ -63,6 +63,41 @@ export default [
     },
   },
   {
+    // Design system rules (CLAUDE.md, Theming), enforced here instead of only
+    // in review. Colors come from useTheme(); a palette that is data (team
+    // colors, the splash) lives in src/utils or src/constants.
+    files: ['src/components/**/*.tsx', 'src/screens/**/*.tsx', 'app/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/^(#[0-9a-fA-F]{3,8}|rgba?\\(|hsla?\\()/]',
+          message:
+            'Hardcoded color: use a token from useTheme() (src/constants/theme.ts).',
+        },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react-native',
+              importNames: ['Switch'],
+              message:
+                'Use ThemedSwitch: a bare Switch shows the system teal thumb on Android.',
+            },
+          ],
+        },
+      ],
+      'react-native/no-inline-styles': 'error',
+    },
+  },
+  {
+    // ThemedSwitch is the one place that wraps the bare Switch.
+    files: ['src/components/ThemedSwitch.tsx'],
+    rules: { 'no-restricted-imports': 'off' },
+  },
+  {
     // The Cloudflare Worker, pasted in the dashboard as plain JavaScript.
     files: ['infra/**/*.js'],
     languageOptions: {

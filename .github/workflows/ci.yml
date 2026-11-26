@@ -29,5 +29,14 @@ jobs:
       - run: yarn type-check
       - run: yarn lint --max-warnings 0
       - run: yarn format:check
-      # Includes the collector parsers against saved pages (no network).
-      - run: yarn test --ci
+      # Includes the collector parsers against saved pages (no network). The
+      # coverage floor is in jest.config.js (coverageThreshold).
+      - run: yarn test --ci --coverage --coverageReporters=text-summary
+      # The JavaScript bundles an `eas update` would ship: catches what only
+      # Metro sees, such as an import Jest resolves but the app cannot.
+      - run: npx expo export --platform ios --platform android --output-dir "$RUNNER_TEMP/export"
+      # Expo SDK packages behind what this SDK expects. A warning only: Expo
+      # publishes patches with no change here, and a required check must not
+      # turn red on its own. Fix with `npx expo install --fix` and a rebuild.
+      - name: Expo SDK versions
+        run: npx expo install --check || echo "::warning title=Expo SDK versions::Some packages are behind the SDK; run npx expo install --fix (native modules need a new build)"

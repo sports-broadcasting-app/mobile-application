@@ -200,7 +200,7 @@ eas update --channel production --message "description"    # Update production b
 - **Utility files**: camelCase (e.g., `championshipLabel.ts`)
 - **Test files**: Co-locate tests in `src/__tests__/` directory
 - **Styles**: Use `StyleSheet.create()` for layout/spacing; override colors via style arrays `[styles.card, { backgroundColor: colors.surface }]`
-- **Theming**: Always use `useTheme()` for colors — never hardcode color values
+- **Theming**: Always use `useTheme()` for colors — never hardcode color values. ESLint enforces it in `src/components`, `src/screens` and `app/` (hex/rgb/hsl literals, a bare `Switch` instead of `ThemedSwitch`, inline styles are errors); a palette that is data (team colors with `TEAM_TEXT_COLOR`, the splash) lives in `src/utils` or `src/constants`
 - **Functional components only**: No class components
 - **Named exports** for components; default export for route/screen components
 - **Expo Router hooks**: `useRouter()` for navigation, `useLocalSearchParams()` for route params, `<Stack.Screen options={...}/>` for dynamic headers
@@ -215,7 +215,7 @@ eas update --channel production --message "description"    # Update production b
 - Mock `expo-linking` in tests that use Linking: `jest.mock('expo-linking', () => ({ openURL: jest.fn() }))`
 - Test behavior, not implementation details
 - Run `yarn test` before committing (husky pre-commit runs lint-staged, which only lints and formats the staged files)
-- The CI job `checks` (`.github/workflows/ci.yml`) runs `type-check`, `lint --max-warnings 0`, `format:check` and `yarn test` on every PR; `main` only takes PRs with it green. Type-check and lint cover the Worker (`infra/**/*.js`, JSDoc types, `@eslint/js` recommended)
+- The CI job `checks` (`.github/workflows/ci.yml`) runs `type-check`, `lint --max-warnings 0`, `format:check`, `yarn test --coverage` and `expo export` (iOS and Android bundles) on every PR; `main` only takes PRs with it green. Type-check and lint cover the Worker (`infra/**/*.js`, JSDoc types, `@eslint/js` recommended). Coverage counts `src/` and `scripts/` and has a floor in `jest.config.js` (`coverageThreshold`, just under the current numbers): raise it when coverage climbs, never lower it to pass. `npx expo install --check` only warns (Expo ships patches with no change here)
 
 ## Theming (Dark Mode / Light Mode)
 

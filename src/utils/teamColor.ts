@@ -13,6 +13,9 @@ const PALETTE = [
   '#0e7490',
 ];
 
+/** Text over any color of the palette (all dark enough for white, both themes). */
+export const TEAM_TEXT_COLOR = '#fff';
+
 export function getTeamColor(id: string): string {
   const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return PALETTE[hash % PALETTE.length];

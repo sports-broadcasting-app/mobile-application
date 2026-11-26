@@ -25,6 +25,11 @@ By default review what changed: `git diff main...HEAD -- src/` plus uncommitted 
 8. **Keyboard and safe areas:** sheets or screens with a text field stay usable with the keyboard open (see `BottomSheet` `fullHeight`).
 9. **Tests:** a new component or hook has a test in `src/__tests__/`.
 
+## Enforced by ESLint (PR #51)
+
+- In `src/components`, `src/screens` and `app/`: color literals (`#hex`, `rgb(a)`, `hsl(a)`) are errors (`no-restricted-syntax`), importing `Switch` from `react-native` is an error outside `ThemedSwitch.tsx` (`no-restricted-imports`), and `react-native/no-inline-styles` is an error. Lint catches these now; review still checks what lint cannot: tokens used by role, touch targets, `maxFontScale`, `SectionHeader`/`Button` use.
+- Data palettes stay out of components: team colors and the text over them (`TEAM_TEXT_COLOR`) in `src/utils/teamColor.ts`, the splash color in `src/constants/splash.ts`.
+
 ## Blocks added with Formula 1 (PR #46)
 
 - `DayStrip` (week strip, `day-<offset>` test ids, dot = `primary`, selected day `primary`/`onPrimary`), `GrandPrixCard` (a weekend in the day list: no "×", one row per session, `BroadcasterPill`), `SessionRow` (the `MatchRow` of a session), `NewsCard` (a new competition, `primarySoft` with `primary` border, two `Button`s), `SessionRemindersSheet` (`ThemedSwitch` per session kind), `SegmentedChips` options with `sport` draw a `SportIcon` in the chip's text color. The flag icon (`automobilismo`) follows the sport icon rules: 2 pt stroke, filled = solid cloth with knocked-out squares.

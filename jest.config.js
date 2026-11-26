@@ -15,7 +15,14 @@ module.exports = {
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
+    // The collector: what every user ends up seeing.
+    'scripts/**/*.ts',
   ],
+  // A floor just under the coverage of Nov 2026 (85 / 78 / 82 / 87 %), so it
+  // cannot drop unnoticed. Raise it when it climbs; never lower it to pass.
+  coverageThreshold: {
+    global: { statements: 84, branches: 76, functions: 80, lines: 86 },
+  },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
