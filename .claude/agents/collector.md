@@ -73,10 +73,15 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - **`series`, never `competitions`:** builds up to 1.4 reject the whole file when an entry of `competitions` has no teams. `loadPrevious` merges `series` into `competitions`; `toPublished` (`scripts/fallback.ts`) splits teamless ones out; `assertValidSnapshot` throws if one lands in `competitions`; `assertValidCompetition` validates a series by sessions (unique ids, dates, weekend).
 - Check: `yarn jest src/__tests__/collectF1.test.ts`; real run of the F1 part only (no CBV): import `collectF1` with `postJson` and a fixed `now`.
 
+## CBV games with a club outside the table (PR #47)
+
+- 2026-11-26: the women's agenda page listed match 2609562 with a team id missing from the standings page; `assertValidCompetition` threw "unknown team", so the source fell back every run and the feminina data froze from 25/11 21:26 (live runs with only `feminina` then failed with "Every source failed").
+- `withoutForeignMatches` in `scripts/superliga/parseCbv.ts` (called by `buildCompetition`) drops such games with a `::warning title=Superliga …::match <id> (<startsAt>, <roundLabel>) left out: team <id> not in the table`; more than `MAX_FOREIGN_MATCHES` (3) throws, since then the page changed. Same idea as the multisport exhibition filter. The validator stays strict. Tests in `parseCbv.test.ts`. Read the warning in the run log to learn which team it was (never fetch cbv.com.br from a session).
+
 ## Live runs (`COLLECT_MODE=live`, `scripts/schedule.ts`)
 
 - `liveCompetitions(mode, list)` → the slugs to refresh (null = full run); `planSources` keeps unlisted sources from the published file (own `updatedAt`); a source never published is always collected.
-- `inLiveWindow(match, sport, now)`: live, or from 30 min before kickoff to 30 min after kickoff + `MATCH_LENGTH_MS[sport]` (volei/futebol 2.5 h, NFL 4 h, NBA 3 h). Mirrored in the Worker (`infra/cloudflare/data-trigger/worker.js`); change both.
+- `inLiveWindow(match, sport, now)`: live (until kickoff + `MATCH_LENGTH_MS[sport]` + `STALE_LIVE_MS` 6 h), or from 30 min before kickoff to 30 min after kickoff + `MATCH_LENGTH_MS[sport]` (volei/futebol 2.5 h, NFL 4 h, NBA 3 h, F1 2 h). Mirrored in the Worker (`infra/cloudflare/data-trigger/worker.js`); change both. The live cap exists because CBV left match 2585031 (24/11) `isLive` for days and the Worker ran live all night (PR #47); tests in `schedule.test.ts`, `dataTriggerWorker.test.ts`.
 - Collectors take `{ live: true }` (only with `previous`, never offline): `collectMultisport` asks only rounds whose published games are in the window (`anyInLiveWindow`) and never does the full refresh; `collectSerieA` asks page + standings + those rounds, copies the published broadcasters into fetched games and reads match pages only for window games. Measured 2026-11-24: Brasileirão at 18:30 = 4 requests, NBA at 21:30 = 2.
 - Paid APIs in frequent runs: API-NBA asks a date again only after 30 min (`sourceChecks` on the competition, collector bookkeeping ignored by the app); Big Balls stays at ≤ 2 dates per run (≤ 1,000/day).
 

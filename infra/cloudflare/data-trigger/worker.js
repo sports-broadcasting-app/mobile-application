@@ -8,7 +8,8 @@
  * - mode "full" at 06:00 Brasília (09:00 UTC): schedule, standings,
  *   broadcasters and the daily full refresh, for the whole day;
  * - mode "live" during game windows (30 min before kickoff until 30 min after
- *   the expected end, or while a game is live), about every 10 minutes, only
+ *   the expected end, or while a game is live, up to 6 h after its expected
+ *   end), about every 10 minutes, only
  *   for the competitions with a game in the window (Formula 1 sessions, in
  *   `series`, count as games);
  * - nothing otherwise.
@@ -44,14 +45,17 @@ const MATCH_LENGTH_MS = {
   automobilismo: 2 * HOUR_MS,
 };
 
+/** A game still "live" this long after its expected end is stuck at the source. */
+const STALE_LIVE_MS = 6 * HOUR_MS;
+
 /** Whether a game is live or around its kickoff (mirror of scripts/schedule.ts). */
 function inLiveWindow(match, sport, now) {
-  if (match.status === 'live') return true;
+  const start = Date.parse(match.startsAt);
+  const length = MATCH_LENGTH_MS[sport] ?? 3 * HOUR_MS;
+  if (match.status === 'live') return now <= start + length + STALE_LIVE_MS;
   if (match.status === 'postponed' || match.status === 'finished') {
     return false;
   }
-  const start = Date.parse(match.startsAt);
-  const length = MATCH_LENGTH_MS[sport] ?? 3 * HOUR_MS;
   return (
     now >= start - WINDOW_MARGIN_MS && now <= start + length + WINDOW_MARGIN_MS
   );

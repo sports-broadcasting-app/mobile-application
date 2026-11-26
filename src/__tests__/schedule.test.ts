@@ -44,9 +44,9 @@ describe('inLiveWindow', () => {
     ).toBe(false);
   });
 
-  it('follows the status: live always in, finished and postponed out', () => {
+  it('follows the status: live in past the end, finished and postponed out', () => {
     expect(
-      inLiveWindow(game('2026-11-22T10:00:00-03:00', 'live'), 'futebol', NOW),
+      inLiveWindow(game('2026-11-22T15:00:00-03:00', 'live'), 'futebol', NOW),
     ).toBe(true);
     expect(
       inLiveWindow(
@@ -61,6 +61,16 @@ describe('inLiveWindow', () => {
         'futebol',
         NOW,
       ),
+    ).toBe(false);
+  });
+
+  it('lets go of a game left live at the source', () => {
+    // Football: 2.5 h + 6 h after 11:00 is 19:30, before NOW (20:00).
+    expect(
+      inLiveWindow(game('2026-11-22T11:00:00-03:00', 'live'), 'futebol', NOW),
+    ).toBe(false);
+    expect(
+      inLiveWindow(game('2026-11-21T18:30:00-03:00', 'live'), 'volei', NOW),
     ).toBe(false);
   });
 

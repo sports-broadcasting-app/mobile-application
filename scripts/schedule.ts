@@ -18,6 +18,13 @@ export const MATCH_LENGTH_MS: Record<Sport, number> = {
   automobilismo: 2 * HOUR_MS,
 };
 
+/**
+ * A game still marked live this long after its expected end is stuck at the
+ * source (CBV left a Superliga game live for days, Nov 2026): it stops
+ * opening the window, or live runs would go on all night.
+ */
+export const STALE_LIVE_MS = 6 * HOUR_MS;
+
 /** A game or a race session: what the window needs from either. */
 type Scheduled = Pick<Match, 'status' | 'startsAt'>;
 
@@ -26,11 +33,13 @@ export function inLiveWindow(
   sport: Sport,
   now: number,
 ): boolean {
-  if (match.status === 'live') return true;
+  const start = Date.parse(match.startsAt);
+  if (match.status === 'live') {
+    return now <= start + MATCH_LENGTH_MS[sport] + STALE_LIVE_MS;
+  }
   if (match.status === 'postponed' || match.status === 'finished') {
     return false;
   }
-  const start = Date.parse(match.startsAt);
   return (
     now >= start - WINDOW_MARGIN_MS &&
     now <= start + MATCH_LENGTH_MS[sport] + WINDOW_MARGIN_MS
