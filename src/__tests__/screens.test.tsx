@@ -124,9 +124,27 @@ describe('HomeScreen', () => {
     render(<HomeScreen />);
     expect(screen.getByText('Jogos')).toBeTruthy();
     fireEvent.press(screen.getByText('Vôlei'));
-    expect(await screen.findAllByText('Vôlei')).toHaveLength(2);
+    // The sport's row gives way to its competitions: "Vôlei" is the title.
+    expect(await screen.findAllByText('Vôlei')).toHaveLength(1);
     fireEvent.press(await screen.findByText('Superliga M'));
     expect(await screen.findByText('Superliga Masculina')).toBeTruthy();
+  });
+
+  it('swaps the row for the competitions of a sport, with a way back', async () => {
+    render(<HomeScreen />);
+    fireEvent.press(await screen.findByText('Vôlei'));
+    expect(await screen.findByText('Superliga F')).toBeTruthy();
+    expect(screen.queryByText('Todas')).toBeNull();
+    expect(screen.queryByText('Brasileirão')).toBeNull();
+    // The picked competition again shows the whole sport.
+    fireEvent.press(screen.getByText('Superliga F'));
+    expect(await screen.findByText('Superliga Feminina')).toBeTruthy();
+    fireEvent.press(screen.getByText('Superliga F'));
+    expect(await screen.findByText('Vôlei')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('chips-back'));
+    expect(await screen.findByText('Jogos')).toBeTruthy();
+    expect(screen.getByText('Brasileirão')).toBeTruthy();
+    expect(screen.queryByTestId('chips-back')).toBeNull();
   });
 
   it('changes the day', async () => {

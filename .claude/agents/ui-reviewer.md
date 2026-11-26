@@ -28,7 +28,7 @@ By default review what changed: `git diff main...HEAD -- src/` plus uncommitted 
 ## Blocks added with Formula 1 (PR #46)
 
 - `DayStrip` (week strip, `day-<offset>` test ids, dot = `primary`, selected day `primary`/`onPrimary`), `GrandPrixCard` (a weekend in the day list: no "×", one row per session, `BroadcasterPill`), `SessionRow` (the `MatchRow` of a session), `NewsCard` (a new competition, `primarySoft` with `primary` border, two `Button`s), `SessionRemindersSheet` (`ThemedSwitch` per session kind), `SegmentedChips` options with `sport` draw a `SportIcon` in the chip's text color. The flag icon (`automobilismo`) follows the sport icon rules: 2 pt stroke, filled = solid cloth with knocked-out squares.
-- Tiny circles (under ~8 pt) are drawn with `react-native-svg`, not a `View` with `borderRadius`: Android 17 drew the strip's 6 pt dot as a square even with `radius.pill` (seen on the Pixel 6a emulator, PR #46). A scrollable `SegmentedChips` row scrolls the selected chip into view (it could sit past the edge when picked from the other tab).
+- Tiny circles (under ~8 pt) are drawn with `react-native-svg`, not a `View` with `borderRadius`: Android 17 drew the strip's 6 pt dot as a square even with `radius.pill` (seen on the Pixel 6a emulator, PR #46). A scrollable `SegmentedChips` row scrolls the selected chip into view (it could sit past the edge when picked from the other tab). The Home has one chip row: a sport with 2+ competitions swaps it for them, led by a 36 pt round back chip (`surfaceAlt`, `controlBorder`, `chevron-left`, hitSlop to 44, label "Voltar para todos os esportes"); never a second row (PR #49).
 
 ## Report
 

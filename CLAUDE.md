@@ -50,8 +50,9 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 ```
 Bottom Tabs:
   Jogos (/)                    → week strip (DayStrip: yesterday to +13 days, dot on days with something), one chip per
-                                 followed sport (named after the competition when it is the sport's only one; a sport
-                                 with 2+ adds a second row: Todas · Superliga M · Superliga F) + "Editar" (Suas competições sheet);
+                                 followed sport (named after the competition when it is the sport's only one; picking a sport
+                                 with 2+ swaps the same row for ‹ · Superliga M · Superliga F, ‹ back to Todos, the picked one
+                                 again back to the sport) + "Editar" (Suas competições sheet);
                                  "Todos" groups the day: Seus times first, then one section per competition (F1: GrandPrixCard);
                                  a day with fewer than 3 games is filled with the next games and sessions;
                                  NewsCard offers once a new competition of a sport the user does not follow
