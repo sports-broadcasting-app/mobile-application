@@ -30,6 +30,8 @@ interface SegmentedChipsProps<T extends string> {
   onSelect: (value: T) => void;
   /** Scrolls sideways instead of wrapping, for rows that keep growing. */
   scrollable?: boolean;
+  /** Shown before the chips, such as a button back to the previous row. */
+  leading?: ReactNode;
   /** Shown after the chips, such as a button that edits the options. */
   trailing?: ReactNode;
 }
@@ -45,6 +47,7 @@ export function SegmentedChips<T extends string>({
   selected,
   onSelect,
   scrollable = false,
+  leading,
   trailing,
 }: SegmentedChipsProps<T>) {
   const { colors } = useTheme();
@@ -119,6 +122,7 @@ export function SegmentedChips<T extends string>({
         style={styles.scroll}
         contentContainerStyle={styles.scrollRow}
       >
+        {leading}
         {chips}
         {trailing}
       </ScrollView>
@@ -126,6 +130,7 @@ export function SegmentedChips<T extends string>({
   }
   return (
     <View style={styles.row}>
+      {leading}
       {chips}
       {trailing}
     </View>

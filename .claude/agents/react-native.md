@@ -35,6 +35,12 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 - Platform files: `.web.tsx` variants exist for ads, notifications and splash. Keep them in sync when you change the native one.
 - Dependencies: `yarn expo install <pkg>` (picks the version for SDK 58; never npm). A package with native code, or a change to `app.json` plugins, needs a new `eas build` — say so; JS-only changes can ship with `eas update` (`runtimeVersion` follows the app version).
 
+## Home chip row (PR #49)
+
+- One row only. `HomeScreen` derives it from `filter`: a sport with 2+ followed competitions (`split`) shows `rowOptions` = its competitions, with a `leading` back chip (`chips-back`, `setFilter('todos')`); otherwise the sport chips (`filters`). No "Todas" chip: picking the sport already shows all of it; `onChip` turns a tap on the selected competition back into the sport.
+- `SegmentedChips` takes `leading` (before the chips) and gets `key={split ? filterSport : 'sports'}`, so a new row remounts scrolled to its start (its `chipX` map would otherwise scroll to a chip of the other row).
+- Tests: "swaps the row for the competitions of a sport, with a way back" in `screens.test.tsx`. Checked on the Pixel 6a emulator and the iPhone 17 Pro Max simulator.
+
 ## Checking your work
 
 ```bash

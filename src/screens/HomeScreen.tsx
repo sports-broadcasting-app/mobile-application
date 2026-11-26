@@ -288,17 +288,22 @@ export default function HomeScreen() {
         ? sportOf(filter)
         : filter;
   const sportCompetitions = filterSport ? followedIn(filterSport) : [];
+  // A sport with 2+ followed competitions swaps the row for them, with a
+  // back chip: picking the sport already shows all of it, so no "Todas".
   const split = filterSport !== null && sportCompetitions.length > 1;
-  const activeChip: CompetitionFilter = split ? filterSport : filter;
-  const subFilters: { value: CompetitionFilter; label: string }[] = split
-    ? [
-        { value: filterSport, label: 'Todas' },
-        ...sportCompetitions.map((slug) => ({
-          value: slug as CompetitionFilter,
-          label: getCompetition(slug).label,
-        })),
-      ]
-    : [];
+  const rowOptions: {
+    value: CompetitionFilter;
+    label: string;
+    sport?: Sport;
+  }[] = split
+    ? sportCompetitions.map((slug) => ({
+        value: slug as CompetitionFilter,
+        label: getCompetition(slug).label,
+      }))
+    : filters;
+  const onChip = (value: CompetitionFilter) =>
+    // The picked competition again goes back to the whole sport.
+    setFilter(split && value === filter ? (filterSport ?? 'todos') : value);
 
   const title =
     filter === 'todos'
@@ -343,10 +348,36 @@ export default function HomeScreen() {
         eventDays={eventDays}
       />
       <SegmentedChips
-        options={filters}
-        selected={activeChip}
-        onSelect={setFilter}
+        // A new row starts scrolled to its beginning, back chip in view.
+        key={split ? filterSport : 'sports'}
+        options={rowOptions}
+        selected={filter}
+        onSelect={onChip}
         scrollable
+        leading={
+          split && (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Voltar para todos os esportes"
+              testID="chips-back"
+              hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+              style={[
+                styles.backChip,
+                {
+                  backgroundColor: colors.surfaceAlt,
+                  borderColor: colors.controlBorder,
+                },
+              ]}
+              onPress={() => setFilter('todos')}
+            >
+              <MaterialCommunityIcons
+                name="chevron-left"
+                size={iconSize.md}
+                color={colors.textPrimary}
+              />
+            </TouchableOpacity>
+          )
+        }
         trailing={
           <TouchableOpacity
             accessibilityRole="button"
@@ -370,14 +401,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         }
       />
-      {split && (
-        <SegmentedChips
-          options={subFilters}
-          selected={filter}
-          onSelect={setFilter}
-          scrollable
-        />
-      )}
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -519,6 +542,14 @@ const styles = StyleSheet.create({
   sectionHeader: {
     paddingBottom: spacing.xs,
     paddingTop: spacing.md,
+  },
+  backChip: {
+    alignItems: 'center',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 36,
+    justifyContent: 'center',
+    width: 36,
   },
   editChip: {
     alignItems: 'center',
