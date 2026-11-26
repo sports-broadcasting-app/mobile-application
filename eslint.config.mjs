@@ -5,6 +5,8 @@ import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import reactNativePlugin from 'eslint-plugin-react-native';
 import prettierPlugin from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
+import js from '@eslint/js';
+import globals from 'globals';
 
 export default [
   {
@@ -58,6 +60,21 @@ export default [
       react: {
         version: 'detect',
       },
+    },
+  },
+  {
+    // The Cloudflare Worker, pasted in the dashboard as plain JavaScript.
+    files: ['infra/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: globals.serviceworker,
+    },
+    plugins: { prettier: prettierPlugin },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...prettierConfig.rules,
+      'prettier/prettier': 'error',
     },
   },
 ];

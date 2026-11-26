@@ -122,3 +122,15 @@ jobs:
           --endpoint-url "$R2_ENDPOINT"
           --content-type application/json
           --cache-control "public, max-age=300"
+
+      # The file is out either way. A competition that stopped updating (its
+      # source keeps failing and the fallback republishes old data, see
+      # scripts/freshness.ts) turns the run red, so the failure e-mail says
+      # so instead of a warning nobody reads.
+      - name: Check that every competition is fresh
+        if: ${{ !cancelled() && steps.collect.outputs.stale != '' }}
+        env:
+          STALE: ${{ steps.collect.outputs.stale }}
+        run: |
+          echo "::error title=Stale data::$STALE"
+          exit 1

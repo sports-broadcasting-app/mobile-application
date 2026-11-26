@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { CompetitionSlug } from '../src/types/snapshot';
 import { collectSerieA } from './brasileirao/collect.ts';
@@ -13,10 +13,12 @@ import {
   toPublished,
   type Source,
 } from './fallback.ts';
+import { staleCompetitions } from './freshness.ts';
 import { fetchText, postJson } from './http.ts';
 import { collectNba } from './nba/collect.ts';
 import { collectNfl } from './nfl/collect.ts';
 import { toLegacySnapshot } from './legacy.ts';
+import { assertOldBuildsRead } from './oldBuilds.ts';
 import { liveCompetitions, planSources } from './schedule.ts';
 import { collectSuperliga } from './superliga/collect.ts';
 import { assertValidSnapshot } from './validate.ts';
@@ -167,13 +169,29 @@ async function main(): Promise<void> {
 
   const snapshot = toPublished(new Date().toISOString(), competitions);
   assertValidSnapshot(snapshot);
+  const legacy = toLegacySnapshot(snapshot);
+  // Builds already installed cannot be fixed: never publish what they reject.
+  assertOldBuildsRead({
+    'onde-passa.json': snapshot,
+    'superliga.json': legacy,
+  });
 
   await mkdir(outputDir, { recursive: true });
   await writeFile(join(outputDir, SNAPSHOT_FILE), JSON.stringify(snapshot));
-  await writeFile(
-    join(outputDir, LEGACY_FILE),
-    JSON.stringify(toLegacySnapshot(snapshot)),
-  );
+  await writeFile(join(outputDir, LEGACY_FILE), JSON.stringify(legacy));
+
+  // Published anyway (the other sources are fresh); the workflow turns the
+  // run red after the upload, so a source stuck on old data is noticed.
+  const stale = staleCompetitions(competitions, Date.now());
+  if (stale.length > 0) {
+    console.log(`::warning title=Stale data::${stale.join('; ')}`);
+    if (process.env.GITHUB_OUTPUT) {
+      await appendFile(
+        process.env.GITHUB_OUTPUT,
+        `stale=${stale.join('; ')}\n`,
+      );
+    }
+  }
 
   for (const c of competitions) {
     console.log(

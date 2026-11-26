@@ -1,5 +1,9 @@
 // The Cloudflare Worker that starts the collection (pasted in the dashboard).
-import { decide } from '../../infra/cloudflare/data-trigger/worker.js';
+import { decide as workerDecide } from '../../infra/cloudflare/data-trigger/worker.js';
+
+// The Worker reads JSON: these tests hand it loose objects the same way.
+const decide = (file: unknown, now: number) =>
+  workerDecide(file as Parameters<typeof workerDecide>[0], now);
 
 const at = (iso: string) => Date.parse(iso);
 
