@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { AppText } from './AppText';
 import Svg, { Circle } from 'react-native-svg';
 import { useTheme } from '../contexts/ThemeContext';
 import {
@@ -8,7 +9,6 @@ import {
   getDayBounds,
 } from '../utils/date';
 import {
-  maxFontScale,
   radius,
   spacing,
   touchTarget,
@@ -73,24 +73,24 @@ export function DayStrip({
             style={[styles.day, active && { backgroundColor: colors.primary }]}
             onPress={() => onSelect(offset)}
           >
-            <Text
-              maxFontSizeMultiplier={maxFontScale}
+            <AppText
+              capped
               style={[
                 styles.label,
                 { color: active ? colors.onPrimary : colors.textSecondary },
               ]}
             >
               {formatStripDay(date, offset)}
-            </Text>
-            <Text
-              maxFontSizeMultiplier={maxFontScale}
+            </AppText>
+            <AppText
+              capped
               style={[
                 styles.number,
                 { color: active ? colors.onPrimary : colors.textPrimary },
               ]}
             >
               {date.getDate()}
-            </Text>
+            </AppText>
             {/* SVG: Android drew a View this small as a square. */}
             <Svg
               width={DOT}

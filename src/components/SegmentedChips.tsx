@@ -3,19 +3,14 @@ import {
   ScrollView,
   ScrollViewInstance,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AppText } from './AppText';
 import { useTheme } from '../contexts/ThemeContext';
 import { Sport } from '../types/snapshot';
 import { SportIcon } from './SportIcon';
-import {
-  maxFontScale,
-  radius,
-  spacing,
-  typography,
-} from '../constants/designTokens';
+import { radius, spacing, typography } from '../constants/designTokens';
 
 interface ChipOption<T extends string> {
   value: T;
@@ -97,12 +92,9 @@ export function SegmentedChips<T extends string>({
           ]}
         >
           {sport && <SportIcon sport={sport} size={16} color={textColor} />}
-          <Text
-            maxFontSizeMultiplier={maxFontScale}
-            style={[styles.label, { color: textColor }]}
-          >
+          <AppText capped style={[styles.label, { color: textColor }]}>
             {label}
-          </Text>
+          </AppText>
         </View>
         {active && (
           <View style={[styles.arrow, { borderLeftColor: colors.primary }]} />

@@ -1,46 +1,49 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import {
-  maxFontScale,
-  radius,
-  spacing,
-  typography,
-} from '../constants/designTokens';
+import { AppText } from './AppText';
+import { radius, spacing } from '../constants/designTokens';
 
 interface BroadcasterPillProps {
   name: string;
+  /** `sm` inside cards; `md` at the end of a one-line row. */
+  size?: 'sm' | 'md';
 }
 
+/** Where a game or session is shown: every channel pill of the app. */
 export const BroadcasterPill = React.memo(function BroadcasterPill({
   name,
+  size = 'sm',
 }: BroadcasterPillProps) {
   const { colors } = useTheme();
 
   return (
     <View
-      style={[styles.pill, { backgroundColor: colors.primarySoft }]}
+      style={[styles[size], { backgroundColor: colors.primarySoft }]}
       testID={`broadcaster-pill-${name}`}
     >
-      <Text
-        maxFontSizeMultiplier={maxFontScale}
+      <AppText
+        variant={size === 'sm' ? 'tiny' : 'captionStrong'}
+        tone="accent"
+        capped
         numberOfLines={1}
-        style={[styles.text, { color: colors.primary }]}
       >
         {name}
-      </Text>
+      </AppText>
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  pill: {
+  sm: {
     borderRadius: radius.md,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
-  text: {
-    fontSize: typography.size.xs,
-    fontWeight: typography.weight.semibold,
+  md: {
+    borderRadius: radius.sm + 2,
+    maxWidth: 96,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: spacing.xs,
   },
 });

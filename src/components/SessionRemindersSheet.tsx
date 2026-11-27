@@ -1,14 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { BottomSheet } from './BottomSheet';
 import { Button } from './Button';
-import { ThemedSwitch } from './ThemedSwitch';
+import { SwitchRow } from './SwitchRow';
 import { useNotifications } from '../contexts/NotificationsContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { SessionKind } from '../types/snapshot';
 import { promptExactAlarms } from '../utils/exactAlarmPrompt';
 import { REMINDER_KINDS } from '../utils/sessions';
 import { REMINDER_LEAD_MINUTES } from '../utils/reminders';
-import { spacing, typography } from '../constants/designTokens';
 
 interface SessionRemindersSheetProps {
   visible: boolean;
@@ -64,8 +63,14 @@ export function SessionRemindersSheet({
     >
       <View>
         {REMINDER_KINDS.map(({ kind, label, detail }, index) => (
-          <View
+          <SwitchRow
             key={kind}
+            label={label}
+            detail={detail}
+            value={enabled && sessionKinds.includes(kind)}
+            onValueChange={(on) => toggle(kind, on)}
+            accessibilityLabel={`Avisar antes de ${label}`}
+            testID={`session-kind-${kind}`}
             style={[
               styles.row,
               index > 0 && {
@@ -73,22 +78,7 @@ export function SessionRemindersSheet({
                 borderTopWidth: StyleSheet.hairlineWidth,
               },
             ]}
-          >
-            <View style={styles.text}>
-              <Text style={[styles.label, { color: colors.textPrimary }]}>
-                {label}
-              </Text>
-              <Text style={[styles.detail, { color: colors.textSecondary }]}>
-                {detail}
-              </Text>
-            </View>
-            <ThemedSwitch
-              accessibilityLabel={`Avisar antes de ${label}`}
-              testID={`session-kind-${kind}`}
-              value={enabled && sessionKinds.includes(kind)}
-              onValueChange={(on) => toggle(kind, on)}
-            />
-          </View>
+          />
         ))}
       </View>
     </BottomSheet>
@@ -97,20 +87,6 @@ export function SessionRemindersSheet({
 
 const styles = StyleSheet.create({
   row: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.md,
     minHeight: 58,
-  },
-  text: {
-    flex: 1,
-    gap: 2,
-  },
-  label: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
-  },
-  detail: {
-    fontSize: typography.size.sm,
   },
 });

@@ -1,11 +1,12 @@
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import * as Linking from 'expo-linking';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { AppText } from './AppText';
 import { useTheme } from '../contexts/ThemeContext';
 import { Button } from './Button';
 import { Match, Team } from '../types/snapshot';
+import { openLink } from '../utils/links';
 import { getChannelUrl } from '../utils/broadcast';
 import { getTeamName } from '../utils/teamName';
-import { radius, spacing, typography } from '../constants/designTokens';
+import { radius, spacing } from '../constants/designTokens';
 
 interface WatchSheetProps {
   match: Match | null;
@@ -50,7 +51,7 @@ export function WatchSheet({
 
   const open = (url: string) => {
     onClose();
-    Linking.openURL(url).catch(() => {});
+    openLink(url);
   };
 
   return (
@@ -67,12 +68,10 @@ export function WatchSheet({
       />
       <View style={[styles.sheet, { backgroundColor: colors.surface }]}>
         <View style={[styles.handle, { backgroundColor: colors.border }]} />
-        <Text style={[styles.title, { color: colors.textPrimary }]}>
-          {title}
-        </Text>
-        <Text style={[styles.message, { color: colors.textSecondary }]}>
+        <AppText variant="heading">{title}</AppText>
+        <AppText variant="body" tone="secondary" style={styles.message}>
           {message}
-        </Text>
+        </AppText>
 
         {channels.map(({ name, url }) =>
           url ? (
@@ -132,12 +131,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     width: 40,
   },
-  title: {
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.bold,
-  },
   message: {
-    fontSize: typography.size.body,
     marginBottom: spacing.sm,
   },
 });

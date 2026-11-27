@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { AppText } from './AppText';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomSheet } from './BottomSheet';
 import { SearchField } from './SearchField';
@@ -17,12 +12,7 @@ import { CompetitionSlug, Team } from '../types/snapshot';
 import { normalizeForSearch } from '../utils/search';
 import { getTeamName, teamSearchText } from '../utils/teamName';
 import { getCompetition } from '../constants/competitions';
-import {
-  iconSize,
-  radius,
-  spacing,
-  typography,
-} from '../constants/designTokens';
+import { iconSize, radius, spacing } from '../constants/designTokens';
 
 interface TeamSheetProps {
   /** The competition to pick a team in; null keeps the sheet closed. */
@@ -86,9 +76,9 @@ export function TeamSheet({ competition, onClose, onPicked }: TeamSheetProps) {
             style={[styles.none, { borderColor: colors.border }]}
             onPress={() => pick(null)}
           >
-            <Text style={[styles.noneText, { color: colors.textSecondary }]}>
+            <AppText variant="label" tone="secondary">
               Sem time nesta competição
-            </Text>
+            </AppText>
           </TouchableOpacity>
         ) : undefined
       }
@@ -113,12 +103,9 @@ export function TeamSheet({ competition, onClose, onPicked }: TeamSheetProps) {
               onPress={() => pick(team)}
             >
               <TeamCircle team={team} size={32} />
-              <Text
-                numberOfLines={1}
-                style={[styles.name, { color: colors.textPrimary }]}
-              >
+              <AppText variant="label" numberOfLines={1} style={styles.name}>
                 {getTeamName(team.name)}
-              </Text>
+              </AppText>
               <View
                 style={[
                   styles.radio,
@@ -139,9 +126,9 @@ export function TeamSheet({ competition, onClose, onPicked }: TeamSheetProps) {
           );
         })}
         {teams !== undefined && visibleTeams.length === 0 && (
-          <Text style={[styles.empty, { color: colors.textSecondary }]}>
+          <AppText variant="body" tone="secondary" style={styles.empty}>
             Nenhum time encontrado
-          </Text>
+          </AppText>
         )}
       </ScrollView>
     </BottomSheet>
@@ -162,8 +149,6 @@ const styles = StyleSheet.create({
   },
   name: {
     flex: 1,
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
   },
   radio: {
     alignItems: 'center',
@@ -173,7 +158,6 @@ const styles = StyleSheet.create({
     width: 22,
   },
   empty: {
-    fontSize: typography.size.body,
     paddingVertical: spacing.lg,
     textAlign: 'center',
   },
@@ -182,9 +166,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     paddingVertical: spacing.md,
-  },
-  noneText: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
   },
 });

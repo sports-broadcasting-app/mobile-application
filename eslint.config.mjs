@@ -86,6 +86,12 @@ export default [
               message:
                 'Use ThemedSwitch: a bare Switch shows the system teal thumb on Android.',
             },
+            {
+              name: 'react-native',
+              importNames: ['Text'],
+              message:
+                'Use AppText: a variant and a tone instead of a style with fontSize, fontWeight and a theme color.',
+            },
           ],
         },
       ],
@@ -93,8 +99,8 @@ export default [
     },
   },
   {
-    // ThemedSwitch is the one place that wraps the bare Switch.
-    files: ['src/components/ThemedSwitch.tsx'],
+    // The two wrappers: the only places that use the bare Switch and Text.
+    files: ['src/components/ThemedSwitch.tsx', 'src/components/AppText.tsx'],
     rules: { 'no-restricted-imports': 'off' },
   },
   {

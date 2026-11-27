@@ -2,10 +2,10 @@ import {
   Image,
   ImageSourcePropType,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AppText } from './AppText';
 import { ThemeMode, useTheme } from '../contexts/ThemeContext';
 import { radius, spacing, typography } from '../constants/designTokens';
 import darkPreview from '../../assets/appearance/dark.png';
@@ -59,14 +59,14 @@ export function AppearancePicker() {
             >
               <Image source={preview} style={styles.preview} />
             </View>
-            <Text
+            <AppText
               style={[
                 styles.label,
                 { color: selected ? colors.primary : colors.textSecondary },
               ]}
             >
               {label}
-            </Text>
+            </AppText>
           </TouchableOpacity>
         );
       })}

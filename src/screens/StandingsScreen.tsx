@@ -2,10 +2,10 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AppText } from '../components/AppText';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,7 +28,6 @@ import {
 } from '../constants/competitions';
 import {
   iconSize,
-  maxFontScale,
   radius,
   spacing,
   typography,
@@ -51,13 +50,13 @@ export default function StandingsScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <View style={styles.header}>
-        <Text
+        <AppText
+          variant="screenTitle"
           // Screen titles are already large; uncapped they broke mid-word.
-          maxFontSizeMultiplier={maxFontScale}
-          style={[styles.title, { color: colors.textPrimary }]}
+          capped
         >
           Classificação
-        </Text>
+        </AppText>
       </View>
       <SegmentedChips
         options={COMPETITION_OPTIONS.filter((option) =>
@@ -95,9 +94,9 @@ export default function StandingsScreen() {
               size={iconSize.md}
               color={colors.primary}
             />
-            <Text style={[styles.transfersText, { color: colors.textPrimary }]}>
+            <AppText variant="bodyStrong" style={styles.transfersText}>
               Transferências da temporada
-            </Text>
+            </AppText>
             <MaterialCommunityIcons
               name="chevron-right"
               size={iconSize.md}
@@ -106,12 +105,14 @@ export default function StandingsScreen() {
           </TouchableOpacity>
         )}
         {STANDINGS_COLUMNS[sport].length === 0 ? (
-          <Text
+          <AppText
+            variant="body"
+            tone="secondary"
             testID="standings-unavailable"
-            style={[styles.unavailable, { color: colors.textSecondary }]}
+            style={styles.unavailable}
           >
             {`A classificação da ${getCompetition(competition).name} ainda não está no app. O calendário e onde passa cada sessão estão em Jogos.`}
-          </Text>
+          </AppText>
         ) : (
           <StandingsList
             sport={sport}
@@ -122,17 +123,21 @@ export default function StandingsScreen() {
         )}
         <View style={styles.legend} testID="standings-legend">
           {STANDINGS_COLUMNS[sport].map(({ code, label }) => (
-            <Text
+            <AppText
+              variant="caption"
+              tone="tertiary"
               key={code}
-              style={[styles.legendItem, { color: colors.textTertiary }]}
+              style={styles.legendItem}
             >
-              <Text
-                style={[styles.legendCode, { color: colors.textSecondary }]}
+              <AppText
+                variant="caption"
+                tone="secondary"
+                style={styles.legendCode}
               >
                 {code}
-              </Text>
+              </AppText>
               {`  ${label}`}
-            </Text>
+            </AppText>
           ))}
         </View>
         <AdBanner />
@@ -149,10 +154,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
-  title: {
-    fontSize: typography.size.title,
-    fontWeight: typography.weight.bold,
-  },
   content: {
     paddingBottom: spacing.xxxl,
   },
@@ -167,11 +168,8 @@ const styles = StyleSheet.create({
   },
   transfersText: {
     flex: 1,
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.semibold,
   },
   unavailable: {
-    fontSize: typography.size.body,
     lineHeight: 20,
     padding: spacing.lg,
     textAlign: 'center',
@@ -184,7 +182,6 @@ const styles = StyleSheet.create({
   },
   legendItem: {
     width: '50%',
-    fontSize: typography.size.sm,
   },
   legendCode: {
     fontWeight: typography.weight.bold,

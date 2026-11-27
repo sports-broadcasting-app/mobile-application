@@ -1,20 +1,14 @@
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import * as Linking from 'expo-linking';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { Button } from '../components/Button';
+import { AppText } from '../components/AppText';
+import { Card } from '../components/Card';
+import { ChannelButtons } from '../components/ChannelButtons';
 import { SectionHeader } from '../components/SectionHeader';
 import { useNotifications } from '../contexts/NotificationsContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useGrandPrix } from '../hooks/useSuperliga';
 import { RaceSession } from '../types/snapshot';
-import { getChannelUrl } from '../utils/broadcast';
 import { promptExactAlarms } from '../utils/exactAlarmPrompt';
 import { formatDay, formatTime } from '../utils/date';
 import {
@@ -27,7 +21,6 @@ import {
 import { getCompetition } from '../constants/competitions';
 import {
   iconSize,
-  maxFontScale,
   radius,
   sectionLabel,
   spacing,
@@ -69,9 +62,7 @@ export default function GrandPrixScreen() {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Stack.Screen options={{ title: 'Fórmula 1' }} />
-        {!isLoading && (
-          <Text style={{ color: colors.textSecondary }}>GP não encontrado</Text>
-        )}
+        {!isLoading && <AppText tone="secondary">GP não encontrado</AppText>}
       </View>
     );
   }
@@ -104,16 +95,17 @@ export default function GrandPrixScreen() {
       <Stack.Screen options={{ title: competition.name }} />
 
       <View style={styles.header}>
-        <Text
+        <AppText
           accessibilityRole="header"
-          maxFontSizeMultiplier={maxFontScale}
-          style={[styles.title, { color: colors.textPrimary }]}
+          variant="screenTitle"
+          capped
+          style={styles.title}
         >
           {first.grandPrix}
-        </Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+        </AppText>
+        <AppText tone="secondary">
           {[first.circuit, formatWeekend(sessions)].filter(Boolean).join(' · ')}
-        </Text>
+        </AppText>
       </View>
 
       {next && (
@@ -128,52 +120,27 @@ export default function GrandPrixScreen() {
           ]}
         >
           <View style={styles.nextHead}>
-            <Text style={[sectionLabel, { color: colors.primary }]}>
+            <AppText tone="accent" style={sectionLabel}>
               {next.status === 'live' ? 'Ao vivo agora' : 'Próxima sessão'}
-            </Text>
-            <Text style={[styles.nextDay, { color: colors.textSecondary }]}>
+            </AppText>
+            <AppText variant="caption" tone="secondary">
               {formatDay(new Date(next.startsAt))}
-            </Text>
+            </AppText>
           </View>
           <View style={styles.nextWhat}>
-            <Text
-              maxFontSizeMultiplier={maxFontScale}
-              style={[styles.nextTime, { color: colors.textPrimary }]}
-            >
+            <AppText capped style={styles.nextTime}>
               {formatTime(next.startsAt)}
-            </Text>
-            <Text style={[styles.nextName, { color: colors.textPrimary }]}>
-              {next.name}
-            </Text>
+            </AppText>
+            <AppText variant="label">{next.name}</AppText>
           </View>
-          {next.channels.length === 0 ? (
-            <Text style={[styles.tbd, { color: colors.textSecondary }]}>
-              Transmissão a definir
-            </Text>
-          ) : (
-            next.channels.map((channel) => {
-              const url = getChannelUrl(channel);
-              return (
-                <Button
-                  key={channel}
-                  variant="secondary"
-                  icon="play"
-                  label={url ? `Assistir no ${channel}` : channel}
-                  disabled={!url}
-                  onPress={() => {
-                    if (url) Linking.openURL(url).catch(() => {});
-                  }}
-                />
-              );
-            })
-          )}
+          <ChannelButtons channels={next.channels} variant="secondary" />
         </View>
       )}
 
       {groupByDay(sessions).map(({ day, sessions: ofDay }) => (
         <View key={day}>
           <SectionHeader title={day} style={styles.dayHeader} />
-          <View style={[styles.group, { backgroundColor: colors.surface }]}>
+          <Card style={styles.group}>
             {ofDay.map((session, index) => {
               const remindable =
                 remindersSupported &&
@@ -195,24 +162,12 @@ export default function GrandPrixScreen() {
                     },
                   ]}
                 >
-                  <Text
-                    maxFontSizeMultiplier={maxFontScale}
-                    style={[styles.time, { color: colors.textPrimary }]}
-                  >
+                  <AppText variant="labelStrong" capped style={styles.time}>
                     {formatTime(session.startsAt)}
-                  </Text>
+                  </AppText>
                   <View style={styles.rowText}>
-                    <Text
-                      style={[styles.rowName, { color: colors.textPrimary }]}
-                    >
-                      {session.name}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.rowDetail,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
+                    <AppText variant="label">{session.name}</AppText>
+                    <AppText variant="caption" tone="secondary">
                       {session.status === 'live'
                         ? 'Ao vivo'
                         : session.status === 'finished'
@@ -220,7 +175,7 @@ export default function GrandPrixScreen() {
                           : session.channels.length > 0
                             ? session.channels.join(' · ')
                             : 'Transmissão a definir'}
-                    </Text>
+                    </AppText>
                   </View>
                   {remindable && (
                     <TouchableOpacity
@@ -241,7 +196,7 @@ export default function GrandPrixScreen() {
                 </View>
               );
             })}
-          </View>
+          </Card>
         </View>
       ))}
     </ScrollView>
@@ -263,11 +218,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
   },
   title: {
-    fontSize: typography.size.title,
     fontWeight: typography.weight.heavy,
-  },
-  subtitle: {
-    fontSize: typography.size.body,
   },
   next: {
     borderRadius: radius.lg,
@@ -282,9 +233,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  nextDay: {
-    fontSize: typography.size.sm,
-  },
   nextWhat: {
     alignItems: 'baseline',
     flexDirection: 'row',
@@ -295,20 +243,11 @@ const styles = StyleSheet.create({
     fontSize: typography.size.xxl + 4,
     fontWeight: typography.weight.heavy,
   },
-  nextName: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
-  },
-  tbd: {
-    fontSize: typography.size.body,
-  },
   dayHeader: {
     paddingTop: spacing.xl,
   },
   group: {
-    borderRadius: radius.lg,
     marginHorizontal: spacing.lg,
-    overflow: 'hidden',
   },
   row: {
     alignItems: 'center',
@@ -319,21 +258,12 @@ const styles = StyleSheet.create({
     paddingRight: spacing.xs,
   },
   time: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.bold,
     minWidth: 46,
   },
   rowText: {
     flex: 1,
     gap: 2,
     paddingVertical: spacing.sm,
-  },
-  rowName: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
-  },
-  rowDetail: {
-    fontSize: typography.size.sm,
   },
   bell: {
     alignItems: 'center',

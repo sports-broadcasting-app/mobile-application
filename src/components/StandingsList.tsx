@@ -1,17 +1,13 @@
 import { Fragment } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { AppText } from './AppText';
 import { useTheme } from '../contexts/ThemeContext';
 import { Sport, Standing, Team } from '../types/snapshot';
 import { describeStanding } from '../utils/accessibility';
 import { getTeamName } from '../utils/teamName';
 import { TeamCircle } from './TeamCircle';
 import { STANDINGS_COLUMNS } from '../constants/competitions';
-import {
-  maxFontScale,
-  sectionLabel,
-  spacing,
-  typography,
-} from '../constants/designTokens';
+import { sectionLabel, spacing, typography } from '../constants/designTokens';
 
 interface StandingsListProps {
   sport: Sport;
@@ -67,34 +63,34 @@ export function StandingsList({
           favorite && { backgroundColor: colors.primarySoft },
         ]}
       >
-        <Text
-          maxFontSizeMultiplier={maxFontScale}
-          style={[styles.position, { color: colors.textSecondary }]}
+        <AppText
+          variant="caption"
+          tone="secondary"
+          capped
+          style={styles.position}
         >
           {standing.position}
-        </Text>
+        </AppText>
         <View style={styles.team}>
           <TeamCircle team={team} size={24} />
-          <Text
-            maxFontSizeMultiplier={maxFontScale}
+          <AppText
+            variant="bodyStrong"
+            capped
             numberOfLines={1}
-            style={[styles.teamCode, { color: colors.textPrimary }]}
+            style={styles.teamCode}
           >
             {getTeamName(team.name)}
-          </Text>
+          </AppText>
         </View>
         {columns.map(({ code, value }, index) => (
-          <Text
-            maxFontSizeMultiplier={maxFontScale}
+          <AppText
+            variant="caption"
+            capped
             key={code}
-            style={[
-              styles.column,
-              { color: colors.textPrimary },
-              index === 0 && styles.points,
-            ]}
+            style={[styles.column, index === 0 && styles.points]}
           >
             {value(standing)}
-          </Text>
+          </AppText>
         ))}
       </View>
     );
@@ -108,35 +104,41 @@ export function StandingsList({
         importantForAccessibility="no-hide-descendants"
         style={[styles.row, { borderBottomColor: colors.border }]}
       >
-        <Text
-          maxFontSizeMultiplier={maxFontScale}
-          style={[styles.position, { color: colors.textTertiary }]}
+        <AppText
+          variant="caption"
+          tone="tertiary"
+          capped
+          style={styles.position}
         >
           #
-        </Text>
-        <Text
-          maxFontSizeMultiplier={maxFontScale}
-          style={[styles.headerTeam, { color: colors.textTertiary }]}
+        </AppText>
+        <AppText
+          variant="caption"
+          tone="tertiary"
+          capped
+          style={styles.headerTeam}
         >
           Time
-        </Text>
+        </AppText>
         {columns.map(({ code }) => (
-          <Text
-            maxFontSizeMultiplier={maxFontScale}
+          <AppText
+            variant="caption"
+            tone="tertiary"
+            capped
             key={code}
-            style={[styles.column, { color: colors.textTertiary }]}
+            style={styles.column}
           >
             {code}
-          </Text>
+          </AppText>
         ))}
       </View>
 
       {groupStandings(standings).map(({ name, rows }, index) => (
         <Fragment key={index}>
           {name !== undefined && (
-            <Text
+            <AppText
               accessibilityRole="header"
-              maxFontSizeMultiplier={maxFontScale}
+              capped
               testID={`standing-group-${name}`}
               style={[
                 styles.group,
@@ -147,7 +149,7 @@ export function StandingsList({
               ]}
             >
               {name}
-            </Text>
+            </AppText>
           )}
           {rows.map(renderRow)}
         </Fragment>
@@ -170,12 +172,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   position: {
-    fontSize: typography.size.sm,
     width: 24,
   },
   headerTeam: {
     flex: 1,
-    fontSize: typography.size.sm,
   },
   team: {
     alignItems: 'center',
@@ -185,11 +185,8 @@ const styles = StyleSheet.create({
   },
   teamCode: {
     flexShrink: 1,
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.semibold,
   },
   column: {
-    fontSize: typography.size.sm,
     textAlign: 'center',
     width: 32,
   },

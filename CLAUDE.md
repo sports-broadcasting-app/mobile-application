@@ -26,7 +26,7 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 │   ├── (tabs)/                 # Jogos, Classificacao, Configuracoes
 │   └── match/[id].tsx          # Match detail
 ├── src/
-│   ├── components/             # MatchCard, StandingsList, SegmentedChips, SyncGate, TeamCircle...
+│   ├── components/             # building blocks (AppText, Card, CheckRow, SwitchRow, ScheduleRow, ChannelButtons...) and MatchCard, StandingsList...
 │   ├── screens/                # Home, Standings, Favorites, MatchDetail
 │   ├── contexts/               # ThemeContext, SyncContext, FavoritesContext
 │   ├── data/database.ts        # SQLite schema and every query
@@ -261,19 +261,23 @@ Named by role, never by component (no `watchBtnBg`): reuse these before adding o
 | `error`             | `#dc2626`          | `#ef4444`             | Error text, "Adiado"                        |
 | `redCard`           | `#dc2626`          | `#ef4444`             | Red card in the match timeline              |
 | `overlayBg`         | black 50%          | black 70%             | Sheet backdrops                             |
-| `skeletonBase`      | `#e5e7eb`          | `#1b2740`             | Loading placeholders                        |
 | `statusBar`         | `dark`             | `light`               | StatusBar style (`ThemedStatusBar`)         |
 
 ### Tokens and building blocks (`src/constants/designTokens.ts`)
 
 - `spacing`, `radius`, `typography`, `iconSize`, `shadows`: use them instead of numbers.
 - `touchTarget` (44): minimum height of anything tappable; small links get `hitSlop`.
-- `maxFontScale` (1.3): pass as `maxFontSizeMultiplier` on text in fixed-width columns or one-line chips (`MatchRow`, `StandingsList`, `SegmentedChips`, pills, `MatchCard` names, score and buttons) and on screen titles. Free text scales without a cap and wraps; boxes that hold text use `minHeight`, not `height`.
+- `maxFontScale` (1.3): `<AppText capped>` on text in fixed-width columns or one-line chips (`ScheduleRow`, `StandingsList`, `SegmentedChips`, pills, `MatchCard` names, score and buttons) and on screen titles. Free text scales without a cap and wraps; boxes that hold text use `minHeight`, not `height`.
 - `sectionLabel`: the uppercase label style.
 - **`SectionHeader`** (`title`, `icon`, `detail`): every label above a group of rows. Don't restyle a `Text` for it.
 - **`Button`** (`primary` | `secondary` | `plain`, `icon`, `disabled`): every full-width action. Disabled primary turns `surfaceAlt`.
 - **`PeriodScoreboard`** / **`MatchTimeline`**: score by period (sets, halves) and the football goals/red cards timeline in the match detail.
 - **`ThemedSwitch`**: every switch. `primary` track; on Android the thumb is `controlThumb` (white) when on (a bare `Switch` shows the system teal there).
+- **`AppText`** (`variant`, `tone`, `capped`): every text. Variants by role (`caption`, `captionMedium`, `captionStrong`, `meta`, `body`, `bodyStrong`, `rowTitle`, `label`, `labelStrong`, `heading`, `screenTitle`, `tiny`) carry size and weight; `tone` is the theme color (`primary` default, `secondary`, `tertiary`, `accent`, `onPrimary`, `onLive`, `error`, `section`, `inherit` for text inside text). A one-off (the big score) takes the nearest variant plus `style`. ESLint forbids importing `Text` from `react-native` outside `AppText.tsx`. Text inside text needs the parent's `variant` (a nested `AppText` sets its own size).
+- **`Card`**: a group of rows on `surface`, `radius.lg`, clipped. **`IconTile`**: an icon on the `surfaceAlt` well (36 sheets, 34 settings, 40 onboarding, `active` = `primary`).
+- **`SwitchRow`** (`label`, `detail`, `leading`, switch) and its sport form **`SportToggleRow`**; **`CheckRow`** (`label`, `detail`, `checked`, `locked` with its hint) over **`Checkbox`** (`square` 24, `round` 22). The sheet, settings and onboarding are built from these.
+- **`ScheduleRow`** (when · title · `BroadcasterPill` or "a definir"): `MatchRow` and `SessionRow` are thin adapters over it. **`BroadcasterPill`** (`sm` in cards, `md` at the end of a row) is the only channel pill.
+- **`ChannelButtons`**: "Assistir no X" per channel or "Transmissão a definir"; links open through `openLink` / `openChannel` (`src/utils/links.ts`), never `Linking.openURL` directly.
 
 ## Git Workflow
 

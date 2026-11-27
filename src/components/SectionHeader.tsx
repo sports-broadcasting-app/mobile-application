@@ -1,7 +1,8 @@
 import { ReactNode } from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { AppText } from './AppText';
 import { useTheme } from '../contexts/ThemeContext';
-import { maxFontScale, sectionLabel, spacing } from '../constants/designTokens';
+import { sectionLabel, spacing } from '../constants/designTokens';
 
 interface SectionHeaderProps {
   title: string;
@@ -27,20 +28,17 @@ export function SectionHeader({
   return (
     <View style={[styles.row, style]} testID={testID}>
       {icon}
-      <Text
+      <AppText
         accessibilityRole="header"
-        maxFontSizeMultiplier={maxFontScale}
+        capped
         style={[sectionLabel, { color: colors.sectionHeaderText }]}
       >
         {title}
-      </Text>
+      </AppText>
       {detail !== undefined && (
-        <Text
-          maxFontSizeMultiplier={maxFontScale}
-          style={[styles.detail, { color: colors.textTertiary }]}
-        >
+        <AppText tone="tertiary" capped style={styles.detail}>
           · {detail}
-        </Text>
+        </AppText>
       )}
     </View>
   );

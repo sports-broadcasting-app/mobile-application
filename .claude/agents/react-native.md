@@ -37,9 +37,16 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 
 ## Home chip row (PR #49)
 
-- One row only. `HomeScreen` derives it from `filter`: a sport with 2+ followed competitions (`split`) shows `rowOptions` = its competitions, with a `leading` back chip (`chips-back`, `setFilter('todos')`); otherwise the sport chips (`filters`). No "Todas" chip: picking the sport already shows all of it; `onChip` turns a tap on the selected competition back into the sport.
-- `SegmentedChips` takes `leading` (before the chips) and gets `key={split ? filterSport : 'sports'}`, so a new row remounts scrolled to its start (its `chipX` map would otherwise scroll to a chip of the other row).
+- One row only, from `chipRow(filter, followedSports, followedIn)` in `src/utils/home.ts`: a sport with 2+ followed competitions (`split`) gives its competitions, with a `leading` back chip (`chips-back`, `setFilter('todos')`); otherwise the sport chips. No "Todas" chip: picking the sport already shows all of it; `pick` turns a tap on the selected competition back into the sport.
+- `SegmentedChips` takes `leading` (before the chips) and gets `key={chips.split ? chips.sport : 'sports'}`, so a new row remounts scrolled to its start (its `chipX` map would otherwise scroll to a chip of the other row).
 - Tests: "swaps the row for the competitions of a sport, with a way back" in `screens.test.tsx`. Checked on the Pixel 6a emulator and the iPhone 17 Pro Max simulator.
+
+## Components and the Jogos screen (PR #52)
+
+- Building blocks in `src/components` (CLAUDE.md, Tokens and building blocks): `AppText`, `Card`, `IconTile`, `Checkbox`, `CheckRow`, `SwitchRow`, `SportToggleRow`, `ScheduleRow`, `BroadcasterPill` (`sm`/`md`), `ChannelButtons`; links through `src/utils/links.ts`. Before writing a row, a pill or a text style, use one of these; a new pattern used twice becomes one.
+- `HomeScreen` only draws. Rules are pure functions in `src/utils/home.ts` (`scopeOf`, `buildSections`, `sectionDetail`, `mergeNext`, `chipRow`, `homeTitle`, `nextTitle`, `onlySessions`, `describeNext`; tests in `homeRules.test.ts`); the day's data comes from `useHomeDay(today, offset, filter, scope)` (`src/hooks/useHomeDay.ts`, `useHomeDay.test.ts`): sections, `isEmpty`, `next` (empty unless the day has under `FEW_MATCHES`), strip dots, `isFavoriteMatch`.
+- `MatchDetailScreen` has local `Section`/`TeamColumn`/`Info`; `SettingsScreen` a local `LinkRow` ("Seu time" / "Avisos"). `SkeletonBlock` and the `skeletonBase` token were removed (unused).
+- The Text→AppText move was a codemod; its traps, for the next one: a style shared by two texts lost `fontSize` when one became a variant (the standings cells went 12→14 until fixed), and a comment above `maxFontSizeMultiplier` swallowed `capped`. Check by screenshots diffed below the status bar, not by eye alone.
 
 ## Checking your work
 

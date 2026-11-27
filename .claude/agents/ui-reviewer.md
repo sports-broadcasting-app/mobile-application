@@ -27,8 +27,14 @@ By default review what changed: `git diff main...HEAD -- src/` plus uncommitted 
 
 ## Enforced by ESLint (PR #51)
 
-- In `src/components`, `src/screens` and `app/`: color literals (`#hex`, `rgb(a)`, `hsl(a)`) are errors (`no-restricted-syntax`), importing `Switch` from `react-native` is an error outside `ThemedSwitch.tsx` (`no-restricted-imports`), and `react-native/no-inline-styles` is an error. Lint catches these now; review still checks what lint cannot: tokens used by role, touch targets, `maxFontScale`, `SectionHeader`/`Button` use.
+- In `src/components`, `src/screens` and `app/`: color literals (`#hex`, `rgb(a)`, `hsl(a)`) are errors (`no-restricted-syntax`), importing `Switch` from `react-native` is an error outside `ThemedSwitch.tsx` (`no-restricted-imports`), and `react-native/no-inline-styles` is an error. Lint catches these now; review still checks what lint cannot: tokens used by role, touch targets, `capped`, `SectionHeader`/`Button` use.
 - Data palettes stay out of components: team colors and the text over them (`TEAM_TEXT_COLOR`) in `src/utils/teamColor.ts`, the splash color in `src/constants/splash.ts`.
+
+## Shared building blocks (PR #52)
+
+- Text is `AppText` only (`variant` + `tone` + `capped`); ESLint blocks `Text` from `react-native` outside `AppText.tsx`. Review: the variant fits the role (a row name is `label`, a date is `caption`), a nested text repeats the parent's `variant`, and `capped` sits on fixed-width or one-line text.
+- Rows with a switch are `SwitchRow`/`SportToggleRow`, rows with a checkbox `CheckRow`, one-line schedules `ScheduleRow`, channel pills `BroadcasterPill`, channel buttons `ChannelButtons`, grouped rows `Card`. A new screen that re-draws one of these by hand is a finding.
+- PR #52 kept every screen pixel-identical (before/after screenshots on both emulators, diffed below the status bar); the one layout difference is a 1 px shift of the sport name in Android settings.
 
 ## Blocks added with Formula 1 (PR #46)
 

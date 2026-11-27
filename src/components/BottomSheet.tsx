@@ -6,9 +6,9 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
+import { AppText } from './AppText';
 import { useTheme } from '../contexts/ThemeContext';
 import { radius, spacing, typography } from '../constants/designTokens';
 
@@ -96,20 +96,21 @@ export function BottomSheet({
         >
           <View style={[styles.handle, { backgroundColor: colors.border }]} />
           {eyebrow ? (
-            <Text style={[styles.eyebrow, { color: colors.primary }]}>
+            <AppText
+              variant="captionStrong"
+              tone="accent"
+              style={styles.eyebrow}
+            >
               {eyebrow}
-            </Text>
+            </AppText>
           ) : null}
-          <Text
-            accessibilityRole="header"
-            style={[styles.title, { color: colors.textPrimary }]}
-          >
+          <AppText accessibilityRole="header" style={styles.title}>
             {title}
-          </Text>
+          </AppText>
           {message ? (
-            <Text style={[styles.message, { color: colors.textSecondary }]}>
+            <AppText variant="body" tone="secondary" style={styles.message}>
               {message}
-            </Text>
+            </AppText>
           ) : null}
           <View style={styles.body}>{children}</View>
           {footer ? <View style={styles.footer}>{footer}</View> : null}
@@ -146,8 +147,6 @@ const styles = StyleSheet.create({
     width: 40,
   },
   eyebrow: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
     marginBottom: spacing.xs,
   },
   title: {
@@ -155,7 +154,6 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.heavy,
   },
   message: {
-    fontSize: typography.size.body,
     lineHeight: 20,
     marginTop: spacing.xs,
   },
