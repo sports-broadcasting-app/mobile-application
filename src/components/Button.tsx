@@ -21,7 +21,7 @@ interface ButtonProps {
    * (outlined). plain: dismissals such as "Cancelar" (text only).
    */
   variant?: 'primary' | 'secondary' | 'plain';
-  icon?: IconName;
+  icon?: IconName | undefined;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;

@@ -5,8 +5,9 @@ import type {
   CompetitionSlug,
 } from '../../src/types/snapshot';
 import { download } from '../http.ts';
+import { parseJson } from '../../src/utils/json.ts';
 import { buildCompetition } from './parseCbv.ts';
-import { resolveTransfers, type TransferFile } from './transfers.ts';
+import { resolveTransfers, toTransferFile } from './transfers.ts';
 
 /** Hand-curated from news articles; see the README. */
 const TRANSFERS_FILE = new URL('./transfers.json', import.meta.url);
@@ -52,9 +53,9 @@ async function collect(
 export async function collectSuperliga(
   fixturesDir?: string,
 ): Promise<CompetitionData[]> {
-  const transferFile = JSON.parse(
-    await readFile(TRANSFERS_FILE, 'utf8'),
-  ) as TransferFile;
+  const transferFile = toTransferFile(
+    parseJson(await readFile(TRANSFERS_FILE, 'utf8')),
+  );
 
   const competitions: CompetitionData[] = [];
   for (const { slug, name, path } of COMPETITIONS) {

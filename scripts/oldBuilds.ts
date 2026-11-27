@@ -11,28 +11,29 @@
  * `series` because of the `teams` rule below.
  */
 
+import { asList, asObject } from '../src/utils/json.ts';
+
 interface OldBuild {
   builds: string;
   file: 'onde-passa.json' | 'superliga.json';
   reads: (data: unknown) => boolean;
 }
 
-type Loose = {
-  version?: unknown;
-  competitions?: { slug?: unknown; teams?: unknown[]; matches?: unknown }[];
+/** What both checks ask of each competition: teams and a list of matches. */
+const hasTeamsAndMatches = (competition: unknown) => {
+  const { teams, matches } = asObject(competition);
+  return asList(teams).length > 0 && Array.isArray(matches);
 };
 
 /** Version 2 builds: every competition needs teams; one known slug must stay. */
 function version2(known: string[]) {
   return (data: unknown): boolean => {
-    const snapshot = data as Loose | null;
+    const { version, competitions } = asObject(data);
     return (
-      snapshot?.version === 2 &&
-      Array.isArray(snapshot.competitions) &&
-      snapshot.competitions.every(
-        (c) => (c.teams?.length ?? 0) > 0 && Array.isArray(c.matches),
-      ) &&
-      snapshot.competitions.some((c) => known.includes(c.slug as string))
+      version === 2 &&
+      Array.isArray(competitions) &&
+      competitions.every(hasTeamsAndMatches) &&
+      competitions.some((c) => known.includes(String(asObject(c).slug)))
     );
   };
 }
@@ -43,14 +44,12 @@ export const OLD_BUILDS: OldBuild[] = [
     builds: 'first release',
     file: 'superliga.json',
     reads: (data) => {
-      const snapshot = data as Loose | null;
+      const { version, competitions } = asObject(data);
       return (
-        snapshot?.version === 1 &&
-        Array.isArray(snapshot.competitions) &&
-        snapshot.competitions.length === 2 &&
-        snapshot.competitions.every(
-          (c) => (c.teams?.length ?? 0) > 0 && Array.isArray(c.matches),
-        )
+        version === 1 &&
+        Array.isArray(competitions) &&
+        competitions.length === 2 &&
+        competitions.every(hasTeamsAndMatches)
       );
     },
   },

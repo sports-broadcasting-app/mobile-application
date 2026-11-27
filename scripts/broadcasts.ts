@@ -1,10 +1,6 @@
-import type {
-  CompetitionData,
-  CompetitionSlug,
-  Match,
-  Team,
-} from '../src/types/snapshot';
+import type { CompetitionData, Match, Team } from '../src/types/snapshot';
 import { normalizeForSearch } from '../src/utils/search.ts';
+import { asList, asObject, objectsOf } from '../src/utils/json.ts';
 
 /**
  * Broadcasters the sources do not list, curated by hand in broadcasts.json.
@@ -23,7 +19,31 @@ export interface BroadcastEntry {
   source: string;
 }
 
-export type BroadcastFile = Partial<Record<CompetitionSlug, BroadcastEntry[]>>;
+/** By competition slug; an unknown one is a warning in `applyBroadcasts`. */
+export type BroadcastFile = Partial<Record<string, BroadcastEntry[]>>;
+
+const textOf = (value: unknown): string =>
+  typeof value === 'string' ? value : '';
+
+/**
+ * broadcasts.json read field by field. A field of the wrong kind reads as
+ * empty, and `applyBroadcasts` then rejects that line (and the run).
+ */
+export function toBroadcastFile(value: unknown): BroadcastFile {
+  const file: BroadcastFile = {};
+  for (const [slug, lines] of Object.entries(asObject(value))) {
+    file[slug] = objectsOf(lines).map((line) => ({
+      date: textOf(line.date),
+      home: textOf(line.home),
+      away: textOf(line.away),
+      channels: asList(line.channels).filter(
+        (channel): channel is string => typeof channel === 'string',
+      ),
+      source: textOf(line.source),
+    }));
+  }
+  return file;
+}
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -73,10 +93,7 @@ export function applyBroadcasts(
   file: BroadcastFile,
 ): string[] {
   const log: string[] = [];
-  for (const [slug, entries] of Object.entries(file) as [
-    string,
-    BroadcastEntry[],
-  ][]) {
+  for (const [slug, entries = []] of Object.entries(file)) {
     const competition = competitions.find((c) => c.slug === slug);
     if (!competition) {
       log.push(`::warning::broadcasts.json: no competition "${slug}"`);

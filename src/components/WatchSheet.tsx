@@ -10,8 +10,8 @@ import { radius, spacing } from '../constants/designTokens';
 
 interface WatchSheetProps {
   match: Match | null;
-  homeTeam?: Team;
-  awayTeam?: Team;
+  homeTeam?: Team | undefined;
+  awayTeam?: Team | undefined;
   onClose: () => void;
   onDetails: (match: Match) => void;
 }

@@ -91,6 +91,13 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - `staleCompetitions` (`scripts/freshness.ts`): `STALE_IN_WINDOW_MS` 1 h (only for games whose window opened over 1 h ago, since a Worker decision made just before the window may not have asked that source), `STALE_MS` 26 h. `collect.ts` logs `::warning title=Stale data::…` and appends `stale=…` to `GITHUB_OUTPUT`; the publish still happens. Tests: `freshness.test.ts`, `oldBuilds.test.ts`.
 - The window rule: `windowMirror.test.ts` compares `inLiveWindow` with the Worker's `decide` on a 5-minute grid of 15 h for every status and sport (`MATCH_LENGTH_MS` keys). A sport added to one side only fails it.
 
+## Typed reading, no casts (PR #53)
+
+- Every parser reads `unknown` through `src/utils/json.ts` (`parseJson`, `asObject`, `objectsOf`, `asList`, `toText`, `toNumber`, `readBalanced`), shared with the app; the local copies in the CBV and ge parsers are gone. The NBA/NFL/F1 parsers keep their own `toText` (they trim, and NBA/NFL return `''`).
+- `scripts/lines.ts`: `sum` and `pairLines` (two teams' points per period, null when the counts differ), used by both score enrichers.
+- The published file is checked with `isSnapshot` (`src/utils/guards.ts`) in `loadPrevious` and `applyTransfers`; `transfers.json` and `broadcasts.json` go through `toTransferFile` / `toBroadcastFile` (wrong-kind fields read as empty, so `resolveTransfers` / `applyBroadcasts` reject the line). Their types are keyed by `string`. Optional snapshot fields (`group`, `fullRefreshAt`, `transfers`) are spread in only when present.
+- Checked on real data: the published file of 2026-11-27 passes `isSnapshot` and every row guard (100%), and both curated files resolve completely.
+
 ## Checking your work
 
 ```bash

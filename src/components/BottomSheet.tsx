@@ -16,12 +16,12 @@ interface BottomSheetProps {
   visible: boolean;
   onClose: () => void;
   /** Small line above the title, such as the competition. */
-  eyebrow?: string;
+  eyebrow?: string | undefined;
   title: string;
-  message?: string;
+  message?: string | undefined;
   /** Fills the space between the header and the footer; may scroll. */
   children: ReactNode;
-  footer?: ReactNode;
+  footer?: ReactNode | undefined;
   /**
    * Keeps the sheet at its full height instead of fitting the content, for
    * a list filtered by a search field: it would shrink under the keyboard.

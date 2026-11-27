@@ -43,8 +43,10 @@ describe('buildReminders', () => {
       teamsById,
       Date.parse(match.startsAt) - 24 * 60 * 60 * 1000,
     );
-    expect(reminder.title).toBe('Flamengo x Palmeiras em 30 min');
-    expect(reminder.body).toBe('Brasileirão · 18:30 · Transmissão a confirmar');
+    expect(reminder!.title).toBe('Flamengo x Palmeiras em 30 min');
+    expect(reminder!.body).toBe(
+      'Brasileirão · 18:30 · Transmissão a confirmar',
+    );
   });
 
   it('skips matches that are not scheduled or too close to warn', () => {
@@ -77,7 +79,7 @@ describe('buildReminders', () => {
     }));
     const reminders = buildReminders(matches, teamsById, longBefore);
     expect(reminders).toHaveLength(MAX_REMINDERS);
-    expect(reminders[0].matchId).toBe('64');
-    expect(reminders[0].fireAt).toBeLessThan(reminders[1].fireAt);
+    expect(reminders[0]!.matchId).toBe('64');
+    expect(reminders[0]!.fireAt).toBeLessThan(reminders[1]!.fireAt);
   });
 });

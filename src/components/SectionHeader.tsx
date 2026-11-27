@@ -7,12 +7,12 @@ import { sectionLabel, spacing } from '../constants/designTokens';
 interface SectionHeaderProps {
   title: string;
   /** Drawn before the title, such as a star or a sport icon. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** Shown after the title as "· 3 jogos". */
-  detail?: string;
+  detail?: string | undefined;
   /** Spacing around it; the default fits a full-width screen list. */
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
+  style?: StyleProp<ViewStyle> | undefined;
+  testID?: string | undefined;
 }
 
 /** The uppercase label above a group of rows, the same on every screen. */

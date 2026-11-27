@@ -55,7 +55,7 @@ export function formatRelativeSync(syncedAt: number, now: number): string {
 export function formatStripDay(date: Date, offset: number): string {
   if (offset === 0) return 'Hoje';
   if (offset === -1) return 'Ontem';
-  const short = WEEKDAYS[date.getDay()];
+  const short = WEEKDAYS[date.getDay()] ?? '';
   return short.charAt(0).toUpperCase() + short.slice(1);
 }
 

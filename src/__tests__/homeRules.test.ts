@@ -35,13 +35,13 @@ describe('Jogos rules', () => {
       filter: 'todos',
       scope: ALL,
       matches: [scheduledMatch, footballMatch],
-      sessions: [raceSessions[0]],
+      sessions: [raceSessions[0]!],
       isFavoriteMatch: (match) => match.id === scheduledMatch.id,
     });
     expect(sections.map((s) => s.key)).toEqual(['mine', 'serie-a', 'f1']);
-    expect(sectionDetail(sections[0])).toBeUndefined();
-    expect(sectionDetail(sections[1])).toBe('1 jogo');
-    expect(sectionDetail(sections[2])).toBe('1 sessão');
+    expect(sectionDetail(sections[0]!)).toBeUndefined();
+    expect(sectionDetail(sections[1]!)).toBe('1 jogo');
+    expect(sectionDetail(sections[2]!)).toBe('1 sessão');
   });
 
   it('shows one unnamed section for a single competition', () => {
@@ -59,7 +59,7 @@ describe('Jogos rules', () => {
     const next = mergeNext([footballMatch], raceSessions, 2);
     expect(next.map((item) => (item.match ?? item.session).id)).toEqual([
       footballMatch.id,
-      raceSessions[0].id,
+      raceSessions[0]!.id,
     ]);
   });
 

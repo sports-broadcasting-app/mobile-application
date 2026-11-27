@@ -180,13 +180,13 @@ describe('addNflScores', () => {
       now: NOW,
       fetchText: jest.fn(async () => answer([bbGame({})])),
     });
-    expect(nfl.matches[0].periodScores).toEqual(quarters);
+    expect(nfl.matches[0]!.periodScores).toEqual(quarters);
 
     const fetchText = jest.fn();
     const next = competition([{ ...match }]);
     await addNflScores(next, nfl, { key: 'k', now: NOW, fetchText });
     expect(fetchText).not.toHaveBeenCalled();
-    expect(next.matches[0].periodScores).toEqual(quarters);
+    expect(next.matches[0]!.periodScores).toEqual(quarters);
   });
 
   it('does nothing without a key and never throws on an API error', async () => {
@@ -209,7 +209,7 @@ describe('addNflScores', () => {
         }),
       }),
     ).resolves.toContain('0 live');
-    expect(nfl.matches[0].homeScore).toBeNull();
+    expect(nfl.matches[0]!.homeScore).toBeNull();
   });
 
   it('gives a finished game its final score when ge has none yet', async () => {

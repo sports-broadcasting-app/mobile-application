@@ -112,7 +112,7 @@ describe('parseGe', () => {
       NOW,
     );
     expect(matches).toHaveLength(1);
-    expect(matches[0].match).toEqual({
+    expect(matches[0]!.match).toEqual({
       id: '346365',
       competition: 'serie-a',
       startsAt: '2026-11-14T18:30:00-03:00',
@@ -128,7 +128,7 @@ describe('parseGe', () => {
       venue: 'Maião',
       city: null,
     });
-    expect(matches[0].pageUrl).toContain('mirassol-atletico-mg');
+    expect(matches[0]!.pageUrl).toContain('mirassol-atletico-mg');
     expect(teams.map((team) => team.code)).toEqual(['MIR', 'CAM']);
   });
 
@@ -288,7 +288,7 @@ describe('parseEvents', () => {
 
   it('copies only the whitelisted fields', () => {
     const [event] = parseEvents(page, '262', '293') ?? [];
-    expect(Object.keys(event).sort()).toEqual([
+    expect(Object.keys(event!).sort()).toEqual([
       'minute',
       'period',
       'player',

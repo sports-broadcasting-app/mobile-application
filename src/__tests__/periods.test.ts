@@ -23,6 +23,6 @@ describe('quarterColumns', () => {
       q(9, 4),
     ]);
     expect(two.slice(4).map((c) => c.label)).toEqual(['Pr 1', 'Pr 2']);
-    expect(two[5].name).toBe('2ª prorrogação');
+    expect(two[5]!.name).toBe('2ª prorrogação');
   });
 });

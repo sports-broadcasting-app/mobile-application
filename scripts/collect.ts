@@ -1,10 +1,11 @@
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { CompetitionSlug } from '../src/types/snapshot';
+import { parseJson } from '../src/utils/json.ts';
 import { collectSerieA } from './brasileirao/collect.ts';
 import { addNbaQuarters } from './apiSports/nba.ts';
 import { addNflScores } from './bigBalls/nfl.ts';
-import { applyBroadcasts, type BroadcastFile } from './broadcasts.ts';
+import { applyBroadcasts, toBroadcastFile } from './broadcasts.ts';
 import { collectF1 } from './f1/collect.ts';
 import { AGENDA_QUERY } from './f1/parseGe.ts';
 import {
@@ -154,15 +155,15 @@ async function main(): Promise<void> {
     previous,
   );
   // Same order as the sources, whichever were asked.
-  const order = sources.flatMap((s) => s.slugs as string[]);
+  const order: string[] = sources.flatMap((s) => s.slugs);
   const competitions = [...collected, ...plan.kept].sort(
     (a, b) => order.indexOf(a.slug) - order.indexOf(b.slug),
   );
   // On every run, kept competitions included: a live run asks ge for the
   // round again, and ge has no streaming broadcasters.
-  const broadcasts = JSON.parse(
-    await readFile(BROADCASTS_FILE, 'utf8'),
-  ) as BroadcastFile;
+  const broadcasts = toBroadcastFile(
+    parseJson(await readFile(BROADCASTS_FILE, 'utf8')),
+  );
   for (const line of applyBroadcasts(competitions, broadcasts)) {
     console.log(line);
   }

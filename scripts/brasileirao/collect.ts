@@ -1,10 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type {
-  CompetitionData,
-  MatchEvent,
-  Team,
-} from '../../src/types/snapshot';
+import type { CompetitionData, MatchEvent } from '../../src/types/snapshot';
 import { download } from '../http.ts';
 import { inLiveWindow } from '../schedule.ts';
 import {
@@ -170,7 +166,9 @@ export async function collectSerieA(
 
     const html = fixturesDir
       ? await readFixture(fixturesDir, matchPageFile(match.id))
-      : await download(entry.pageUrl as string);
+      : entry.pageUrl
+        ? await download(entry.pageUrl)
+        : null;
     if (html === null) continue;
     if (channels) match.channels = parseChannels(html);
     if (!events) continue;
@@ -205,7 +203,7 @@ export async function collectSerieA(
     sport: 'futebol',
     name: NAME,
     season,
-    teams: [...knownTeams.values()] as Team[],
+    teams: [...knownTeams.values()],
     matches,
     standings,
   };

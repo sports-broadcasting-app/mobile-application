@@ -13,7 +13,7 @@ interface SportIconProps {
    */
   filled?: boolean;
   knockoutColor?: string;
-  testID?: string;
+  testID?: string | undefined;
 }
 
 // 24 pt grid, 2 pt stroke, round ends: the same language as the tab icons.
@@ -107,7 +107,7 @@ export function SportIcon({
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      testID={testID}
+      {...(testID ? { testID } : {})}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >

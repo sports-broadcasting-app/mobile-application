@@ -7,15 +7,15 @@ import { spacing } from '../constants/designTokens';
 interface SwitchRowProps {
   label: string;
   /** Under the label: what the switch does, or what it covers. */
-  detail?: string | null;
+  detail?: string | null | undefined;
   value: boolean;
   onValueChange: (next: boolean) => void;
   disabled?: boolean;
   accessibilityLabel: string;
   /** On the switch, where tests and screen readers act. */
-  testID?: string;
+  testID?: string | undefined;
   /** Before the label, such as a sport icon. */
-  leading?: ReactNode;
+  leading?: ReactNode | undefined;
   labelVariant?: TextVariant;
   labelTone?: TextTone;
   /** Height and padding of the list it sits in. */

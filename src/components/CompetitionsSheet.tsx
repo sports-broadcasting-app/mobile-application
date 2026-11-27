@@ -64,7 +64,9 @@ export function CompetitionsSheet({
           const own = competitionsOfSport(sport);
           if (own.length === 0) return null;
           const on = sportOn(sport);
-          const single = own.length === 1 ? getCompetition(own[0]) : null;
+          const [only, ...others] = own;
+          const single =
+            only && others.length === 0 ? getCompetition(only) : null;
           return (
             <View
               key={sport}

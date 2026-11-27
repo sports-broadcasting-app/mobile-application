@@ -64,7 +64,7 @@ describe('staleCompetitions', () => {
     const series = {
       ...buildF1Series([
         {
-          ...buildF1Series().sessions![0],
+          ...buildF1Series().sessions![0]!,
           startsAt: '2026-11-26T19:30:00-03:00',
         },
       ]),

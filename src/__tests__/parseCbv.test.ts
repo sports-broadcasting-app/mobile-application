@@ -76,7 +76,7 @@ describe('parseCbv', () => {
       channels: ['SporTV 2'],
       venue: 'ARENA "A"',
     });
-    expect(match.setScores).toHaveLength(3);
+    expect(match!.setScores).toHaveLength(3);
     expect(JSON.stringify(match)).not.toContain('contato@clube.com');
   });
 
@@ -85,7 +85,7 @@ describe('parseCbv', () => {
     const payload = JSON.stringify([noChannel, finishedRaw]);
     const matches = parseMatches(payload, 'masculina');
     expect(matches).toHaveLength(1);
-    expect(matches[0].channels).toEqual(['SporTV 2']);
+    expect(matches[0]!.channels).toEqual(['SporTV 2']);
   });
 
   it('hides sets and score of a match that did not start', () => {
@@ -96,16 +96,16 @@ describe('parseCbv', () => {
       WonSetGuest: 0,
     };
     const [match] = parseMatches(JSON.stringify([raw]), 'masculina');
-    expect(match.status).toBe('scheduled');
-    expect(match.homeScore).toBeNull();
-    expect(match.setScores).toEqual([]);
+    expect(match!.status).toBe('scheduled');
+    expect(match!.homeScore).toBeNull();
+    expect(match!.setScores).toEqual([]);
   });
 
   it('flags postponed matches and tolerates a missing broadcast', () => {
     const postponed = { ...finishedRaw, custom_data: {}, postponed: true };
     const [match] = parseMatches(JSON.stringify([postponed]), 'feminina');
-    expect(match.status).toBe('postponed');
-    expect(match.channels).toEqual([]);
+    expect(match!.status).toBe('postponed');
+    expect(match!.channels).toEqual([]);
   });
 
   it('skips a match without teams', () => {
@@ -157,7 +157,7 @@ describe('parseCbv', () => {
     expect(log).toHaveBeenCalledWith(
       expect.stringContaining('match 11 (2026-10-21T02:00:00+02:00'),
     );
-    expect(log.mock.calls[0][0]).toContain('team 9 not in the table');
+    expect(log.mock.calls[0]![0]).toContain('team 9 not in the table');
     log.mockRestore();
   });
 
@@ -182,7 +182,7 @@ describe('parseCbv', () => {
     );
     expect(competition.matches).toHaveLength(5);
     expect(competition.matches.every((m) => m.awayTeamId === '2')).toBe(true);
-    expect(log.mock.calls[0][0]).toContain(
+    expect(log.mock.calls[0]![0]).toContain(
       'agenda team 9 (5 matches) taken as TIME B (2)',
     );
     log.mockRestore();
@@ -218,10 +218,10 @@ describe('parseCbv', () => {
         code: `T${index}`,
         badgeUrl: null,
       }));
-      const competition = snapshot.competitions[0];
+      const competition = snapshot.competitions[0]!;
       competition.teams = teams;
       competition.standings = teams.map((team, index) => ({
-        ...competition.standings[0],
+        ...competition.standings[0]!,
         teamId: team.id,
         position: index + 1,
       }));
@@ -240,13 +240,13 @@ describe('parseCbv', () => {
 
     it('rejects a page that came back almost empty', () => {
       const snapshot = validSnapshot();
-      snapshot.competitions[0].matches = [];
+      snapshot.competitions[0]!.matches = [];
       expect(() => assertValidSnapshot(snapshot)).toThrow(/matches/);
     });
 
     it('rejects a match with an unknown team', () => {
       const snapshot = validSnapshot();
-      snapshot.competitions[0].matches[0].awayTeamId = '999';
+      snapshot.competitions[0]!.matches[0]!.awayTeamId = '999';
       expect(() => assertValidSnapshot(snapshot)).toThrow(/unknown team/);
     });
   });

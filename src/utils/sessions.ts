@@ -42,9 +42,11 @@ export function groupByDay(
 
 /** "27 a 29/11", or "30/11 a 1/12" across months. */
 export function formatWeekend(sessions: RaceSession[]): string {
-  if (sessions.length === 0) return '';
-  const first = new Date(sessions[0].startsAt);
-  const last = new Date(sessions[sessions.length - 1].startsAt);
+  const [opening] = sessions;
+  const closing = sessions.at(-1);
+  if (!opening || !closing) return '';
+  const first = new Date(opening.startsAt);
+  const last = new Date(closing.startsAt);
   const month = (date: Date) => date.getMonth() + 1;
   if (first.toDateString() === last.toDateString()) {
     return `${first.getDate()}/${month(first)}`;

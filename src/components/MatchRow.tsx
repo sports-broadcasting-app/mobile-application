@@ -9,8 +9,8 @@ interface MatchRowProps {
   match: Match;
   homeTeam: Team;
   awayTeam: Team;
-  favorite?: boolean;
-  onPress?: () => void;
+  favorite?: boolean | undefined;
+  onPress?: (() => void) | undefined;
 }
 
 /** A coming match in one line: day and time, the clubs, the first channel. */

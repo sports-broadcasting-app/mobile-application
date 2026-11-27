@@ -166,7 +166,7 @@ describe('addNbaQuarters', () => {
       'https://v2.nba.api-sports.io/games?date=2026-11-22',
       'k',
     );
-    expect(nba.matches[0].periodScores).toEqual(quarters);
+    expect(nba.matches[0]!.periodScores).toEqual(quarters);
     expect(log).toBe('NBA quarters: 1 date(s) asked, 1 added, 0 kept');
   });
 
@@ -183,7 +183,7 @@ describe('addNbaQuarters', () => {
       },
     );
     expect(fetchText).not.toHaveBeenCalled();
-    expect(nba.matches[0].periodScores).toEqual(quarters);
+    expect(nba.matches[0]!.periodScores).toEqual(quarters);
   });
 
   it('does nothing without a key and never throws on an API error', async () => {
@@ -206,7 +206,7 @@ describe('addNbaQuarters', () => {
         fetchText: failing,
       }),
     ).resolves.toContain('0 added');
-    expect(nba.matches[0].periodScores).toBeUndefined();
+    expect(nba.matches[0]!.periodScores).toBeUndefined();
   });
 
   it('skips games older than the lookback window', async () => {

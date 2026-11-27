@@ -51,7 +51,8 @@ export default [
       'react-native/no-inline-styles': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { argsIgnorePattern: '^_' },
+        // `const { dropped, ...rest } = x` keeps `rest` without `dropped`.
+        { argsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
@@ -60,6 +61,20 @@ export default [
       react: {
         version: 'detect',
       },
+    },
+  },
+  {
+    // No casts outside tests: data from the network, SQLite or AsyncStorage
+    // is checked (type guards, parsers) instead of asserted. `as const` and
+    // `satisfies` stay allowed. Tests build partial objects and keep casts.
+    files: ['src/**/*.{ts,tsx}', 'scripts/**/*.ts', 'app/**/*.{ts,tsx}'],
+    ignores: ['src/__tests__/**', 'src/test-*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/consistent-type-assertions': [
+        'error',
+        { assertionStyle: 'never' },
+      ],
+      '@typescript-eslint/no-non-null-assertion': 'error',
     },
   },
   {

@@ -5,7 +5,6 @@ import type {
   CompetitionSlug,
   Match,
   Sport,
-  Team,
 } from '../../src/types/snapshot';
 import { download, postJson } from '../http.ts';
 import { anyInLiveWindow } from '../schedule.ts';
@@ -230,9 +229,13 @@ export async function collectMultisport(
     sport: league.sport,
     name: league.name,
     season: page.season,
-    teams: [...knownTeams.values()] as Team[],
+    teams: [...knownTeams.values()],
     matches,
     standings: page.standings,
-    fullRefreshAt: full ? new Date(now).toISOString() : previous?.fullRefreshAt,
+    ...(full
+      ? { fullRefreshAt: new Date(now).toISOString() }
+      : previous?.fullRefreshAt
+        ? { fullRefreshAt: previous.fullRefreshAt }
+        : {}),
   };
 }

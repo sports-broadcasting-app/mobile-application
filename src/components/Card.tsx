@@ -6,8 +6,8 @@ import { radius } from '../constants/designTokens';
 interface CardProps {
   children: ReactNode;
   /** Spacing and anything on top of the surface and the corners. */
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
+  style?: StyleProp<ViewStyle> | undefined;
+  testID?: string | undefined;
 }
 
 /** A group of rows on the surface color, with rounded corners. */

@@ -7,7 +7,7 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 ## Tech Stack
 
 - **Framework**: React Native with Expo SDK 58
-- **Language**: TypeScript (strict mode enabled)
+- **Language**: TypeScript (`strict`, plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noFallthroughCasesInSwitch`); no casts outside tests
 - **Navigation**: Expo Router (file-based routing with tabs + stack-over-tabs)
 - **Package Manager**: Yarn (do NOT use npm)
 - **Testing**: Jest + React Native Testing Library
@@ -194,11 +194,13 @@ eas update --channel production --message "description"    # Update production b
 ## Code Conventions
 
 - **Always use TypeScript strict mode** — no `any` types unless absolutely necessary
+- **No casts** (`as X`, non-null `!`) in `src/`, `scripts/` and `app/`; ESLint enforces it (`consistent-type-assertions: never`, `no-non-null-assertion`), tests excepted. `as const` and `satisfies` are fine. Data from outside (source pages, APIs, SQLite, AsyncStorage, the published file, `transfers.json`/`broadcasts.json`) is read as `unknown` and checked: `src/utils/json.ts` (`parseJson`, `asObject`, `objectsOf`, `asList`, `toText`, `toNumber`, `readBalanced`) and `src/utils/guards.ts` (`isSnapshot`, `isMatch`, `isTeam`, `isStanding`, `isRaceSession`, `isTransfer`); curated files through `toTransferFile` / `toBroadcastFile`. Both utils are imported by the collector too, so their own imports carry the `.ts` extension.
+- **`noUncheckedIndexedAccess`**: `list[0]` may be `undefined`. Destructure and check (`const [first] = list; if (!first) …`) instead of indexing; a named default (`DEFAULT_COMPETITION`, the first palette color) where a value must exist. Optional props that callers fill from maybe-missing values are declared `prop?: T | undefined` (`exactOptionalPropertyTypes`); snapshot fields stay exact and are only spread in when present (`...(group ? { group } : {})`).
 - **Route files** in `app/` import from `../../src/` (relative paths)
 - **Component files**: PascalCase (e.g., `MatchCard.tsx`)
 - **Hook files**: camelCase with `use` prefix (e.g., `useTodayMatches.ts`)
 - **Utility files**: camelCase (e.g., `championshipLabel.ts`)
-- **Test files**: Co-locate tests in `src/__tests__/` directory
+- **Test files**: Co-locate tests in `src/__tests__/` directory (casts and `!` are allowed there: `list[0]!` when the test would fail anyway without it)
 - **Styles**: Use `StyleSheet.create()` for layout/spacing; override colors via style arrays `[styles.card, { backgroundColor: colors.surface }]`
 - **Theming**: Always use `useTheme()` for colors — never hardcode color values. ESLint enforces it in `src/components`, `src/screens` and `app/` (hex/rgb/hsl literals, a bare `Switch` instead of `ThemedSwitch`, inline styles are errors); a palette that is data (team colors with `TEAM_TEXT_COLOR`, the splash) lives in `src/utils` or `src/constants`
 - **Functional components only**: No class components
