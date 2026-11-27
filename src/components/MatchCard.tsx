@@ -3,16 +3,16 @@ import {
   Animated,
   Image,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import * as Linking from 'expo-linking';
+import { AppText } from './AppText';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import screenPlay from '../../assets/tabs/screen-play.png';
 import { getCompetition } from '../constants/competitions';
 import { useTheme } from '../contexts/ThemeContext';
 import { Match, Team } from '../types/snapshot';
+import { openLink } from '../utils/links';
 import { describeMatch } from '../utils/accessibility';
 import { getChannelUrl } from '../utils/broadcast';
 import { formatTime } from '../utils/date';
@@ -21,7 +21,6 @@ import { getTeamName } from '../utils/teamName';
 import { TeamCircle } from './TeamCircle';
 import {
   iconSize,
-  maxFontScale,
   radius,
   spacing,
   typography,
@@ -42,17 +41,17 @@ interface MatchCardProps {
 }
 
 function TeamColumn({ team }: { team: Team }) {
-  const { colors } = useTheme();
   return (
     <View style={styles.team}>
       <TeamCircle team={team} size={48} />
-      <Text
+      <AppText
+        variant="bodyStrong"
         numberOfLines={2}
-        maxFontSizeMultiplier={maxFontScale}
-        style={[styles.teamName, { color: colors.textPrimary }]}
+        capped
+        style={styles.teamName}
       >
         {getTeamName(team.name)}
-      </Text>
+      </AppText>
     </View>
   );
 }
@@ -88,12 +87,9 @@ function LiveBadge() {
           { backgroundColor: colors.onLive, opacity: pulse },
         ]}
       />
-      <Text
-        maxFontSizeMultiplier={maxFontScale}
-        style={[styles.liveText, { color: colors.onLive }]}
-      >
+      <AppText tone="onLive" capped style={styles.liveText}>
         AO VIVO
-      </Text>
+      </AppText>
     </View>
   );
 }
@@ -157,13 +153,15 @@ export const MatchCard = React.memo(function MatchCard({
         testID={`match-summary-${match.id}`}
       >
         <View style={styles.header}>
-          <Text
+          <AppText
+            variant="meta"
+            tone="secondary"
             numberOfLines={2}
-            maxFontSizeMultiplier={maxFontScale}
-            style={[styles.meta, { color: colors.textSecondary }]}
+            capped
+            style={styles.meta}
           >
             {meta}
-          </Text>
+          </AppText>
           {favorite && (
             <MaterialCommunityIcons
               name="star"
@@ -174,12 +172,9 @@ export const MatchCard = React.memo(function MatchCard({
           )}
           {isLive && <LiveBadge />}
           {match.status === 'postponed' && (
-            <Text
-              maxFontSizeMultiplier={maxFontScale}
-              style={[styles.meta, { color: colors.error }]}
-            >
+            <AppText variant="meta" tone="error" capped style={styles.meta}>
               Adiado
-            </Text>
+            </AppText>
           )}
         </View>
 
@@ -187,26 +182,20 @@ export const MatchCard = React.memo(function MatchCard({
           <TeamColumn team={homeTeam} />
           <View style={styles.score}>
             {hasScore && (
-              <Text
-                maxFontSizeMultiplier={maxFontScale}
-                style={[styles.scoreText, { color: colors.textPrimary }]}
-              >
+              <AppText capped style={styles.scoreText}>
                 {match.homeScore}
-              </Text>
+              </AppText>
             )}
-            <Text
-              maxFontSizeMultiplier={maxFontScale}
+            <AppText
+              capped
               style={[styles.versus, { color: colors.versusText }]}
             >
               ×
-            </Text>
+            </AppText>
             {hasScore && (
-              <Text
-                maxFontSizeMultiplier={maxFontScale}
-                style={[styles.scoreText, { color: colors.textPrimary }]}
-              >
+              <AppText capped style={styles.scoreText}>
                 {match.awayScore}
-              </Text>
+              </AppText>
             )}
           </View>
           <TeamColumn team={awayTeam} />
@@ -216,29 +205,33 @@ export const MatchCard = React.memo(function MatchCard({
       {/* Without a channel: "a definir" only before kickoff; a finished game
           says so, a live one shows nothing (the AO VIVO badge says it). */}
       {channels.length === 0 && !isLive && (
-        <Text
+        <AppText
+          variant="meta"
+          tone="tertiary"
           // Already in the summary above.
           accessibilityElementsHidden
           importantForAccessibility="no"
-          style={[styles.noChannel, { color: colors.textTertiary }]}
+          style={styles.noChannel}
         >
           {match.status === 'finished'
             ? 'Jogo encerrado'
             : 'Transmissão a definir'}
-        </Text>
+        </AppText>
       )}
       {channels.map((channel) => {
         const url = getChannelUrl(channel);
         if (!url) {
           return (
-            <Text
+            <AppText
+              variant="meta"
+              tone="secondary"
               key={channel}
               accessibilityElementsHidden
               importantForAccessibility="no"
-              style={[styles.noChannel, { color: colors.textSecondary }]}
+              style={styles.noChannel}
             >
               {`Passa na ${channel}`}
-            </Text>
+            </AppText>
           );
         }
         const primary = isLive;
@@ -259,9 +252,7 @@ export const MatchCard = React.memo(function MatchCard({
                     },
                   ],
             ]}
-            onPress={() => {
-              Linking.openURL(url).catch(() => {});
-            }}
+            onPress={() => openLink(url)}
           >
             <Image
               source={screenPlay}
@@ -270,15 +261,15 @@ export const MatchCard = React.memo(function MatchCard({
                 { tintColor: primary ? colors.onPrimary : colors.primary },
               ]}
             />
-            <Text
-              maxFontSizeMultiplier={maxFontScale}
+            <AppText
+              capped
               style={[
                 styles.watchText,
                 { color: primary ? colors.onPrimary : colors.textPrimary },
               ]}
             >
               {primary ? `Assistir no ${channel}` : `Abrir no ${channel}`}
-            </Text>
+            </AppText>
           </TouchableOpacity>
         );
       })}
@@ -305,8 +296,6 @@ const styles = StyleSheet.create({
   },
   meta: {
     flex: 1,
-    fontSize: typography.size.sm + 1,
-    fontWeight: typography.weight.medium,
   },
   liveBadge: {
     alignItems: 'center',
@@ -340,8 +329,6 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   teamName: {
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.semibold,
     textAlign: 'center',
   },
   score: {
@@ -362,8 +349,6 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   noChannel: {
-    fontSize: typography.size.sm + 1,
-    fontWeight: typography.weight.medium,
     textAlign: 'center',
   },
   watch: {

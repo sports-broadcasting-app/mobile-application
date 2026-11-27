@@ -1,5 +1,6 @@
 import React, { Component, ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { AppText } from './AppText';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing, typography } from '../constants/designTokens';
 import { Button } from './Button';
@@ -14,12 +15,10 @@ function DefaultErrorFallback({ error, onRetry }: FallbackProps) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.textPrimary }]}>
-        Algo deu errado
-      </Text>
-      <Text style={[styles.message, { color: colors.textSecondary }]}>
+      <AppText style={styles.title}>Algo deu errado</AppText>
+      <AppText variant="body" tone="secondary" style={styles.message}>
         {error.message}
-      </Text>
+      </AppText>
       <Button
         label="Tentar novamente"
         onPress={onRetry}
@@ -79,7 +78,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   message: {
-    fontSize: typography.size.body,
     marginBottom: spacing.xxl,
     textAlign: 'center',
   },

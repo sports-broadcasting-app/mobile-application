@@ -1,11 +1,6 @@
 import { useMemo, useState } from 'react';
-import {
-  SectionList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { SectionList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { AppText } from '../components/AppText';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { SearchField } from '../components/SearchField';
@@ -25,12 +20,7 @@ import {
   splitByTeam,
 } from '../utils/transfers';
 import { getTeamName } from '../utils/teamName';
-import {
-  iconSize,
-  radius,
-  spacing,
-  typography,
-} from '../constants/designTokens';
+import { iconSize, radius, spacing } from '../constants/designTokens';
 
 const OPTIONS: { value: CompetitionSlug; label: string }[] = [
   { value: 'masculina', label: 'Superliga M' },
@@ -118,12 +108,13 @@ export default function TransfersScreen() {
           style={[styles.selected, { backgroundColor: colors.surface }]}
         >
           <TeamCircle team={selectedTeam} size={28} />
-          <Text
+          <AppText
+            variant="bodyStrong"
             numberOfLines={1}
-            style={[styles.teamName, { color: colors.textPrimary }]}
+            style={styles.teamName}
           >
             {getTeamName(selectedTeam.name)}
-          </Text>
+          </AppText>
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel="Mostrar todos os times"
@@ -155,12 +146,13 @@ export default function TransfersScreen() {
               onPress={() => selectTeam(team)}
             >
               <TeamCircle team={team} size={28} />
-              <Text
+              <AppText
+                variant="bodyStrong"
                 numberOfLines={1}
-                style={[styles.teamName, { color: colors.textPrimary }]}
+                style={styles.teamName}
               >
                 {getTeamName(team.name)}
-              </Text>
+              </AppText>
               <MaterialCommunityIcons
                 name="chevron-right"
                 size={iconSize.md}
@@ -199,11 +191,11 @@ export default function TransfersScreen() {
       )}
       ListEmptyComponent={
         isEmpty ? (
-          <Text style={[styles.empty, { color: colors.textSecondary }]}>
+          <AppText variant="body" tone="secondary" style={styles.empty}>
             {query || selectedTeam
               ? 'Nenhuma transferência encontrada'
               : 'Nenhuma transferência registrada nesta temporada'}
-          </Text>
+          </AppText>
         ) : undefined
       }
     />
@@ -234,11 +226,8 @@ const styles = StyleSheet.create({
   },
   teamName: {
     flex: 1,
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.semibold,
   },
   empty: {
-    fontSize: typography.size.body,
     paddingVertical: spacing.xxl,
     textAlign: 'center',
   },

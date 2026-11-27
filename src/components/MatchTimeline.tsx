@@ -1,5 +1,7 @@
 import { Fragment } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Card } from './Card';
+import { AppText } from './AppText';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import type { MatchEvent, Team } from '../types/snapshot';
@@ -12,7 +14,6 @@ import {
 import { getTeamName } from '../utils/teamName';
 import {
   iconSize,
-  maxFontScale,
   radius,
   spacing,
   typography,
@@ -56,25 +57,23 @@ export function MatchTimeline({
   const { colors } = useTheme();
 
   return (
-    <View
-      testID="match-timeline"
-      style={[styles.timeline, { backgroundColor: colors.surface }]}
-    >
+    <Card testID="match-timeline" style={styles.timeline}>
       {eventPeriods(events).map((period) => {
         const inPeriod = events.filter((e) => e.period === period);
         return (
           <Fragment key={period}>
-            <Text
+            <AppText
+              tone="tertiary"
               accessibilityRole="header"
-              maxFontSizeMultiplier={maxFontScale}
-              style={[styles.period, { color: colors.textTertiary }]}
+              capped
+              style={styles.period}
             >
               {periodName(period)}
-            </Text>
+            </AppText>
             {inPeriod.length === 0 && (
-              <Text style={[styles.nothing, { color: colors.textTertiary }]}>
+              <AppText variant="caption" tone="tertiary" style={styles.nothing}>
                 Sem gols nem expulsões
-              </Text>
+              </AppText>
             )}
             {inPeriod.map((event, index) => {
               const team = event.side === 'home' ? homeTeam : awayTeam;
@@ -90,8 +89,8 @@ export function MatchTimeline({
                   ]}
                 >
                   <EventIcon type={event.type} />
-                  <Text
-                    maxFontSizeMultiplier={maxFontScale}
+                  <AppText
+                    capped
                     numberOfLines={2}
                     style={[
                       styles.player,
@@ -100,7 +99,7 @@ export function MatchTimeline({
                     ]}
                   >
                     {label}
-                  </Text>
+                  </AppText>
                 </View>
               );
               return (
@@ -123,15 +122,9 @@ export function MatchTimeline({
                       { backgroundColor: colors.surfaceAlt },
                     ]}
                   >
-                    <Text
-                      maxFontSizeMultiplier={maxFontScale}
-                      style={[
-                        styles.minuteText,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
+                    <AppText tone="secondary" capped style={styles.minuteText}>
                       {formatMinute(event)}
-                    </Text>
+                    </AppText>
                   </View>
                   <View style={styles.side}>
                     {event.side === 'away' && content}
@@ -142,13 +135,12 @@ export function MatchTimeline({
           </Fragment>
         );
       })}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   timeline: {
-    borderRadius: radius.lg,
     gap: spacing.sm,
     padding: spacing.md,
   },
@@ -161,7 +153,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   nothing: {
-    fontSize: typography.size.sm,
     textAlign: 'center',
   },
   row: {

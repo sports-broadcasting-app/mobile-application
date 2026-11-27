@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { AppText } from './AppText';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RaceSession } from '../types/snapshot';
@@ -9,7 +10,6 @@ import { BroadcasterPill } from './BroadcasterPill';
 import { SportIcon } from './SportIcon';
 import {
   iconSize,
-  maxFontScale,
   radius,
   spacing,
   touchTarget,
@@ -58,20 +58,13 @@ export const GrandPrixCard = React.memo(function GrandPrixCard({
           />
         </View>
         <View style={styles.title}>
-          <Text
-            maxFontSizeMultiplier={maxFontScale}
-            numberOfLines={1}
-            style={[styles.name, { color: colors.textPrimary }]}
-          >
+          <AppText variant="labelStrong" capped numberOfLines={1}>
             {grandPrix}
-          </Text>
+          </AppText>
           {circuit ? (
-            <Text
-              numberOfLines={1}
-              style={[styles.circuit, { color: colors.textSecondary }]}
-            >
+            <AppText variant="caption" tone="secondary" numberOfLines={1}>
               {circuit}
-            </Text>
+            </AppText>
           ) : null}
         </View>
         <MaterialCommunityIcons
@@ -86,38 +79,30 @@ export const GrandPrixCard = React.memo(function GrandPrixCard({
           key={session.id}
           style={[styles.session, { borderTopColor: colors.borderLight }]}
         >
-          <Text
-            maxFontSizeMultiplier={maxFontScale}
-            style={[styles.time, { color: colors.textPrimary }]}
-          >
+          <AppText variant="labelStrong" capped style={styles.time}>
             {formatTime(session.startsAt)}
-          </Text>
-          <Text
-            maxFontSizeMultiplier={maxFontScale}
+          </AppText>
+          <AppText
+            variant="bodyStrong"
+            capped
             numberOfLines={1}
-            style={[styles.sessionName, { color: colors.textPrimary }]}
+            style={styles.sessionName}
           >
             {session.name}
-          </Text>
+          </AppText>
           {session.status === 'live' ? (
             <View style={[styles.live, { backgroundColor: colors.live }]}>
-              <Text
-                maxFontSizeMultiplier={maxFontScale}
-                style={[styles.liveText, { color: colors.onLive }]}
-              >
+              <AppText tone="onLive" capped style={styles.liveText}>
                 AO VIVO
-              </Text>
+              </AppText>
             </View>
           ) : null}
           {session.channels.length > 0 ? (
             <BroadcasterPill name={session.channels[0]} />
           ) : session.status === 'scheduled' ? (
-            <Text
-              maxFontSizeMultiplier={maxFontScale}
-              style={[styles.tbd, { color: colors.textTertiary }]}
-            >
+            <AppText variant="caption" tone="tertiary" capped>
               a definir
-            </Text>
+            </AppText>
           ) : null}
         </View>
       ))}
@@ -152,13 +137,6 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 1,
   },
-  name: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.bold,
-  },
-  circuit: {
-    fontSize: typography.size.sm,
-  },
   session: {
     alignItems: 'center',
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -167,14 +145,10 @@ const styles = StyleSheet.create({
     minHeight: touchTarget,
   },
   time: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.bold,
     minWidth: 44,
   },
   sessionName: {
     flex: 1,
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.semibold,
   },
   live: {
     borderRadius: radius.sm,
@@ -184,8 +158,5 @@ const styles = StyleSheet.create({
   liveText: {
     fontSize: typography.size.xs,
     fontWeight: typography.weight.bold,
-  },
-  tbd: {
-    fontSize: typography.size.sm,
   },
 });

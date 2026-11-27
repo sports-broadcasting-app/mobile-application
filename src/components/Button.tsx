@@ -1,11 +1,6 @@
 import { ComponentProps } from 'react';
-import {
-  Pressable,
-  StyleProp,
-  StyleSheet,
-  Text,
-  ViewStyle,
-} from 'react-native';
+import { Pressable, StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import { AppText } from './AppText';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import {
@@ -79,7 +74,7 @@ export function Button({
           color={textColor}
         />
       )}
-      <Text
+      <AppText
         style={[
           styles.label,
           variant === 'primary' ? styles.strong : styles.regular,
@@ -87,7 +82,7 @@ export function Button({
         ]}
       >
         {label}
-      </Text>
+      </AppText>
     </Pressable>
   );
 }

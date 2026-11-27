@@ -1,18 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useTheme } from '../contexts/ThemeContext';
 import { Match, Team } from '../types/snapshot';
 import { describeMatch } from '../utils/accessibility';
 import { formatShortDay, formatTime } from '../utils/date';
 import { getTeamName } from '../utils/teamName';
-import {
-  iconSize,
-  maxFontScale,
-  radius,
-  spacing,
-  typography,
-} from '../constants/designTokens';
+import { ScheduleRow } from './ScheduleRow';
 
 interface MatchRowProps {
   match: Match;
@@ -30,111 +21,28 @@ export const MatchRow = React.memo(function MatchRow({
   favorite = false,
   onPress,
 }: MatchRowProps) {
-  const { colors } = useTheme();
   const date = new Date(match.startsAt);
-  const when = `${formatShortDay(date)} · ${formatTime(match.startsAt)}`;
-  const [channel] = match.channels;
+  const day = formatShortDay(date);
+  const time = formatTime(match.startsAt);
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      disabled={!onPress}
+    <ScheduleRow
+      when={`${day} · ${time}`}
+      title={`${getTeamName(homeTeam.name)} × ${getTeamName(awayTeam.name)}`}
+      favorite={favorite}
+      channel={match.channels[0]}
+      // Once it started, no channel means none was announced: say nothing.
+      showTbd={match.status !== 'live' && match.status !== 'finished'}
       onPress={onPress}
-      accessibilityRole={onPress ? 'button' : undefined}
       accessibilityLabel={describeMatch({
         match,
         homeName: homeTeam.name,
         awayName: awayTeam.name,
         favorite,
-        details: [formatShortDay(date), formatTime(match.startsAt)],
+        details: [day, time],
       })}
-      accessibilityHint={onPress ? 'Abre os detalhes do jogo' : undefined}
+      accessibilityHint="Abre os detalhes do jogo"
       testID={`match-row-${match.id}`}
-      style={[styles.row, { borderBottomColor: colors.borderLight }]}
-    >
-      <Text
-        maxFontSizeMultiplier={maxFontScale}
-        numberOfLines={1}
-        style={[styles.when, { color: colors.textSecondary }]}
-      >
-        {when}
-      </Text>
-      <View style={styles.teams}>
-        <Text
-          maxFontSizeMultiplier={maxFontScale}
-          numberOfLines={1}
-          style={[styles.teamsText, { color: colors.textPrimary }]}
-        >
-          {`${getTeamName(homeTeam.name)} × ${getTeamName(awayTeam.name)}`}
-        </Text>
-        {favorite && (
-          <MaterialCommunityIcons
-            name="star"
-            size={iconSize.sm}
-            color={colors.primary}
-          />
-        )}
-      </View>
-      {channel ? (
-        <View style={[styles.channel, { backgroundColor: colors.primarySoft }]}>
-          <Text
-            maxFontSizeMultiplier={maxFontScale}
-            numberOfLines={1}
-            style={[styles.channelText, { color: colors.primary }]}
-          >
-            {channel}
-          </Text>
-        </View>
-      ) : match.status === 'live' || match.status === 'finished' ? null : (
-        <Text
-          maxFontSizeMultiplier={maxFontScale}
-          style={[styles.tbd, { color: colors.textTertiary }]}
-        >
-          a definir
-        </Text>
-      )}
-    </TouchableOpacity>
+    />
   );
-});
-
-const styles = StyleSheet.create({
-  row: {
-    alignItems: 'center',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    flexDirection: 'row',
-    gap: spacing.sm,
-    minHeight: 48,
-    paddingVertical: spacing.sm,
-  },
-  when: {
-    fontSize: typography.size.sm + 1,
-    fontWeight: typography.weight.medium,
-    // Fits "dom 22 · 15:00" on one line with the system font at 100%.
-    width: 112,
-  },
-  teams: {
-    alignItems: 'center',
-    flex: 1,
-    flexDirection: 'row',
-    gap: spacing.xs,
-  },
-  teamsText: {
-    flexShrink: 1,
-    fontSize: typography.size.body + 1,
-    fontWeight: typography.weight.semibold,
-  },
-  channel: {
-    borderRadius: radius.sm + 2,
-    maxWidth: 96,
-    paddingHorizontal: spacing.sm + 2,
-    paddingVertical: spacing.xs,
-  },
-  channelText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
-  },
-  tbd: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
 });

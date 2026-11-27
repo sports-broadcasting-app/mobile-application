@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   Alert,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -11,9 +10,11 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppearancePicker } from '../components/AppearancePicker';
+import { AppText } from '../components/AppText';
+import { Card } from '../components/Card';
+import { CheckRow } from '../components/CheckRow';
 import { ReminderToggle } from '../components/ReminderToggle';
-import { SportIcon } from '../components/SportIcon';
-import { ThemedSwitch } from '../components/ThemedSwitch';
+import { SportToggleRow } from '../components/SportToggleRow';
 import { TeamCircle } from '../components/TeamCircle';
 import { SectionHeader } from '../components/SectionHeader';
 import { SessionRemindersSheet } from '../components/SessionRemindersSheet';
@@ -33,15 +34,57 @@ import { promptExactAlarms } from '../utils/exactAlarmPrompt';
 import { getCompetition, SPORTS } from '../constants/competitions';
 import {
   iconSize,
-  maxFontScale,
   radius,
   spacing,
   touchTarget,
-  typography,
 } from '../constants/designTokens';
 
 /** Asked once: the first team is when reminders start to make sense. */
 export const REMINDERS_OFFERED_KEY = '@reminders_offered';
+
+/** Indent of what sits under a sport, past its 34 pt icon. */
+const INDENT = 34 + spacing.md;
+
+interface LinkRowProps {
+  icon: ReactNode;
+  children: ReactNode;
+  onPress: () => void;
+  accessibilityLabel: string;
+  testID: string;
+}
+
+/** "Seu time: X" or "Avisos: Y", opening the sheet that changes it. */
+function LinkRow({
+  icon,
+  children,
+  onPress,
+  accessibilityLabel,
+  testID,
+}: LinkRowProps) {
+  const { colors } = useTheme();
+  return (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+      style={[
+        styles.linkRow,
+        { backgroundColor: colors.background, borderColor: colors.borderLight },
+      ]}
+      onPress={onPress}
+    >
+      {icon}
+      <AppText numberOfLines={1} tone="secondary" style={styles.linkText}>
+        {children}
+      </AppText>
+      <MaterialCommunityIcons
+        name="chevron-right"
+        size={iconSize.md}
+        color={colors.textTertiary}
+      />
+    </TouchableOpacity>
+  );
+}
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
@@ -97,55 +140,31 @@ export default function SettingsScreen() {
   const renderTeamButton = (slug: CompetitionSlug, name: string) => {
     const teamId = favorites[slug];
     const team = teamId ? teamsById.get(teamId) : undefined;
-    return (
-      <TouchableOpacity
-        accessibilityRole="button"
-        accessibilityLabel={
-          team
-            ? `Seu time em ${name}: ${getTeamName(team.name)}. Trocar`
-            : `Escolher seu time em ${name}`
-        }
+    return team ? (
+      <LinkRow
+        icon={<TeamCircle team={team} size={24} />}
+        accessibilityLabel={`Seu time em ${name}: ${getTeamName(team.name)}. Trocar`}
         testID={`pick-team-${slug}`}
-        style={[
-          styles.teamButton,
-          {
-            backgroundColor: colors.background,
-            borderColor: colors.borderLight,
-          },
-        ]}
         onPress={() => setPicking(slug)}
       >
-        {team ? (
-          <>
-            <TeamCircle team={team} size={24} />
-            <Text
-              numberOfLines={1}
-              style={[styles.teamLabel, { color: colors.textSecondary }]}
-            >
-              Seu time:{' '}
-              <Text style={[styles.teamName, { color: colors.textPrimary }]}>
-                {getTeamName(team.name)}
-              </Text>
-            </Text>
-          </>
-        ) : (
-          <>
-            <MaterialCommunityIcons
-              name="plus"
-              size={iconSize.md}
-              color={colors.primary}
-            />
-            <Text style={[styles.teamLabel, { color: colors.primary }]}>
-              Escolher seu time
-            </Text>
-          </>
-        )}
-        <MaterialCommunityIcons
-          name="chevron-right"
-          size={iconSize.md}
-          color={colors.textTertiary}
-        />
-      </TouchableOpacity>
+        Seu time:{' '}
+        <AppText variant="bodyStrong">{getTeamName(team.name)}</AppText>
+      </LinkRow>
+    ) : (
+      <LinkRow
+        icon={
+          <MaterialCommunityIcons
+            name="plus"
+            size={iconSize.md}
+            color={colors.primary}
+          />
+        }
+        accessibilityLabel={`Escolher seu time em ${name}`}
+        testID={`pick-team-${slug}`}
+        onPress={() => setPicking(slug)}
+      >
+        <AppText tone="accent">Escolher seu time</AppText>
+      </LinkRow>
     );
   };
 
@@ -158,39 +177,20 @@ export default function SettingsScreen() {
           .join(', ');
   const renderReminderKinds = (name: string) =>
     notificationsSupported ? (
-      <TouchableOpacity
-        accessibilityRole="button"
+      <LinkRow
+        icon={
+          <MaterialCommunityIcons
+            name="bell-outline"
+            size={iconSize.md}
+            color={colors.textSecondary}
+          />
+        }
         accessibilityLabel={`Avisos de ${name}: ${kindsLabel}. Alterar`}
         testID="session-reminders"
-        style={[
-          styles.teamButton,
-          {
-            backgroundColor: colors.background,
-            borderColor: colors.borderLight,
-          },
-        ]}
         onPress={() => setEditingKinds(true)}
       >
-        <MaterialCommunityIcons
-          name="bell-outline"
-          size={iconSize.md}
-          color={colors.textSecondary}
-        />
-        <Text
-          numberOfLines={1}
-          style={[styles.teamLabel, { color: colors.textSecondary }]}
-        >
-          Avisos:{' '}
-          <Text style={[styles.teamName, { color: colors.textPrimary }]}>
-            {kindsLabel}
-          </Text>
-        </Text>
-        <MaterialCommunityIcons
-          name="chevron-right"
-          size={iconSize.md}
-          color={colors.textTertiary}
-        />
-      </TouchableOpacity>
+        Avisos: <AppText variant="bodyStrong">{kindsLabel}</AppText>
+      </LinkRow>
     ) : null;
 
   return (
@@ -202,20 +202,17 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.content}
         contentInsetAdjustmentBehavior="automatic"
       >
-        <Text
-          // Screen titles are already large; uncapped they broke mid-word.
-          maxFontSizeMultiplier={maxFontScale}
-          style={[styles.title, { color: colors.textPrimary }]}
-        >
+        {/* Screen titles are already large; uncapped they broke mid-word. */}
+        <AppText variant="screenTitle" capped style={styles.title}>
           Configurações
-        </Text>
+        </AppText>
 
         {notificationsSupported && (
           <>
             <SectionHeader title="Notificações" style={styles.sectionHeader} />
-            <View style={[styles.group, { backgroundColor: colors.surface }]}>
+            <Card style={styles.group}>
               <ReminderToggle />
-            </View>
+            </Card>
           </>
         )}
 
@@ -228,98 +225,41 @@ export default function SettingsScreen() {
           if (own.length === 0) return null;
           const on = sportOn(sport);
           return (
-            <View
-              key={sport}
-              style={[
-                styles.group,
-                styles.sportGroup,
-                { backgroundColor: colors.surface },
-              ]}
-            >
-              <View style={styles.competitionHead}>
-                <View
-                  style={[styles.icon, { backgroundColor: colors.surfaceAlt }]}
-                >
-                  <SportIcon
-                    sport={sport}
-                    size={iconSize.md}
-                    color={colors.textSecondary}
-                  />
-                </View>
-                <Text
-                  style={[
-                    styles.competitionName,
-                    { color: on ? colors.textPrimary : colors.textSecondary },
-                  ]}
-                >
-                  {name}
-                </Text>
-                <ThemedSwitch
-                  accessibilityLabel={`Acompanhar ${name}`}
-                  testID={`follow-sport-${sport}`}
-                  value={on}
-                  disabled={on && sportLocked(sport)}
-                  onValueChange={(next) => setSport(sport, next)}
-                />
-              </View>
+            <Card key={sport} style={[styles.group, styles.sportGroup]}>
+              <SportToggleRow
+                sport={sport}
+                name={name}
+                on={on}
+                locked={sportLocked(sport)}
+                onChange={(next) => setSport(sport, next)}
+                accessibilityLabel={`Acompanhar ${name}`}
+                compact
+              />
               {on &&
                 own.map((slug) => {
                   const info = getCompetition(slug);
                   const checked = followed.includes(slug);
-                  const locked = checked && competitionLocked(slug);
                   return (
                     <View
                       key={slug}
                       style={[
                         styles.competition,
-                        {
-                          borderTopColor: colors.borderLight,
-                          borderTopWidth: StyleSheet.hairlineWidth,
-                        },
+                        { borderTopColor: colors.borderLight },
                       ]}
                     >
                       {own.length > 1 && (
-                        <TouchableOpacity
-                          accessibilityRole="checkbox"
-                          accessibilityState={{ checked, disabled: locked }}
+                        <CheckRow
+                          label={info.name}
+                          checked={checked}
+                          locked={checked && competitionLocked(slug)}
+                          onToggle={(next) =>
+                            setCompetitionFollowed(slug, next)
+                          }
                           testID={`follow-${slug}`}
                           style={styles.competitionRow}
-                          onPress={() => {
-                            if (!locked) setCompetitionFollowed(slug, !checked);
-                          }}
-                        >
-                          <Text
-                            style={[
-                              styles.childName,
-                              {
-                                color: checked
-                                  ? colors.textPrimary
-                                  : colors.textSecondary,
-                              },
-                            ]}
-                          >
-                            {info.name}
-                          </Text>
-                          <View
-                            style={[
-                              styles.check,
-                              checked
-                                ? { backgroundColor: colors.primary }
-                                : [
-                                    styles.unchecked,
-                                    { borderColor: colors.controlBorder },
-                                  ],
-                            ]}
-                          >
-                            {checked ? (
-                              <MaterialCommunityIcons
-                                name="check"
-                                size={iconSize.sm}
-                                color={colors.onPrimary}
-                              />
-                            ) : null}
-                          </View>
-                        </TouchableOpacity>
+                          labelVariant="rowTitle"
+                          dimUnchecked
+                        />
                       )}
                       {checked && info.sport === 'automobilismo'
                         ? renderReminderKinds(info.name)
@@ -329,7 +269,7 @@ export default function SettingsScreen() {
                     </View>
                   );
                 })}
-            </View>
+            </Card>
           );
         })}
 
@@ -360,8 +300,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxxl,
   },
   title: {
-    fontSize: typography.size.title,
-    fontWeight: typography.weight.bold,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
@@ -369,9 +307,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
   },
   group: {
-    borderRadius: radius.lg,
     marginHorizontal: spacing.lg,
-    overflow: 'hidden',
   },
   sportGroup: {
     marginBottom: spacing.sm,
@@ -379,64 +315,25 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   competition: {
+    borderTopWidth: StyleSheet.hairlineWidth,
     gap: spacing.sm,
     paddingVertical: spacing.sm,
   },
   competitionRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginLeft: 34 + spacing.md,
+    marginLeft: INDENT,
     minHeight: touchTarget,
   },
-  childName: {
-    flex: 1,
-    fontSize: typography.size.body + 1,
-    fontWeight: typography.weight.semibold,
-  },
-  check: {
-    alignItems: 'center',
-    borderRadius: 7,
-    height: 24,
-    justifyContent: 'center',
-    width: 24,
-  },
-  unchecked: {
-    borderWidth: 2,
-  },
-  competitionHead: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.md,
-    minHeight: touchTarget + 4,
-  },
-  icon: {
-    alignItems: 'center',
-    borderRadius: radius.sm,
-    height: 34,
-    justifyContent: 'center',
-    width: 34,
-  },
-  competitionName: {
-    flex: 1,
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
-  },
-  teamButton: {
+  linkRow: {
     alignItems: 'center',
     borderRadius: radius.md,
     borderWidth: 1,
     flexDirection: 'row',
     gap: spacing.sm,
-    marginLeft: 34 + spacing.md,
+    marginLeft: INDENT,
     minHeight: touchTarget,
     paddingHorizontal: spacing.md,
   },
-  teamLabel: {
+  linkText: {
     flex: 1,
-    fontSize: typography.size.body,
-  },
-  teamName: {
-    fontWeight: typography.weight.semibold,
   },
 });

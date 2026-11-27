@@ -1,14 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Card } from './Card';
+import { AppText } from './AppText';
 import { useTheme } from '../contexts/ThemeContext';
 import type { Team } from '../types/snapshot';
 import { getTeamName } from '../utils/teamName';
 import { TeamCircle } from './TeamCircle';
-import {
-  maxFontScale,
-  radius,
-  spacing,
-  typography,
-} from '../constants/designTokens';
+import { spacing, typography } from '../constants/designTokens';
 
 export interface PeriodColumn {
   /** Column header: "1º", "1º T". */
@@ -64,20 +61,21 @@ export function PeriodScoreboard({
       >
         <View style={styles.team}>
           <TeamCircle team={team} size={24} />
-          <Text
-            maxFontSizeMultiplier={maxFontScale}
+          <AppText
+            variant="bodyStrong"
+            capped
             numberOfLines={1}
-            style={[styles.teamName, { color: colors.textPrimary }]}
+            style={styles.teamName}
           >
             {name}
-          </Text>
+          </AppText>
         </View>
         {periods.map((period, index) => {
           const won = period[side] > period[side === 'home' ? 'away' : 'home'];
           return (
-            <Text
+            <AppText
               key={index}
-              maxFontSizeMultiplier={maxFontScale}
+              capped
               style={[
                 styles.cell,
                 { color: won ? colors.textPrimary : colors.textSecondary },
@@ -85,24 +83,21 @@ export function PeriodScoreboard({
               ]}
             >
               {period[side]}
-            </Text>
+            </AppText>
           );
         })}
-        <Text
-          maxFontSizeMultiplier={maxFontScale}
+        <AppText
+          capped
           style={[styles.cell, styles.total, { color: colors.textPrimary }]}
         >
           {total}
-        </Text>
+        </AppText>
       </View>
     );
   };
 
   return (
-    <View
-      testID={testID}
-      style={[styles.table, { backgroundColor: colors.surface }]}
-    >
+    <Card testID={testID} style={styles.table}>
       <View
         // The rows say each column's name; the short headers are visual.
         accessibilityElementsHidden
@@ -111,16 +106,16 @@ export function PeriodScoreboard({
       >
         <View style={styles.team} />
         {periods.map((period, index) => (
-          <Text
+          <AppText
             key={index}
-            maxFontSizeMultiplier={maxFontScale}
+            capped
             style={[styles.cell, styles.header, { color: colors.textTertiary }]}
           >
             {period.label}
-          </Text>
+          </AppText>
         ))}
-        <Text
-          maxFontSizeMultiplier={maxFontScale}
+        <AppText
+          capped
           style={[
             styles.cell,
             styles.total,
@@ -129,17 +124,16 @@ export function PeriodScoreboard({
           ]}
         >
           {totalLabel}
-        </Text>
+        </AppText>
       </View>
       {row(homeTeam, 'home', homeTotal)}
       {row(awayTeam, 'away', awayTotal)}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   table: {
-    borderRadius: radius.lg,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
@@ -160,8 +154,6 @@ const styles = StyleSheet.create({
   },
   teamName: {
     flexShrink: 1,
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.semibold,
   },
   cell: {
     fontSize: typography.size.body,

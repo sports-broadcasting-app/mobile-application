@@ -37,7 +37,6 @@ export interface ThemeColors {
   /** The referee's red card in a match timeline (a fact, not an error). */
   redCard: string;
   overlayBg: string;
-  skeletonBase: string;
   statusBar: 'dark' | 'light';
 }
 
@@ -64,7 +63,6 @@ export const lightTheme: ThemeColors = {
   error: '#dc2626',
   redCard: '#dc2626',
   overlayBg: 'rgba(0, 0, 0, 0.5)',
-  skeletonBase: '#e5e7eb',
   statusBar: 'dark',
 };
 
@@ -93,6 +91,5 @@ export const darkTheme: ThemeColors = {
   error: '#ef4444',
   redCard: '#ef4444',
   overlayBg: 'rgba(0, 0, 0, 0.7)',
-  skeletonBase: '#1b2740',
   statusBar: 'light',
 };

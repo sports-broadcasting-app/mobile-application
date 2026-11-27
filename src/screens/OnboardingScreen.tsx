@@ -1,15 +1,14 @@
 import { useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SportIcon } from '../components/SportIcon';
+import { AppText } from '../components/AppText';
 import { Button } from '../components/Button';
+import { Card } from '../components/Card';
+import { Checkbox } from '../components/Checkbox';
+import { CheckRow } from '../components/CheckRow';
+import { IconTile } from '../components/IconTile';
 import { SectionHeader } from '../components/SectionHeader';
 import { useCompetition } from '../contexts/CompetitionContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -92,25 +91,6 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
     setStep(2);
   };
 
-  const tick = (on: boolean) => (
-    <View
-      style={[
-        styles.tick,
-        on
-          ? { backgroundColor: colors.primary }
-          : [styles.unchecked, { borderColor: colors.controlBorder }],
-      ]}
-    >
-      {on ? (
-        <MaterialCommunityIcons
-          name="check"
-          size={iconSize.sm - 2}
-          color={colors.onPrimary}
-        />
-      ) : null}
-    </View>
-  );
-
   const steps = (
     <View
       style={styles.steps}
@@ -153,15 +133,12 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
             </TouchableOpacity>
             <View style={styles.stepsBeside}>{steps}</View>
           </View>
-          <Text
-            accessibilityRole="header"
-            style={[styles.title, { color: colors.textPrimary }]}
-          >
+          <AppText accessibilityRole="header" style={styles.title}>
             E as competições?
-          </Text>
-          <Text style={[styles.text, { color: colors.textSecondary }]}>
+          </AppText>
+          <AppText tone="secondary" style={styles.text}>
             Já vêm todas marcadas. Desmarque o que não quer ver.
-          </Text>
+          </AppText>
 
           {chosen.map(({ sport, name }) => (
             <View key={sport}>
@@ -176,40 +153,31 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
                   />
                 }
               />
-              <View style={[styles.box, { backgroundColor: colors.surface }]}>
-                {competitionsOf(sport).map((info, index) => {
-                  const on = picked.includes(info.slug);
-                  return (
-                    <TouchableOpacity
-                      key={info.slug}
-                      accessibilityRole="checkbox"
-                      accessibilityState={{ checked: on }}
-                      testID={`onboarding-${info.slug}`}
-                      style={[
-                        styles.item,
-                        index > 0 && {
-                          borderTopColor: colors.borderLight,
-                          borderTopWidth: StyleSheet.hairlineWidth,
-                        },
-                      ]}
-                      onPress={() => toggleCompetition(info.slug)}
-                    >
-                      <Text
-                        style={[styles.itemName, { color: colors.textPrimary }]}
-                      >
-                        {info.name}
-                      </Text>
-                      <View style={styles.itemTick}>{tick(on)}</View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+              <Card>
+                {competitionsOf(sport).map((info, index) => (
+                  <CheckRow
+                    key={info.slug}
+                    label={info.name}
+                    checked={picked.includes(info.slug)}
+                    onToggle={() => toggleCompetition(info.slug)}
+                    testID={`onboarding-${info.slug}`}
+                    shape="round"
+                    style={[
+                      styles.item,
+                      index > 0 && {
+                        borderTopColor: colors.borderLight,
+                        borderTopWidth: StyleSheet.hairlineWidth,
+                      },
+                    ]}
+                  />
+                ))}
+              </Card>
             </View>
           ))}
 
-          <Text style={[styles.note, { color: colors.textTertiary }]}>
+          <AppText variant="caption" tone="tertiary" style={styles.note}>
             Quando o app ganhar uma competição destes esportes, ela já entra.
-          </Text>
+          </AppText>
         </ScrollView>
 
         <View style={styles.footer}>
@@ -230,18 +198,15 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
     >
       <ScrollView contentContainerStyle={styles.content}>
         {steps}
-        <Text style={[styles.eyebrow, { color: colors.primary }]}>
+        <AppText variant="bodyStrong" tone="accent">
           Bem-vindo ao Onde Passa
-        </Text>
-        <Text
-          accessibilityRole="header"
-          style={[styles.title, { color: colors.textPrimary }]}
-        >
+        </AppText>
+        <AppText accessibilityRole="header" style={styles.title}>
           Quais esportes você acompanha?
-        </Text>
-        <Text style={[styles.text, { color: colors.textSecondary }]}>
+        </AppText>
+        <AppText tone="secondary" style={styles.text}>
           Depois você escolhe as competições de cada um.
-        </Text>
+        </AppText>
 
         <View style={styles.grid}>
           {SPORTS.map(({ sport, name }) => {
@@ -264,14 +229,7 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
                 ]}
                 onPress={() => toggleSport(sport)}
               >
-                <View
-                  style={[
-                    styles.tileIcon,
-                    {
-                      backgroundColor: on ? colors.primary : colors.surfaceAlt,
-                    },
-                  ]}
-                >
+                <IconTile size={40} active={on}>
                   <SportIcon
                     sport={sport}
                     size={iconSize.lg}
@@ -279,25 +237,23 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
                     filled={on}
                     knockoutColor={colors.primary}
                   />
-                </View>
-                <Text style={[styles.tileName, { color: colors.textPrimary }]}>
-                  {name}
-                </Text>
-                <Text
-                  style={[styles.tileSport, { color: colors.textSecondary }]}
-                >
+                </IconTile>
+                <AppText variant="labelStrong">{name}</AppText>
+                <AppText variant="caption" tone="secondary">
                   {competitions}
-                </Text>
-                <View style={styles.tileTick}>{tick(on)}</View>
+                </AppText>
+                <View style={styles.tileTick}>
+                  <Checkbox checked={on} shape="round" />
+                </View>
               </TouchableOpacity>
             );
           })}
         </View>
 
-        <Text style={[styles.note, { color: colors.textTertiary }]}>
+        <AppText variant="caption" tone="tertiary" style={styles.note}>
           Dá para mudar quando quiser. Seu time favorito e os avisos ficam em
           Configurações.
-        </Text>
+        </AppText>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -319,18 +275,11 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
 }
 
 const styles = StyleSheet.create({
-  unchecked: {
-    borderWidth: 2,
-  },
   container: {
     flex: 1,
   },
   content: {
     padding: spacing.xl,
-  },
-  eyebrow: {
-    fontSize: typography.size.body,
-    fontWeight: typography.weight.semibold,
   },
   title: {
     fontSize: typography.size.title,
@@ -359,27 +308,6 @@ const styles = StyleSheet.create({
     maxWidth: '48.5%',
     minHeight: 132,
     padding: spacing.lg,
-  },
-  tileIcon: {
-    alignItems: 'center',
-    borderRadius: radius.md,
-    height: 40,
-    justifyContent: 'center',
-    width: 40,
-  },
-  tileName: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.bold,
-  },
-  tileSport: {
-    fontSize: typography.size.sm,
-  },
-  tick: {
-    alignItems: 'center',
-    borderRadius: radius.pill,
-    height: 22,
-    justifyContent: 'center',
-    width: 22,
   },
   tileTick: {
     position: 'absolute',
@@ -416,28 +344,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     paddingTop: spacing.xl,
   },
-  box: {
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-  },
   item: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.md,
     minHeight: 56,
     paddingHorizontal: spacing.lg,
   },
-  itemName: {
-    flex: 1,
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
-  },
-  itemTick: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   note: {
-    fontSize: typography.size.sm,
     lineHeight: 18,
     marginTop: spacing.lg,
   },

@@ -1,10 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { AppText } from './AppText';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import * as Linking from 'expo-linking';
 import { TeamCircle } from './TeamCircle';
 import { useTheme } from '../contexts/ThemeContext';
 import { Team, Transfer, TransferClub } from '../types/snapshot';
+import { openLink } from '../utils/links';
 import {
   formatTransferDate,
   getSourceName,
@@ -47,12 +48,13 @@ function Club({
           color={colors.textTertiary}
         />
       )}
-      <Text
+      <AppText
+        variant="captionMedium"
         numberOfLines={2}
-        style={[styles.clubName, { color: colors.textPrimary }]}
+        style={styles.clubName}
       >
         {getTeamName(team?.name ?? club.name)}
-      </Text>
+      </AppText>
     </View>
   );
 }
@@ -85,14 +87,14 @@ export const TransferCard = React.memo(function TransferCard({
         },
       ]}
     >
-      <Text style={[styles.athlete, { color: colors.textPrimary }]}>
+      <AppText variant="label">
         {transfer.athleteName}
         {transfer.position ? (
-          <Text style={{ color: colors.textSecondary }}>
+          <AppText variant="label" tone="secondary">
             {` · ${transfer.position}`}
-          </Text>
+          </AppText>
         ) : null}
-      </Text>
+      </AppText>
 
       <View style={styles.clubs}>
         <Club club={transfer.from} teamsById={teamsById} />
@@ -106,15 +108,15 @@ export const TransferCard = React.memo(function TransferCard({
 
       {(details.length > 0 || highlight) && (
         <View style={styles.footer}>
-          <Text style={[styles.details, { color: colors.textSecondary }]}>
+          <AppText variant="caption" tone="secondary">
             {details.join(' · ')}
-          </Text>
+          </AppText>
           {highlight && (
-            <Text style={[styles.favorite, { color: highlight }]}>
+            <AppText style={[styles.favorite, { color: highlight }]}>
               {favoriteDirection === 'in'
                 ? 'Chegou ao seu time'
                 : 'Saiu do seu time'}
-            </Text>
+            </AppText>
           )}
         </View>
       )}
@@ -124,16 +126,16 @@ export const TransferCard = React.memo(function TransferCard({
         testID={`transfer-source-${transfer.id}`}
         hitSlop={spacing.md}
         style={styles.source}
-        onPress={() => Linking.openURL(transfer.sourceUrl).catch(() => {})}
+        onPress={() => openLink(transfer.sourceUrl)}
       >
         <MaterialCommunityIcons
           name="newspaper-variant-outline"
           size={iconSize.sm}
           color={colors.primary}
         />
-        <Text style={[styles.sourceText, { color: colors.primary }]}>
+        <AppText variant="caption" tone="accent">
           {`Fonte: ${getSourceName(transfer.sourceUrl)}`}
-        </Text>
+        </AppText>
       </TouchableOpacity>
     </View>
   );
@@ -148,10 +150,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     padding: spacing.lg,
   },
-  athlete: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
-  },
   clubs: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -165,15 +163,10 @@ const styles = StyleSheet.create({
   },
   clubName: {
     flexShrink: 1,
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  details: {
-    fontSize: typography.size.sm,
   },
   favorite: {
     fontSize: typography.size.sm,
@@ -184,8 +177,5 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     flexDirection: 'row',
     gap: spacing.xs,
-  },
-  sourceText: {
-    fontSize: typography.size.sm,
   },
 });

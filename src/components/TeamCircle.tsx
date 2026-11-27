@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { AppText } from './AppText';
 import { Image } from 'expo-image';
 import { Team } from '../types/snapshot';
 import { getTeamColor, TEAM_TEXT_COLOR } from '../utils/teamColor';
@@ -38,14 +39,14 @@ export const TeamCircle = React.memo(function TeamCircle({
           testID={`team-logo-${team.id}`}
         />
       ) : size >= 32 ? (
-        <Text
+        <AppText
           style={[
             styles.acronym,
             { color: TEAM_TEXT_COLOR, fontSize: size * 0.3 },
           ]}
         >
           {team.code}
-        </Text>
+        </AppText>
       ) : null}
     </View>
   );

@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { AppText } from './AppText';
 import { useTheme } from '../contexts/ThemeContext';
 import { CompetitionSlug } from '../types/snapshot';
 import { getCompetition } from '../constants/competitions';
@@ -9,7 +10,6 @@ import {
   radius,
   sectionLabel,
   spacing,
-  typography,
 } from '../constants/designTokens';
 
 interface NewsCardProps {
@@ -57,21 +57,18 @@ export function NewsCard({
           />
         </View>
         <View style={styles.title}>
-          <Text style={[sectionLabel, { color: colors.primary }]}>
+          <AppText style={[sectionLabel, { color: colors.primary }]}>
             Novidade
-          </Text>
-          <Text
-            accessibilityRole="header"
-            style={[styles.name, { color: colors.textPrimary }]}
-          >
+          </AppText>
+          <AppText variant="heading" accessibilityRole="header">
             {`Agora tem ${info.name}`}
-          </Text>
+          </AppText>
         </View>
       </View>
       {description || next ? (
-        <Text style={[styles.text, { color: colors.textPrimary }]}>
+        <AppText variant="body" style={styles.text}>
           {[description, next].filter(Boolean).join(' ')}
-        </Text>
+        </AppText>
       ) : null}
       <View style={styles.actions}>
         <Button
@@ -117,12 +114,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-  name: {
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.bold,
-  },
   text: {
-    fontSize: typography.size.body,
     lineHeight: 20,
   },
   actions: {

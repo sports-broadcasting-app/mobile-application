@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
+import { AppText } from './AppText';
 import { IS_STORE_BUILD } from '../constants/buildInfo';
 import { HAS_DATA_URL_ENV, DATA_URL } from '../constants/config';
 import { useSync } from '../contexts/SyncContext';
@@ -26,15 +27,15 @@ export function SyncGate({ children }: { children: ReactNode }) {
       {phase === 'loading' || refreshing ? (
         <>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.message, { color: colors.textSecondary }]}>
+          <AppText tone="secondary" style={styles.message}>
             Buscando os jogos...
-          </Text>
+          </AppText>
         </>
       ) : (
         <>
-          <Text style={[styles.message, { color: colors.textSecondary }]}>
+          <AppText tone="secondary" style={styles.message}>
             Não foi possível carregar os dados. Verifique sua conexão.
-          </Text>
+          </AppText>
           <Button label="Tentar novamente" onPress={refresh} />
           {/* The data URL and env flags help us debug; store users get
               nothing from them. */}

@@ -1,15 +1,9 @@
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { BottomSheet } from './BottomSheet';
-import { SportIcon } from './SportIcon';
 import { Button } from './Button';
-import { ThemedSwitch } from './ThemedSwitch';
+import { AppText } from './AppText';
+import { CheckRow } from './CheckRow';
+import { SportToggleRow } from './SportToggleRow';
 import { useFavorites } from '../contexts/FavoritesContext';
 import {
   competitionsOfSport,
@@ -20,12 +14,7 @@ import { useTeamsById } from '../hooks/useSuperliga';
 import { CompetitionSlug } from '../types/snapshot';
 import { getTeamName } from '../utils/teamName';
 import { getCompetition, SPORTS } from '../constants/competitions';
-import {
-  iconSize,
-  radius,
-  spacing,
-  typography,
-} from '../constants/designTokens';
+import { spacing } from '../constants/designTokens';
 
 interface CompetitionsSheetProps {
   visible: boolean;
@@ -76,172 +65,63 @@ export function CompetitionsSheet({
           if (own.length === 0) return null;
           const on = sportOn(sport);
           const single = own.length === 1 ? getCompetition(own[0]) : null;
-          const detail = single
-            ? [single.name, teamLine(single.slug)].filter(Boolean).join(' · ')
-            : null;
           return (
             <View
               key={sport}
               style={[styles.sport, { borderBottomColor: colors.borderLight }]}
             >
-              <View style={styles.row}>
-                <View
-                  style={[styles.icon, { backgroundColor: colors.surfaceAlt }]}
-                >
-                  <SportIcon
-                    sport={sport}
-                    size={iconSize.md}
-                    color={colors.textSecondary}
-                  />
-                </View>
-                <View style={styles.label}>
-                  <Text style={[styles.name, { color: colors.textPrimary }]}>
-                    {name}
-                  </Text>
-                  {detail ? (
-                    <Text
-                      style={[styles.detail, { color: colors.textSecondary }]}
-                    >
-                      {detail}
-                    </Text>
-                  ) : null}
-                </View>
-                <ThemedSwitch
-                  accessibilityLabel={`Acompanhar ${single?.name ?? name}`}
-                  testID={`follow-sport-${sport}`}
-                  value={on}
-                  disabled={on && sportLocked(sport)}
-                  onValueChange={(next) => setSport(sport, next)}
-                />
-              </View>
+              <SportToggleRow
+                sport={sport}
+                name={name}
+                detail={
+                  single &&
+                  [single.name, teamLine(single.slug)]
+                    .filter(Boolean)
+                    .join(' · ')
+                }
+                on={on}
+                locked={sportLocked(sport)}
+                onChange={(next) => setSport(sport, next)}
+                accessibilityLabel={`Acompanhar ${single?.name ?? name}`}
+              />
               {!single &&
                 on &&
                 own.map((slug) => {
-                  const info = getCompetition(slug);
                   const checked = followed.includes(slug);
-                  const locked = checked && competitionLocked(slug);
-                  const team = teamLine(slug);
                   return (
-                    <TouchableOpacity
+                    <CheckRow
                       key={slug}
-                      accessibilityRole="checkbox"
-                      accessibilityState={{ checked, disabled: locked }}
-                      accessibilityHint={
-                        locked
-                          ? 'Acompanhe outra antes de desmarcar esta'
-                          : undefined
-                      }
+                      label={getCompetition(slug).name}
+                      detail={teamLine(slug)}
+                      checked={checked}
+                      locked={checked && competitionLocked(slug)}
+                      onToggle={(next) => setCompetitionFollowed(slug, next)}
                       testID={`follow-${slug}`}
                       style={styles.child}
-                      onPress={() => {
-                        if (!locked) setCompetitionFollowed(slug, !checked);
-                      }}
-                    >
-                      <View style={styles.label}>
-                        <Text
-                          style={[
-                            styles.childName,
-                            { color: colors.textPrimary },
-                          ]}
-                        >
-                          {info.name}
-                        </Text>
-                        {team ? (
-                          <Text
-                            style={[
-                              styles.detail,
-                              { color: colors.textSecondary },
-                            ]}
-                          >
-                            {team}
-                          </Text>
-                        ) : null}
-                      </View>
-                      <View
-                        style={[
-                          styles.check,
-                          checked
-                            ? { backgroundColor: colors.primary }
-                            : [
-                                styles.unchecked,
-                                { borderColor: colors.controlBorder },
-                              ],
-                        ]}
-                      >
-                        {checked ? (
-                          <MaterialCommunityIcons
-                            name="check"
-                            size={iconSize.sm}
-                            color={colors.onPrimary}
-                          />
-                        ) : null}
-                      </View>
-                    </TouchableOpacity>
+                    />
                   );
                 })}
             </View>
           );
         })}
-        <Text style={[styles.note, { color: colors.textTertiary }]}>
+        <AppText variant="caption" tone="tertiary" style={styles.note}>
           Competições novas de um esporte que você acompanha entram sozinhas.
-        </Text>
+        </AppText>
       </ScrollView>
     </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  unchecked: {
-    borderWidth: 2,
-  },
   sport: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     paddingVertical: spacing.sm,
   },
-  row: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.md,
-    minHeight: 52,
-  },
   child: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.md,
     minHeight: 48,
     paddingLeft: 36 + spacing.md,
   },
-  icon: {
-    alignItems: 'center',
-    borderRadius: radius.sm,
-    height: 36,
-    justifyContent: 'center',
-    width: 36,
-  },
-  label: {
-    flex: 1,
-    gap: 2,
-  },
-  name: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.bold,
-  },
-  childName: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semibold,
-  },
-  detail: {
-    fontSize: typography.size.sm,
-  },
-  check: {
-    alignItems: 'center',
-    borderRadius: 7,
-    height: 24,
-    justifyContent: 'center',
-    width: 24,
-  },
   note: {
-    fontSize: typography.size.sm,
     paddingTop: spacing.md,
   },
 });
