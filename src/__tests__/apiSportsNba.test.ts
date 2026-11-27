@@ -1,9 +1,5 @@
-import {
-  addNbaQuarters,
-  findPeriods,
-  parseNbaGames,
-  periodsMatchScore,
-} from '../../scripts/apiSports/nba';
+import { addNbaQuarters, parseNbaGames } from '../../scripts/apiSports/nba';
+import { findGameScore, periodsMatchScore } from '../../scripts/periodScores';
 import type { CompetitionData, Match } from '../types/snapshot';
 
 /** An API-NBA v2 game, trimmed to what the parser reads. */
@@ -81,9 +77,9 @@ describe('parseNbaGames', () => {
   it('reads teams, start, status and line scores', () => {
     const [game] = parseNbaGames(answer([apiGame({})]));
     expect(game).toMatchObject({
-      finished: true,
-      homeCode: 'SAC',
-      awayName: 'Boston Celtics',
+      status: 'finished',
+      home: { code: 'SAC' },
+      away: { name: 'Boston Celtics' },
       homeLines: [20, 25, 30, 22],
       awayLines: [24, 26, 20, 26],
     });
@@ -96,7 +92,7 @@ describe('parseNbaGames', () => {
   });
 });
 
-describe('findPeriods', () => {
+describe('findGameScore with API-NBA games', () => {
   it('orients the quarters to ge home and away, whatever the API order', () => {
     const games = parseNbaGames(
       answer([
@@ -106,7 +102,9 @@ describe('findPeriods', () => {
         }),
       ]),
     );
-    expect(findPeriods(match, kings, celtics, games)).toEqual(quarters);
+    expect(findGameScore(match, kings, celtics, games)?.periods).toEqual(
+      quarters,
+    );
   });
 
   it('keeps overtime as extra periods', () => {
@@ -118,18 +116,24 @@ describe('findPeriods', () => {
         }),
       ]),
     );
-    expect(findPeriods(match, kings, celtics, games)).toHaveLength(5);
+    expect(findGameScore(match, kings, celtics, games)?.periods).toHaveLength(
+      5,
+    );
   });
 
   it('ignores unfinished games and quarters that do not add up', () => {
     const live = parseNbaGames(answer([apiGame({ status: 'In Play' })]));
-    expect(findPeriods(match, kings, celtics, live)).toBeNull();
+    expect(findGameScore(match, kings, celtics, live)).toBeNull();
     const wrong = parseNbaGames(
       answer([
         apiGame({ home: ['Sacramento Kings', 'SAC', ['1', '1', '1', '1']] }),
       ]),
     );
-    expect(findPeriods(match, kings, celtics, wrong)).toBeNull();
+    // API-NBA has no total: the quarters are checked against ge's score.
+    const found = findGameScore(match, kings, celtics, wrong);
+    expect(
+      periodsMatchScore(found!.periods, match.homeScore, match.awayScore),
+    ).toBe(false);
   });
 });
 
