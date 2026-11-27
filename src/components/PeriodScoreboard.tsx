@@ -24,7 +24,7 @@ interface PeriodScoreboardProps {
   totalLabel: string;
   homeTotal: number;
   awayTotal: number;
-  testID?: string;
+  testID?: string | undefined;
 }
 
 /**

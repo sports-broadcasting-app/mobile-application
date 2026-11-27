@@ -58,9 +58,14 @@ export const SPORTS: { sport: Sport; name: string }[] = [
   { sport: 'volei', name: 'Vôlei' },
 ];
 
-export function getSport(sport: Sport) {
-  return SPORTS.find((entry) => entry.sport === sport) ?? SPORTS[0];
+export function getSport(sport: Sport): { sport: Sport; name: string } {
+  const info = SPORTS.find((entry) => entry.sport === sport);
+  if (!info) throw new Error(`Unknown sport: ${sport}`);
+  return info;
 }
+
+/** First in display order: the pick before any is made. */
+export const DEFAULT_COMPETITION: CompetitionSlug = 'masculina';
 
 export const ALL_COMPETITIONS: CompetitionSlug[] = COMPETITIONS.map(
   (info) => info.slug,
@@ -69,7 +74,7 @@ export const ALL_COMPETITIONS: CompetitionSlug[] = COMPETITIONS.map(
 const BY_SLUG = new Map(COMPETITIONS.map((info) => [info.slug, info]));
 
 export function isCompetitionSlug(value: unknown): value is CompetitionSlug {
-  return typeof value === 'string' && BY_SLUG.has(value as CompetitionSlug);
+  return COMPETITIONS.some((info) => info.slug === value);
 }
 
 export function getCompetition(slug: CompetitionSlug): CompetitionInfo {

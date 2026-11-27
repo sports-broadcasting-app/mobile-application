@@ -1,3 +1,5 @@
+import { pairLines, sum } from '../lines.ts';
+import { asObject, objectsOf, parseJson } from '../../src/utils/json.ts';
 import type {
   CompetitionData,
   Match,
@@ -20,8 +22,6 @@ const LOOKBACK_MS = 36 * 60 * 60 * 1000;
 /** ge and Big Balls kickoffs of the same game differ by minutes. */
 const SAME_GAME_MS = 6 * 60 * 60 * 1000;
 
-type Raw = Record<string, unknown>;
-
 export interface NflGame {
   kickoff: number;
   status: string;
@@ -32,9 +32,6 @@ export interface NflGame {
   homeLines: number[];
   awayLines: number[];
 }
-
-const asObject = (value: unknown): Raw =>
-  value && typeof value === 'object' ? (value as Raw) : {};
 
 const toText = (value: unknown): string =>
   typeof value === 'string' ? value.trim() : '';
@@ -58,12 +55,12 @@ function toLines(value: unknown): number[] {
 
 /** Games from a `/v1/matches?league=nfl&date=` answer. Throws on an error. */
 export function parseNflGames(json: string): NflGame[] {
-  const body = asObject(JSON.parse(json));
+  const body = asObject(parseJson(json));
   if (body.error) throw new Error(`Big Balls: ${JSON.stringify(body.error)}`);
   if (!Array.isArray(body.data)) return [];
 
   const games: NflGame[] = [];
-  for (const raw of body.data as Raw[]) {
+  for (const raw of objectsOf(body.data)) {
     const kickoff = Date.parse(toText(raw.kickoff_utc));
     if (Number.isNaN(kickoff)) continue;
     const score = asObject(raw.score);
@@ -81,8 +78,6 @@ export function parseNflGames(json: string): NflGame[] {
   }
   return games;
 }
-
-const sum = (lines: number[]) => lines.reduce((total, n) => total + n, 0);
 
 export interface NflScore {
   homeScore: number;
@@ -118,17 +113,14 @@ export function findNflScore(
     const finished = game.status === 'finished';
     if (game.status !== 'live' && !finished) return null;
     if (game.homeScore === null || game.awayScore === null) return null;
-    if (game.homeLines.length !== game.awayLines.length) return null;
+    const periods = pairLines(game.homeLines, game.awayLines);
+    if (!periods) return null;
     if (
       sum(game.homeLines) !== game.homeScore ||
       sum(game.awayLines) !== game.awayScore
     ) {
       return null;
     }
-    const periods = game.homeLines.map((points, i) => ({
-      home: points,
-      away: game.awayLines[i],
-    }));
     return flip
       ? {
           homeScore: game.awayScore,

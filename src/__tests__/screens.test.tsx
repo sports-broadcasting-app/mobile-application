@@ -253,7 +253,7 @@ describe('HomeScreen', () => {
 describe('StandingsScreen', () => {
   it('shows the selected competition in order', async () => {
     (getStandings as jest.Mock).mockResolvedValue(
-      buildSnapshot([]).competitions[0].standings,
+      buildSnapshot([]).competitions[0]!.standings,
     );
     render(<StandingsScreen />);
     expect(await screen.findByTestId('standing-row-2')).toBeTruthy();
@@ -320,7 +320,7 @@ describe('TransfersScreen', () => {
     render(<TransfersScreen />);
     fireEvent.press(await screen.findByTestId('transfer-source-t1'));
     expect(screen.getByText('Fonte: lance.com.br')).toBeTruthy();
-    expect(Linking.openURL).toHaveBeenCalledWith(transfers[0].sourceUrl);
+    expect(Linking.openURL).toHaveBeenCalledWith(transfers[0]!.sourceUrl);
   });
 
   it('puts the favorite team first and marks arrivals and departures', async () => {

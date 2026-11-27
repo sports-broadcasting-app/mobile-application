@@ -38,10 +38,10 @@ describe('startAds', () => {
     expect(requestTracking).toHaveBeenCalled();
     expect(initialize).toHaveBeenCalled();
     expect(gatherConsent.mock.invocationCallOrder[0]).toBeLessThan(
-      initialize.mock.invocationCallOrder[0],
+      initialize.mock.invocationCallOrder[0]!,
     );
     expect(requestTracking.mock.invocationCallOrder[0]).toBeLessThan(
-      initialize.mock.invocationCallOrder[0],
+      initialize.mock.invocationCallOrder[0]!,
     );
   });
 

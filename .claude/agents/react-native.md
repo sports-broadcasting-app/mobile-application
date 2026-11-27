@@ -48,6 +48,12 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 - `MatchDetailScreen` has local `Section`/`TeamColumn`/`Info`; `SettingsScreen` a local `LinkRow` ("Seu time" / "Avisos"). `SkeletonBlock` and the `skeletonBase` token were removed (unused).
 - The Text→AppText move was a codemod; its traps, for the next one: a style shared by two texts lost `fontSize` when one became a variant (the standings cells went 12→14 until fixed), and a comment above `maxFontSizeMultiplier` swallowed `capped`. Check by screenshots diffed below the status bar, not by eye alone.
 
+## Strict types without casts (PR #53)
+
+- `tsconfig.json`: `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noFallthroughCasesInSwitch` on top of `strict`. ESLint forbids `as` and `!` outside tests (`consistent-type-assertions: never`, `no-non-null-assertion`); `ignoreRestSiblings` lets `const { series: _series, ...rest } = x` drop a field.
+- SQLite rows come back through `parseRows(rows, isMatch | isTeam | …)` (`src/data/database.ts`): a row that fails the guard is skipped. AsyncStorage values go through `parseJson`. `isValidSnapshot` became `isSnapshot` in `src/utils/guards.ts` (same checks, shared with the collector).
+- `getSport` throws on an unknown sport (no `SPORTS[0]` fallback); `DEFAULT_COMPETITION` replaces `ALL_COMPETITIONS[0]`; `isCompetitionSlug` checks the list instead of casting. Optional component props filled from maybe-missing values are `prop?: T | undefined`.
+
 ## Checking your work
 
 ```bash

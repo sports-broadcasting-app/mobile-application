@@ -66,7 +66,7 @@ export function toLegacySnapshot(snapshot: Snapshot): LegacySnapshot {
       teams: competition.teams,
       matches: competition.matches.map(toLegacyMatch),
       standings: competition.standings.map(toLegacyStanding),
-      transfers: competition.transfers,
+      ...(competition.transfers ? { transfers: competition.transfers } : {}),
     })),
   };
 }

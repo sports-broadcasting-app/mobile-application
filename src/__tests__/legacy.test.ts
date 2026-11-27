@@ -18,13 +18,13 @@ describe('toLegacySnapshot', () => {
       'feminina',
     ]);
 
-    const [match] = legacy.competitions[0].matches;
+    const [match] = legacy.competitions[0]!.matches;
     expect(match).toMatchObject({ homeSets: 3, awaySets: 1 });
     expect(match).not.toHaveProperty('homeScore');
 
-    const [standing] = legacy.competitions[0].standings;
+    const [standing] = legacy.competitions[0]!.standings;
     expect(standing).toMatchObject({ setsWon: 9, setsLost: 1, pointsWon: 0 });
     expect(standing).not.toHaveProperty('draws');
-    expect(legacy.competitions[0].transfers).toHaveLength(3);
+    expect(legacy.competitions[0]!.transfers).toHaveLength(3);
   });
 });

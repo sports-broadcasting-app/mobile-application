@@ -149,13 +149,9 @@ export function chipRow(
     : [
         { value: 'todos', label: 'Todos' },
         ...followedSports.map((each) => {
-          const inSport = followedIn(each);
-          return inSport.length === 1
-            ? {
-                value: inSport[0],
-                label: getCompetition(inSport[0]).label,
-                sport: each,
-              }
+          const [only, ...others] = followedIn(each);
+          return only && others.length === 0
+            ? { value: only, label: getCompetition(only).label, sport: each }
             : { value: each, label: getSport(each).name, sport: each };
         }),
       ];

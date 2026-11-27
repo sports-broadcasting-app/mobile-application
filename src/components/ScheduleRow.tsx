@@ -12,13 +12,13 @@ interface ScheduleRowProps {
   title: string;
   /** A session name may need a second line; clubs stay on one. */
   titleLines?: 1 | 2;
-  favorite?: boolean;
+  favorite?: boolean | undefined;
   /** The first channel; none shows "a definir" when `showTbd`. */
-  channel?: string;
+  channel?: string | undefined;
   showTbd?: boolean;
-  onPress?: () => void;
+  onPress?: (() => void) | undefined;
   accessibilityLabel: string;
-  accessibilityHint?: string;
+  accessibilityHint?: string | undefined;
   testID: string;
 }
 

@@ -1,30 +1,16 @@
 import bundledTransfers from '../../scripts/superliga/transfers.json';
 import {
   resolveTransfers,
-  type TransferFile,
+  toTransferFile,
 } from '../../scripts/superliga/transfers.ts';
 import { isCompetitionSlug } from '../constants/competitions';
 import { DATA_URL } from '../constants/config';
 import { Snapshot } from '../types/snapshot';
+import { isSnapshot } from '../utils/guards';
 import { logSync } from '../utils/syncLog';
 
 const REQUEST_TIMEOUT_MS = 20_000;
 const BODY_PREVIEW_LENGTH = 200;
-
-function isValidSnapshot(data: unknown): data is Snapshot {
-  const snapshot = data as Partial<Snapshot> | null;
-  return (
-    snapshot?.version === 2 &&
-    Array.isArray(snapshot.competitions) &&
-    snapshot.competitions.every(
-      (competition) =>
-        competition.teams?.length > 0 && Array.isArray(competition.matches),
-    ) &&
-    (snapshot.series === undefined ||
-      (Array.isArray(snapshot.series) &&
-        snapshot.series.every((series) => Array.isArray(series.sessions))))
-  );
-}
 
 /**
  * Series (Formula 1) are published apart from the competitions, which older
@@ -38,11 +24,8 @@ export function withSeries(snapshot: Snapshot): Snapshot {
     matches: entry.matches ?? [],
     standings: entry.standings ?? [],
   }));
-  return {
-    ...snapshot,
-    competitions: [...snapshot.competitions, ...series],
-    series: undefined,
-  };
+  const { series: _series, ...rest } = snapshot;
+  return { ...rest, competitions: [...snapshot.competitions, ...series] };
 }
 
 /**
@@ -65,7 +48,7 @@ export function keepKnownCompetitions(snapshot: Snapshot): Snapshot {
  * the sync.
  */
 export function withBundledTransfers(snapshot: Snapshot): Snapshot {
-  const bundled = bundledTransfers as TransferFile;
+  const bundled = toTransferFile(bundledTransfers);
   for (const competition of snapshot.competitions) {
     if (competition.sport !== 'volei' || competition.transfers?.length) {
       continue;
@@ -113,7 +96,7 @@ export async function fetchSnapshot(): Promise<Snapshot> {
     }
 
     const data: unknown = JSON.parse(body);
-    if (!isValidSnapshot(data)) {
+    if (!isSnapshot(data)) {
       logSync('invalid snapshot', {
         bodyPreview: body.slice(0, BODY_PREVIEW_LENGTH),
       });

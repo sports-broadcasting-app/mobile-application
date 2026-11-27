@@ -48,13 +48,13 @@ describe('database', () => {
 
   it('keeps a divided table in snapshot order, not by position', async () => {
     const snapshot = buildSnapshot([scheduledMatch]);
-    const [first, second] = snapshot.competitions[0].standings;
-    snapshot.competitions[0].standings = [
-      { ...first, position: 1, group: 'A' },
-      { ...second, position: 2, group: 'A' },
-      { ...second, teamId: '9', position: 1, group: 'B' },
+    const [first, second] = snapshot.competitions[0]!.standings;
+    snapshot.competitions[0]!.standings = [
+      { ...first!, position: 1, group: 'A' },
+      { ...second!, position: 2, group: 'A' },
+      { ...second!, teamId: '9', position: 1, group: 'B' },
     ];
-    snapshot.competitions[0].teams.push({ ...homeTeam, id: '9' });
+    snapshot.competitions[0]!.teams.push({ ...homeTeam, id: '9' });
     await saveSnapshot(snapshot, 3000);
     const standings = await getStandings('masculina');
     expect(standings.map((row) => [row.group, row.position])).toEqual([
@@ -104,7 +104,7 @@ describe('database', () => {
 
   it('accepts a snapshot without transfers', async () => {
     const snapshot = buildSnapshot([scheduledMatch]);
-    delete snapshot.competitions[0].transfers;
+    delete snapshot.competitions[0]!.transfers;
     await saveSnapshot(snapshot, 2000);
     expect(await countTransfers('masculina')).toBe(0);
   });

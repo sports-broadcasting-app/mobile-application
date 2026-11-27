@@ -233,7 +233,7 @@ describe('parseMatches', () => {
       ['live', 7, 3],
       ['finished', null, null],
     ]);
-    expect(matches[0].channels).toEqual([]);
+    expect(matches[0]!.channels).toEqual([]);
   });
 
   it('skips a game without a date or a team', () => {
@@ -297,7 +297,7 @@ describe('NBA on the same pages', () => {
     const parsed = parseStandingsPage(page(nba));
 
     expect(parsed.season).toBe('2026/27');
-    expect(parsed.phases[0].rounds).toBe(65);
+    expect(parsed.phases[0]!.rounds).toBe(65);
     expect(parsed.standings[0]).toMatchObject({
       group: 'Conferência Leste',
       wins: 12,

@@ -6,7 +6,7 @@ import { ScheduleRow } from './ScheduleRow';
 
 interface SessionRowProps {
   session: RaceSession;
-  onPress?: () => void;
+  onPress?: (() => void) | undefined;
 }
 
 /** A coming race session in one line, like MatchRow: day, time, the GP. */

@@ -39,9 +39,9 @@ describe('BottomSheet keyboard on Android', () => {
   it('subscribes to the keyboard and follows its height', () => {
     renderSheet();
     expect(listeners.keyboardDidShow).toBeDefined();
-    act(() => listeners.keyboardDidShow({ endCoordinates: { height: 300 } }));
+    act(() => listeners.keyboardDidShow!({ endCoordinates: { height: 300 } }));
     expect(screen.getByText('conteudo')).toBeTruthy();
-    act(() => listeners.keyboardDidHide({ endCoordinates: { height: 0 } }));
+    act(() => listeners.keyboardDidHide!({ endCoordinates: { height: 0 } }));
     expect(screen.getByText('conteudo')).toBeTruthy();
   });
 });

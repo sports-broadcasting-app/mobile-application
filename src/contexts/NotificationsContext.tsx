@@ -16,7 +16,8 @@ import {
   getUpcomingFavoriteMatches,
   getUpcomingSessions,
 } from '../data/database';
-import { CompetitionSlug, SessionKind } from '../types/snapshot';
+import { SessionKind } from '../types/snapshot';
+import { parseJson } from '../utils/json';
 import { getCompetition } from '../constants/competitions';
 import { DEFAULT_REMINDER_KINDS, REMINDER_KINDS } from '../utils/sessions';
 import {
@@ -84,15 +85,14 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { followed } = useCompetition();
   const { lastSyncAt } = useSync();
   // Only competitions the user follows get reminders.
-  const favorites = useMemo(
-    () =>
-      Object.fromEntries(
-        Object.entries(allFavorites).filter(([slug]) =>
-          followed.includes(slug as CompetitionSlug),
-        ),
-      ) as Favorites,
-    [allFavorites, followed],
-  );
+  const favorites = useMemo(() => {
+    const own: Favorites = {};
+    for (const slug of followed) {
+      const team = allFavorites[slug];
+      if (team) own[slug] = team;
+    }
+    return own;
+  }, [allFavorites, followed]);
   const [preference, setPreference] = useState<boolean | null>(null);
   const [permission, setPermission] =
     useState<NotificationPermission>('undetermined');
@@ -116,7 +116,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     AsyncStorage.getItem(SESSION_KINDS_KEY)
       .then((stored) => {
         if (!stored) return;
-        const parsed = JSON.parse(stored) as unknown;
+        const parsed = parseJson(stored);
         if (!Array.isArray(parsed)) return;
         setSessionKinds(
           REMINDER_KINDS.map(({ kind }) => kind).filter((kind) =>

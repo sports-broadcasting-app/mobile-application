@@ -1,5 +1,6 @@
+const FIRST_COLOR = '#1e40af';
 const PALETTE = [
-  '#1e40af',
+  FIRST_COLOR,
   '#dc2626',
   '#059669',
   '#d97706',
@@ -18,5 +19,5 @@ export const TEAM_TEXT_COLOR = '#fff';
 
 export function getTeamColor(id: string): string {
   const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return PALETTE[hash % PALETTE.length];
+  return PALETTE[hash % PALETTE.length] ?? FIRST_COLOR;
 }

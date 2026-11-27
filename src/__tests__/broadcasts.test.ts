@@ -62,7 +62,7 @@ describe('applyBroadcasts', () => {
   it('adds the curated broadcaster to the game of that day', () => {
     const competition = nfl([{ ...game, channels: [] }]);
     const log = applyBroadcasts([competition], { nfl: [line] });
-    expect(competition.matches[0].channels).toEqual(['Netflix']);
+    expect(competition.matches[0]!.channels).toEqual(['Netflix']);
     expect(log).toEqual(['NFL: 1 curated broadcasts']);
   });
 
@@ -71,7 +71,7 @@ describe('applyBroadcasts', () => {
     applyBroadcasts([competition], {
       nfl: [{ ...line, channels: ['Netflix', 'Prime Video'] }],
     });
-    expect(competition.matches[0].channels).toEqual([
+    expect(competition.matches[0]!.channels).toEqual([
       'SporTV',
       'Netflix',
       'Prime Video',
@@ -83,7 +83,7 @@ describe('applyBroadcasts', () => {
     applyBroadcasts([competition], {
       nfl: [{ ...line, home: 'Green Bay Packers', away: 'lar' }],
     });
-    expect(competition.matches[0].channels).toEqual(['Netflix']);
+    expect(competition.matches[0]!.channels).toEqual(['Netflix']);
   });
 
   it('only warns when the game is not in the snapshot', () => {
@@ -91,7 +91,7 @@ describe('applyBroadcasts', () => {
     const log = applyBroadcasts([competition], {
       nfl: [{ ...line, date: '2026-11-26' }],
     });
-    expect(competition.matches[0].channels).toEqual([]);
+    expect(competition.matches[0]!.channels).toEqual([]);
     expect(log[0]).toMatch(/^::warning::.*no LAR x GB game on 2026-11-26/);
   });
 

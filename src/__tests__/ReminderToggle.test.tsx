@@ -77,7 +77,7 @@ describe('ReminderToggle', () => {
       true,
     );
     await waitFor(() => expect(alert).toHaveBeenCalled());
-    const buttons = alert.mock.calls[0][2] ?? [];
+    const buttons = alert.mock.calls[0]![2] ?? [];
     buttons.find((button) => button.text === 'Abrir ajustes')?.onPress?.();
     expect(Linking.openSettings).toHaveBeenCalled();
   });
@@ -134,7 +134,7 @@ describe('ReminderToggle', () => {
         expect.any(Object),
       ),
     );
-    const buttons = alert.mock.calls[0][2] ?? [];
+    const buttons = alert.mock.calls[0]![2] ?? [];
     buttons.find((button) => button.text === 'Permitir')?.onPress?.();
     expect(requestExactAlarms).toHaveBeenCalled();
   });

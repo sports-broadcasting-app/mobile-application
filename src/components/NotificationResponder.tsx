@@ -1,10 +1,5 @@
 import { useEffect, useRef } from 'react';
-import {
-  Href,
-  usePathname,
-  useRootNavigationState,
-  useRouter,
-} from 'expo-router';
+import { usePathname, useRootNavigationState, useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 
 /** Opens the screen of a tapped reminder, also when it launched the app. */
@@ -39,9 +34,9 @@ export function NotificationResponder() {
       pathname.current.startsWith('/match/') ||
       pathname.current.startsWith('/grand-prix/')
     ) {
-      router.replace(path as Href);
+      router.replace(path);
     } else {
-      router.push(path as Href);
+      router.push(path);
     }
   }, [navigationReady, response, router]);
 

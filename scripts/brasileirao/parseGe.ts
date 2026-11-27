@@ -7,8 +7,15 @@ import type {
   Standing,
   Team,
 } from '../../src/types/snapshot';
-
-type RawObject = Record<string, unknown>;
+import {
+  asObject,
+  objectsOf,
+  parseJson,
+  readBalanced,
+  toNumber,
+  toText,
+  type JsonObject,
+} from '../../src/utils/json.ts';
 
 const TIME_ZONE = 'America/Sao_Paulo';
 /** A match that started this long ago is over, even before ge says so. */
@@ -46,39 +53,6 @@ export interface TablePage {
   lastRound: number;
 }
 
-function toNumber(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
-}
-
-function toText(value: unknown): string | null {
-  return typeof value === 'string' && value.length > 0 ? value : null;
-}
-
-function readBalanced(text: string, start: number): string | null {
-  const open = text[start];
-  const close = open === '{' ? '}' : ']';
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-
-  for (let i = start; i < text.length; i++) {
-    const char = text[i];
-    if (inString) {
-      if (escaped) escaped = false;
-      else if (char === '\\') escaped = true;
-      else if (char === '"') inString = false;
-    } else if (char === '"') {
-      inString = true;
-    } else if (char === open) {
-      depth++;
-    } else if (char === close) {
-      depth--;
-      if (depth === 0) return text.slice(start, i + 1);
-    }
-  }
-  return null;
-}
-
 /** The JSON value that follows `"key":` in a page, or null. */
 function readJsonAfter(text: string, key: string): unknown {
   const index = text.indexOf(key);
@@ -86,7 +60,7 @@ function readJsonAfter(text: string, key: string): unknown {
   const raw = readBalanced(text, index + key.length);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as unknown;
+    return parseJson(raw);
   } catch {
     return null;
   }
@@ -132,20 +106,20 @@ export function parseTablePage(html: string): TablePage {
   };
 }
 
-function toTeam(raw: RawObject | undefined): Team | null {
-  const id = toNumber(raw?.id);
-  const name = toText(raw?.nome_popular);
+function toTeam(raw: JsonObject): Team | null {
+  const id = toNumber(raw.id);
+  const name = toText(raw.nome_popular);
   if (id === null || !name) return null;
   return {
     id: String(id),
     name,
-    code: toText(raw?.sigla) ?? name.slice(0, 3).toUpperCase(),
-    badgeUrl: toText(raw?.escudo),
+    code: toText(raw.sigla) ?? name.slice(0, 3).toUpperCase(),
+    badgeUrl: toText(raw.escudo),
   };
 }
 
 function toStatus(
-  raw: RawObject,
+  raw: JsonObject,
   startsAt: string,
   broadcastId: string | null,
   now: number,
@@ -170,27 +144,27 @@ export function parseRound(
   competition: CompetitionSlug,
   now: number,
 ): { matches: RoundMatch[]; teams: Team[] } {
-  const rows = JSON.parse(json) as unknown;
+  const rows = parseJson(json);
   if (!Array.isArray(rows)) throw new Error(`Round ${round}: not a list`);
 
   const matches: RoundMatch[] = [];
   const teams = new Map<string, Team>();
 
-  for (const raw of rows as RawObject[]) {
+  for (const raw of objectsOf(rows)) {
     const id = toNumber(raw.id);
     const startsAt = toInstant(toText(raw.data_realizacao) ?? '');
-    const sides = raw.equipes as RawObject | undefined;
-    const home = toTeam(sides?.mandante as RawObject | undefined);
-    const away = toTeam(sides?.visitante as RawObject | undefined);
+    const sides = asObject(raw.equipes);
+    const home = toTeam(asObject(sides.mandante));
+    const away = toTeam(asObject(sides.visitante));
     if (id === null || !startsAt || !home || !away) continue;
     teams.set(home.id, home);
     teams.set(away.id, away);
 
-    const transmission = raw.transmissao as RawObject | null | undefined;
-    const broadcast = transmission?.broadcast as RawObject | undefined;
-    const status = toStatus(raw, startsAt, toText(broadcast?.id), now);
+    const transmission = asObject(raw.transmissao);
+    const broadcast = asObject(transmission.broadcast);
+    const status = toStatus(raw, startsAt, toText(broadcast.id), now);
     const hasResult = status === 'live' || status === 'finished';
-    const venue = raw.sede as RawObject | undefined;
+    const venue = asObject(raw.sede);
 
     matches.push({
       match: {
@@ -206,10 +180,10 @@ export function parseRound(
         awayScore: hasResult ? toNumber(raw.placar_oficial_visitante) : null,
         setScores: [],
         channels: [],
-        venue: toText(venue?.nome_popular),
+        venue: toText(venue.nome_popular),
         city: null,
       },
-      pageUrl: toText(transmission?.url),
+      pageUrl: toText(transmission.url),
     });
   }
 
@@ -220,13 +194,13 @@ export function parseStandings(json: string): {
   teams: Team[];
   standings: Standing[];
 } {
-  const body = JSON.parse(json) as RawObject;
+  const body = asObject(parseJson(json));
   const rows = body.classificacao;
   if (!Array.isArray(rows)) throw new Error('Standings: no classification');
 
   const teams: Team[] = [];
   const standings: Standing[] = [];
-  for (const raw of rows as RawObject[]) {
+  for (const raw of objectsOf(rows)) {
     const team = toTeam({ ...raw, id: raw.equipe_id });
     const position = toNumber(raw.ordem);
     if (!team || position === null) continue;
@@ -254,7 +228,7 @@ export function parseStandings(json: string): {
 export function parseChannels(html: string): string[] {
   const sources = readJsonAfter(html, '"liveWatchSources":');
   if (!Array.isArray(sources)) return [];
-  return toChannels((sources as RawObject[]).map((source) => source.name));
+  return toChannels(objectsOf(sources).map((source) => source.name));
 }
 
 /** ge live-feed kinds that become events; everything else is ignored. */
@@ -294,20 +268,18 @@ export function parseEvents(
 
   const seen = new Set<string>();
   const events: (MatchEvent & { order: number })[] = [];
-  for (const play of plays as RawObject[]) {
-    const details = (play.details ?? {}) as RawObject;
+  for (const play of objectsOf(plays)) {
+    const details = asObject(play.details);
     const type = EVENT_KINDS[toText(details.kind) ?? ''];
     const id = toText(play.id);
     if (!type || !id || seen.has(id)) continue;
     seen.add(id);
 
-    const teamId = String((details.team as RawObject | undefined)?.id ?? '');
+    const teamId = String(asObject(details.team).id ?? '');
     const playerSide =
       teamId === homeTeamId ? 'home' : teamId === awayTeamId ? 'away' : null;
-    const player = toText(
-      (details.athlete as RawObject | undefined)?.popularName,
-    );
-    const period = toText((play.period as RawObject | undefined)?.abbreviation);
+    const player = toText(asObject(details.athlete).popularName);
+    const period = toText(asObject(play.period).abbreviation);
     const moment = toText(play.moment);
     if (!playerSide || !player || !period || !moment?.includes(':')) continue;
 

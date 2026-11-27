@@ -4,6 +4,8 @@ import type {
   Snapshot,
 } from '../src/types/snapshot';
 import { fetchText } from './http.ts';
+import { isSnapshot } from '../src/utils/guards.ts';
+import { parseJson } from '../src/utils/json.ts';
 import { assertValidCompetition } from './validate.ts';
 
 /** One site the collector reads; the Superliga page yields two competitions. */
@@ -65,10 +67,12 @@ export async function collectWithFallback(
         `::warning title=${source.name} kept from the last run::${reason}`,
       );
       competitions.push(
-        ...(old as CompetitionData[]).map((c) => ({
-          ...c,
-          updatedAt: c.updatedAt ?? previous.generatedAt,
-        })),
+        ...old
+          .filter((c): c is CompetitionData => c !== undefined)
+          .map((c) => ({
+            ...c,
+            updatedAt: c.updatedAt ?? previous.generatedAt,
+          })),
       );
       kept.push(source.name);
     }
@@ -83,16 +87,16 @@ export async function collectWithFallback(
 /** The snapshot online now, or null when it cannot be read. */
 export async function loadPrevious(url: string): Promise<Snapshot | null> {
   try {
-    const snapshot = JSON.parse(await fetchText(url)) as Snapshot;
-    if (snapshot.version !== 2 || !Array.isArray(snapshot.competitions)) {
-      throw new Error(`unexpected snapshot version ${snapshot.version}`);
+    const snapshot = parseJson(await fetchText(url));
+    if (!isSnapshot(snapshot)) {
+      throw new Error('the published file is not a version 2 snapshot');
     }
     // Series are published apart (see toPublished) but are competitions
     // like the others inside the collector.
+    const { series = [], ...rest } = snapshot;
     return {
-      ...snapshot,
-      competitions: [...snapshot.competitions, ...(snapshot.series ?? [])],
-      series: undefined,
+      ...rest,
+      competitions: [...snapshot.competitions, ...series],
     };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);

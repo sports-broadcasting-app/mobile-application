@@ -58,7 +58,8 @@ export default function GrandPrixScreen() {
     setSessionKind,
   } = useNotifications();
 
-  if (!sessions || sessions.length === 0) {
+  const [first] = sessions ?? [];
+  if (!sessions || !first) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Stack.Screen options={{ title: 'Fórmula 1' }} />
@@ -67,7 +68,6 @@ export default function GrandPrixScreen() {
     );
   }
 
-  const [first] = sessions;
   const next = highlighted(sessions);
   const competition = getCompetition(first.competition);
 

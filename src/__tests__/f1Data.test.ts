@@ -62,7 +62,7 @@ describe('Formula 1 in the snapshot', () => {
       ).map((s) => s.kind),
     ).toEqual(['qualifying', 'race']);
     expect(await getEventStarts(friday, saturday, ['f1'])).toEqual([
-      Date.parse(raceSessions[0].startsAt),
+      Date.parse(raceSessions[0]!.startsAt),
     ]);
   });
 });
@@ -77,29 +77,29 @@ describe('session helpers', () => {
   });
 
   it('describes a session for screen readers', () => {
-    expect(describeSession(raceSessions[0])).toBe(
+    expect(describeSession(raceSessions[0]!)).toBe(
       'GP do Catar, 1º treino livre. 10:30. Onde passa: SporTV, Globoplay',
     );
-    expect(describeSession(raceSessions[2])).toMatch(/Transmissão a definir/);
+    expect(describeSession(raceSessions[2]!)).toMatch(/Transmissão a definir/);
   });
 
   it('warns 30 minutes before a session and opens its weekend', () => {
     const now = Date.parse('2026-11-26T12:00:00-03:00');
-    const [reminder] = buildSessionReminders([raceSessions[2]], now);
+    const [reminder] = buildSessionReminders([raceSessions[2]!], now);
     expect(reminder).toEqual({
       id: 'session-7238',
       matchId: 'session-7238',
       path: '/grand-prix/gp-do-catar-2026',
-      fireAt: Date.parse(raceSessions[2].startsAt) - REMINDER_LEAD_MS,
+      fireAt: Date.parse(raceSessions[2]!.startsAt) - REMINDER_LEAD_MS,
       title: 'GP do Catar: Corrida em 30 min',
       body: 'F1 · 13:00 · Transmissão a confirmar',
     });
   });
 
   it('counts a session around its start as a game on', () => {
-    const start = Date.parse(raceSessions[2].startsAt);
-    expect(isGameOn(raceSessions[2], start + 30 * 60 * 1000)).toBe(true);
-    expect(isGameOn(raceSessions[2], start - 2 * 60 * 60 * 1000)).toBe(false);
+    const start = Date.parse(raceSessions[2]!.startsAt);
+    expect(isGameOn(raceSessions[2]!, start + 30 * 60 * 1000)).toBe(true);
+    expect(isGameOn(raceSessions[2]!, start - 2 * 60 * 60 * 1000)).toBe(false);
   });
 });
 

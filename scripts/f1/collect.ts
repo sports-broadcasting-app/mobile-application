@@ -29,8 +29,9 @@ export interface F1Options {
 
 /** `YYYY-MM-DD` plus `days`, as calendar dates (no time zone involved). */
 function addDays(date: string, days: number): string {
-  const [y, m, d] = date.split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+  const day = new Date(`${date}T00:00:00Z`);
+  day.setUTCDate(day.getUTCDate() + days);
+  return day.toISOString().slice(0, 10);
 }
 
 const weekday = (date: string) => new Date(`${date}T12:00:00Z`).getUTCDay();

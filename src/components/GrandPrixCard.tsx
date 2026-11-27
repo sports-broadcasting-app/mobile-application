@@ -97,7 +97,7 @@ export const GrandPrixCard = React.memo(function GrandPrixCard({
               </AppText>
             </View>
           ) : null}
-          {session.channels.length > 0 ? (
+          {session.channels[0] ? (
             <BroadcasterPill name={session.channels[0]} />
           ) : session.status === 'scheduled' ? (
             <AppText variant="caption" tone="tertiary" capped>

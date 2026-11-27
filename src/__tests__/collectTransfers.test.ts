@@ -36,7 +36,7 @@ describe('resolveTransfers', () => {
       [{ ...entry, to: 'Vôlei Renata', from: 'Modena' }],
       teams,
     );
-    expect(transfer.to.teamId).toBe('2');
+    expect(transfer!.to.teamId).toBe('2');
   });
 
   it.each([

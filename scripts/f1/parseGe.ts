@@ -4,6 +4,12 @@ import type {
   RaceSession,
   SessionKind,
 } from '../../src/types/snapshot';
+import {
+  asList as rawList,
+  asObject,
+  parseJson,
+  type JsonObject,
+} from '../../src/utils/json.ts';
 import { normalizeForSearch } from '../../src/utils/search.ts';
 import { toChannels, toInstant } from '../brasileirao/parseGe.ts';
 
@@ -38,13 +44,8 @@ export const AGENDA_QUERY = `
 /** The modality ge gives Formula 1 sessions; other series are skipped. */
 const MODALITY = 'Fórmula 1';
 
-type Raw = Record<string, unknown>;
-
-const asObject = (value: unknown): Raw =>
-  value && typeof value === 'object' ? (value as Raw) : {};
-
-const asList = (value: unknown): Raw[] =>
-  Array.isArray(value) ? value.map(asObject) : [];
+/** The objects of a list; anything else in it reads as an empty object. */
+const asList = (value: unknown): JsonObject[] => rawList(value).map(asObject);
 
 const toText = (value: unknown): string | null =>
   typeof value === 'string' && value.trim() ? value.trim() : null;
@@ -87,7 +88,7 @@ export function parseAgenda(
   json: string,
   competition: CompetitionSlug,
 ): RaceSession[] {
-  const body = asObject(JSON.parse(json));
+  const body = asObject(parseJson(json));
   if (Array.isArray(body.errors) && body.errors.length > 0) {
     throw new Error(`ge agenda: ${JSON.stringify(body.errors).slice(0, 200)}`);
   }

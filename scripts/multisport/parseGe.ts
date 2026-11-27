@@ -6,14 +6,21 @@ import type {
   Team,
 } from '../../src/types/snapshot';
 import { toChannels, toInstant } from '../brasileirao/parseGe.ts';
+import {
+  asList,
+  asObject,
+  objectsOf,
+  parseJson,
+  toNumber,
+  toText,
+  type JsonObject,
+} from '../../src/utils/json.ts';
 
 /**
  * The ge "multisport" pages (NFL, NBA): a standings page that embeds the
  * season phases and the table by group, and a GraphQL service with the games
  * of each round, already with the Brazilian broadcasters.
  */
-
-type RawObject = Record<string, unknown>;
 
 /** ge abbreviations it writes its own way → the league codes fans know. */
 export type TeamCodes = Record<string, string>;
@@ -45,18 +52,6 @@ export interface GePage {
   standings: Standing[];
 }
 
-function toNumber(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
-}
-
-function toText(value: unknown): string | null {
-  return typeof value === 'string' && value.length > 0 ? value : null;
-}
-
-function asObject(value: unknown): RawObject {
-  return value && typeof value === 'object' ? (value as RawObject) : {};
-}
-
 function toTeam(raw: unknown, codes: TeamCodes): Team | null {
   const data = asObject(raw);
   const id = toNumber(data.id);
@@ -73,13 +68,13 @@ function toTeam(raw: unknown, codes: TeamCodes): Team | null {
 
 /** "NBA 2026/2027" → "2026/27"; a single year stays as it is. */
 function toSeason(editionName: string): string {
-  const span = editionName.match(/(\d{4})\/(\d{4})/);
-  if (span) return `${span[1]}/${span[2].slice(2)}`;
+  const [, first, second] = editionName.match(/(\d{4})\/(\d{4})/) ?? [];
+  if (first && second) return `${first}/${second.slice(2)}`;
   return editionName.match(/\d{4}/)?.[0] ?? editionName;
 }
 
 /** The JSON the standings page embeds for its table component. */
-function readPageContext(html: string): RawObject {
+function readPageContext(html: string): JsonObject {
   const open = html.indexOf('id="tabela-context"');
   const start = html.indexOf('>', open);
   const end = html.indexOf('</script>', start);
@@ -87,7 +82,7 @@ function readPageContext(html: string): RawObject {
     throw new Error('Standings page changed: table context not found');
   }
   try {
-    return asObject(JSON.parse(html.slice(start + 1, end)));
+    return asObject(parseJson(html.slice(start + 1, end)));
   } catch {
     throw new Error('Standings page changed: table context is not JSON');
   }
@@ -120,18 +115,12 @@ export function parseStandingsPage(
   const phases: GePhase[] = [];
   const teams: Team[] = [];
   const standings: Standing[] = [];
-  const entries = Array.isArray(data.multisportStandings)
-    ? (data.multisportStandings as unknown[])
-    : [];
-
-  for (const entry of entries.map(asObject)) {
+  for (const entry of objectsOf(data.multisportStandings)) {
     const phase = asObject(entry.phase);
     const slug = toText(phase.slug);
     const name = toText(phase.name);
     if (!slug || !name) continue;
-    const tables = Array.isArray(entry.standing)
-      ? (entry.standing as unknown[]).map(asObject)
-      : [];
+    const tables = objectsOf(entry.standing);
     const knockout = tables.some(
       (table) => table.__typename === 'KnockoutStandingData',
     );
@@ -141,15 +130,12 @@ export function parseStandingsPage(
       if (table.__typename !== 'GroupedRoundRobinStandingData') continue;
       rounds = Math.max(rounds, toNumber(table.totalRounds) ?? 0);
       const group = toText(table.name) ?? undefined;
-      const ratings = Array.isArray(table.ratings)
-        ? (table.ratings as unknown[]).map(asObject)
-        : [];
-      for (const rating of ratings) {
+      for (const rating of objectsOf(table.ratings)) {
         const team = toTeam(asObject(rating.contestant).contestantData, codes);
         const position = toNumber(rating.order);
         if (!team || position === null) continue;
         const columns = new Map<string, number>();
-        for (const column of (rating.standingColumns as unknown[]) ?? []) {
+        for (const column of asList(rating.standingColumns)) {
           const { slug: key, value } = asObject(column);
           const number = toNumber(value);
           if (typeof key === 'string' && number !== null) {
@@ -170,7 +156,7 @@ export function parseStandingsPage(
             columns.get('pontos-a-favor') ?? columns.get('cestas-pro') ?? 0,
           scoredAgainst:
             columns.get('pontos-contra') ?? columns.get('cestas-contra') ?? 0,
-          group,
+          ...(group ? { group } : {}),
         });
       }
     }
@@ -207,13 +193,11 @@ function toStatus(
   startsAt: string,
   now: number,
   matchLengthMs: number,
-) {
-  if (moment === 'PAST') return 'finished' as MatchStatus;
+): MatchStatus {
+  if (moment === 'PAST') return 'finished';
   const start = Date.parse(startsAt);
-  if (now < start) return 'scheduled' as MatchStatus;
-  return now < start + matchLengthMs
-    ? ('live' as MatchStatus)
-    : ('finished' as MatchStatus);
+  if (now < start) return 'scheduled';
+  return now < start + matchLengthMs ? 'live' : 'finished';
 }
 
 /**
@@ -227,7 +211,7 @@ export function parseMatches(
   now: number,
   { codes = {}, matchLengthMs = 4 * 60 * 60 * 1000 }: MatchOptions = {},
 ): { matches: Match[]; teams: Team[] } {
-  const body = asObject(JSON.parse(json));
+  const body = asObject(parseJson(json));
   const items = asObject(body.data).multisportMatchesByPhase;
   if (!Array.isArray(items)) {
     const errors = Array.isArray(body.errors) ? body.errors : [];
@@ -254,9 +238,7 @@ export function parseMatches(
     const hasResult = status !== 'scheduled';
     const score = asObject(raw.scoreboard);
     const location = asObject(raw.location);
-    const sources = Array.isArray(raw.liveWatchSources)
-      ? (raw.liveWatchSources as unknown[]).map((s) => asObject(s).name)
-      : [];
+    const sources = asList(raw.liveWatchSources).map((s) => asObject(s).name);
 
     matches.push({
       id: String(id),

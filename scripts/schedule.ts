@@ -94,7 +94,7 @@ export function planSources<
     );
     const wanted = source.slugs.some((slug) => live.has(slug));
     if (wanted || old.some((c) => c === undefined)) collect.push(source);
-    else kept.push(...(old as C[]));
+    else kept.push(...old.filter((c): c is C => c !== undefined));
   }
   return { collect, kept };
 }

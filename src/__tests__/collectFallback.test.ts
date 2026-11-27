@@ -29,7 +29,7 @@ function competition(slug: CompetitionSlug, label: string): CompetitionData {
       roundLabel: '1ª rodada',
       status: 'scheduled' as const,
       homeTeamId: team.id,
-      awayTeamId: teams[(i + 1) % teams.length].id,
+      awayTeamId: teams[(i + 1) % teams.length]!.id,
       homeScore: null,
       awayScore: null,
       setScores: [],
@@ -108,7 +108,7 @@ describe('collectWithFallback', () => {
     );
 
     expect(result.kept).toEqual(['NFL']);
-    expect(result.competitions[1].name).toBe('NFL antiga');
+    expect(result.competitions[1]!.name).toBe('NFL antiga');
   });
 
   it('leaves out a new league that fails instead of holding back the others', async () => {

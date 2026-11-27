@@ -46,28 +46,28 @@ describe('withBundledTransfers', () => {
     const snapshot = buildSnapshot([]);
     for (const competition of snapshot.competitions) {
       delete competition.transfers;
-      competition.teams = SUPERLIGA_CODES[competition.slug]
-        .split(' ')
-        .map((code) => ({ id: code, name: code, code, badgeUrl: null }));
+      competition.teams = SUPERLIGA_CODES[competition.slug]!.split(' ').map(
+        (code) => ({ id: code, name: code, code, badgeUrl: null }),
+      );
     }
     const [men, women] = withBundledTransfers(snapshot).competitions;
-    expect(men.transfers?.length).toBeGreaterThan(100);
-    expect(women.transfers?.length).toBeGreaterThan(100);
+    expect(men!.transfers?.length).toBeGreaterThan(100);
+    expect(women!.transfers?.length).toBeGreaterThan(100);
   });
 
   it('keeps transfers that came with the snapshot', () => {
     const snapshot = buildSnapshot([]);
-    const published = snapshot.competitions[0].transfers;
-    expect(withBundledTransfers(snapshot).competitions[0].transfers).toBe(
+    const published = snapshot.competitions[0]!.transfers;
+    expect(withBundledTransfers(snapshot).competitions[0]!.transfers).toBe(
       published,
     );
   });
 
   it('skips the list instead of failing the sync when codes do not match', () => {
     const snapshot = buildSnapshot([]);
-    delete snapshot.competitions[0].transfers;
+    delete snapshot.competitions[0]!.transfers;
     expect(
-      withBundledTransfers(snapshot).competitions[0].transfers,
+      withBundledTransfers(snapshot).competitions[0]!.transfers,
     ).toBeUndefined();
   });
 });

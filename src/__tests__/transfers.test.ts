@@ -11,10 +11,10 @@ import {
 
 describe('transfers', () => {
   it('tells whether the favorite gained or lost the athlete', () => {
-    expect(getFavoriteDirection(transfers[0], '1')).toBe('in');
-    expect(getFavoriteDirection(transfers[0], '2')).toBe('out');
-    expect(getFavoriteDirection(transfers[1], '1')).toBeNull();
-    expect(getFavoriteDirection(transfers[0], undefined)).toBeNull();
+    expect(getFavoriteDirection(transfers[0]!, '1')).toBe('in');
+    expect(getFavoriteDirection(transfers[0]!, '2')).toBe('out');
+    expect(getFavoriteDirection(transfers[1]!, '1')).toBeNull();
+    expect(getFavoriteDirection(transfers[0]!, undefined)).toBeNull();
   });
 
   it('puts the favorite transfers apart, keeping the order', () => {
@@ -51,8 +51,8 @@ describe('transfers', () => {
   });
 
   it('names the source by its site', () => {
-    expect(getSourceName(transfers[0].sourceUrl)).toBe('lance.com.br');
-    expect(getSourceName(transfers[1].sourceUrl)).toBe('ge.globo.com');
+    expect(getSourceName(transfers[0]!.sourceUrl)).toBe('lance.com.br');
+    expect(getSourceName(transfers[1]!.sourceUrl)).toBe('ge.globo.com');
   });
 
   it('formats the calendar date', () => {

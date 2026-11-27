@@ -20,7 +20,7 @@ function standing(teamId: string, position: number, group?: string): Standing {
     losses: 1,
     scoredFor: 287,
     scoredAgainst: 199,
-    group,
+    ...(group ? { group } : {}),
   };
 }
 

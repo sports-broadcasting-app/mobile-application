@@ -7,8 +7,14 @@ import type {
   Standing,
   Team,
 } from '../../src/types/snapshot';
-
-type RawObject = Record<string, unknown>;
+import {
+  asObject,
+  parseJson,
+  readBalanced,
+  toNumber,
+  toText,
+  type JsonObject,
+} from '../../src/utils/json.ts';
 
 const FLIGHT_CHUNK = /self\.__next_f\.push\(\[1,"((?:[^"\\]|\\.)*)"\]\)/g;
 const MAX_SETS = 5;
@@ -17,67 +23,36 @@ const MAX_SETS = 5;
 export function extractFlightPayload(html: string): string {
   let payload = '';
   for (const [, chunk] of html.matchAll(FLIGHT_CHUNK)) {
-    payload += JSON.parse(`"${chunk}"`) as string;
+    const text = parseJson(`"${chunk}"`);
+    if (typeof text === 'string') payload += text;
   }
   return payload;
-}
-
-function readBalanced(text: string, start: number): string | null {
-  const open = text[start];
-  const close = open === '{' ? '}' : ']';
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-
-  for (let i = start; i < text.length; i++) {
-    const char = text[i];
-    if (inString) {
-      if (escaped) escaped = false;
-      else if (char === '\\') escaped = true;
-      else if (char === '"') inString = false;
-    } else if (char === '"') {
-      inString = true;
-    } else if (char === open) {
-      depth++;
-    } else if (char === close) {
-      depth--;
-      if (depth === 0) return text.slice(start, i + 1);
-    }
-  }
-  return null;
 }
 
 function parseObjectsStartingWith(
   payload: string,
   prefix: string,
-): RawObject[] {
-  const objects: RawObject[] = [];
+): JsonObject[] {
+  const objects: JsonObject[] = [];
   let index = payload.indexOf(prefix);
 
   while (index !== -1) {
     const raw = readBalanced(payload, index);
-    if (raw) objects.push(JSON.parse(raw) as RawObject);
+    const value = raw ? parseJson(raw) : null;
+    if (value !== null) objects.push(asObject(value));
     index = payload.indexOf(prefix, index + prefix.length);
   }
   return objects;
 }
 
-function toNumber(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
-}
-
-function toText(value: unknown): string | null {
-  return typeof value === 'string' && value.length > 0 ? value : null;
-}
-
-function toStatus(raw: RawObject): MatchStatus {
+function toStatus(raw: JsonObject): MatchStatus {
   if (raw.postponed === true) return 'postponed';
   if (raw.isLive === true) return 'live';
   if (raw.isFinished === true) return 'finished';
   return 'scheduled';
 }
 
-function toSetScores(raw: RawObject): SetScore[] {
+function toSetScores(raw: JsonObject): SetScore[] {
   const scores: SetScore[] = [];
   for (let set = 1; set <= MAX_SETS; set++) {
     const home = toNumber(raw[`Set${set}Home`]);
@@ -88,15 +63,14 @@ function toSetScores(raw: RawObject): SetScore[] {
   return scores;
 }
 
-function toChannels(raw: RawObject): string[] {
-  const customData = raw.custom_data as RawObject | undefined;
-  const names = customData?.sge_transmission_names;
+function toChannels(raw: JsonObject): string[] {
+  const names = asObject(raw.custom_data).sge_transmission_names;
   return Array.isArray(names)
     ? names.filter((name): name is string => typeof name === 'string')
     : [];
 }
 
-function toMatch(raw: RawObject, competition: CompetitionSlug): Match | null {
+function toMatch(raw: JsonObject, competition: CompetitionSlug): Match | null {
   const id = toNumber(raw.ChampionshipMatch_ID);
   const startsAt = toText(raw.MatchDateTime);
   const homeTeamId = toNumber(raw.HomeTeam_ID);
@@ -107,7 +81,7 @@ function toMatch(raw: RawObject, competition: CompetitionSlug): Match | null {
 
   const status = toStatus(raw);
   const hasResult = status === 'live' || status === 'finished';
-  const hall = raw.hall as RawObject | undefined;
+  const hall = asObject(raw.hall);
 
   // Only these fields are published: the source also carries contact e-mails
   // and full rosters, which must never reach the public snapshot.
@@ -124,8 +98,8 @@ function toMatch(raw: RawObject, competition: CompetitionSlug): Match | null {
     awayScore: hasResult ? toNumber(raw.WonSetGuest) : null,
     setScores: hasResult ? toSetScores(raw) : [],
     channels: toChannels(raw),
-    venue: toText(hall?.Denomination),
-    city: toText(hall?.City),
+    venue: toText(hall.Denomination),
+    city: toText(hall.City),
   };
 }
 
@@ -243,9 +217,10 @@ export function withoutForeignMatches(
   if (unknown.size === 0) return matches;
 
   const idle = teams.filter((team) => !used.has(team.id));
-  if (unknown.size === 1 && idle.length === 1) {
-    const [[from, count]] = [...unknown];
-    const [to] = idle;
+  const [only] = unknown;
+  const [to] = idle;
+  if (unknown.size === 1 && idle.length === 1 && only && to) {
+    const [from, count] = only;
     console.log(
       `::warning title=${name}::agenda team ${from} (${count} matches) taken as ${to.name} (${to.id}), the only club of the table without a game`,
     );

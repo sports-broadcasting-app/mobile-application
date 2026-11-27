@@ -1,10 +1,6 @@
-import type {
-  CompetitionSlug,
-  Team,
-  Transfer,
-  TransferClub,
-} from '../../src/types/snapshot';
+import type { Team, Transfer, TransferClub } from '../../src/types/snapshot';
 import { normalizeForSearch } from '../../src/utils/search.ts';
+import { asObject, objectsOf } from '../../src/utils/json.ts';
 
 /**
  * One hand-curated line of transfers.json. `from` and `to` are a Superliga
@@ -20,7 +16,31 @@ export interface TransferEntry {
   source: string;
 }
 
-export type TransferFile = Partial<Record<CompetitionSlug, TransferEntry[]>>;
+/** By competition slug; an unknown slug is never asked for. */
+export type TransferFile = Partial<Record<string, TransferEntry[]>>;
+
+const textOr = <T>(value: unknown, fallback: T): string | T =>
+  typeof value === 'string' ? value : fallback;
+
+/**
+ * transfers.json read field by field. A field of the wrong kind reads as
+ * missing, and `resolveTransfers` then rejects that line (and the run).
+ */
+export function toTransferFile(value: unknown): TransferFile {
+  const file: TransferFile = {};
+  for (const [slug, lines] of Object.entries(asObject(value))) {
+    file[slug] = objectsOf(lines).map((line) => ({
+      athlete: textOr(line.athlete, ''),
+      position: textOr(line.position, null),
+      from: textOr(line.from, ''),
+      to: textOr(line.to, ''),
+      date: textOr(line.date, null),
+      loan: line.loan === true,
+      source: textOr(line.source, ''),
+    }));
+  }
+  return file;
+}
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 

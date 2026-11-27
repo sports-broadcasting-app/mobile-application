@@ -15,7 +15,7 @@ import {
 interface NewsCardProps {
   competition: CompetitionSlug;
   /** One line on what is coming ("O próximo é o GP do Catar, de 27 a 29/11."). */
-  next?: string;
+  next?: string | undefined;
   onFollow: () => void;
   onDismiss: () => void;
 }

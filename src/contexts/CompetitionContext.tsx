@@ -9,10 +9,12 @@ import {
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CompetitionSlug, Sport } from '../types/snapshot';
+import { parseJson } from '../utils/json';
 import {
   ALL_COMPETITIONS,
   getCompetition,
   isCompetitionSlug,
+  DEFAULT_COMPETITION,
 } from '../constants/competitions';
 
 /** The Home filter: everything, one sport, or one competition. */
@@ -67,7 +69,7 @@ const CompetitionContext = createContext<CompetitionContextValue>({
   followedIn: () => [],
   filter: 'todos',
   setFilter: () => {},
-  competition: ALL_COMPETITIONS[0],
+  competition: DEFAULT_COMPETITION,
   setCompetition: () => {},
   news: [],
   answerNews: () => {},
@@ -88,7 +90,7 @@ function store(key: string, list: CompetitionSlug[]): void {
 function parseList(stored: string | null): CompetitionSlug[] | null {
   if (!stored) return null;
   try {
-    const parsed = JSON.parse(stored) as unknown;
+    const parsed = parseJson(stored);
     return Array.isArray(parsed) ? normalize(parsed) : null;
   } catch {
     return null;
@@ -129,9 +131,8 @@ export function CompetitionProvider({ children }: { children: ReactNode }) {
     useState<CompetitionSlug[]>(ALL_COMPETITIONS);
   const [known, setKnown] = useState<CompetitionSlug[]>(ALL_COMPETITIONS);
   const [filter, setFilterState] = useState<CompetitionFilter>('todos');
-  const [competition, setCompetitionState] = useState<CompetitionSlug>(
-    ALL_COMPETITIONS[0],
-  );
+  const [competition, setCompetitionState] =
+    useState<CompetitionSlug>(DEFAULT_COMPETITION);
 
   useEffect(() => {
     Promise.all([
@@ -168,12 +169,14 @@ export function CompetitionProvider({ children }: { children: ReactNode }) {
       if (isCompetitionSlug(filter)) {
         if (!followed.includes(filter)) setFilterState('todos');
       } else {
-        const inSport = followedIn(filter);
-        if (inSport.length === 0) setFilterState('todos');
-        else if (inSport.length === 1) setFilterState(inSport[0]);
+        const [only, ...others] = followedIn(filter);
+        if (!only) setFilterState('todos');
+        else if (others.length === 0) setFilterState(only);
       }
     }
-    if (!followed.includes(competition)) setCompetitionState(followed[0]);
+    if (!followed.includes(competition)) {
+      setCompetitionState(followed[0] ?? DEFAULT_COMPETITION);
+    }
   }, [followed, filter, competition, followedIn]);
 
   const setFollowed = useCallback((next: CompetitionSlug[]) => {

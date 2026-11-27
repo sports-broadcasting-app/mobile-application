@@ -61,9 +61,9 @@ describe('builds already released', () => {
   it('keeps the first release on exactly the two Superligas', () => {
     const legacy = toLegacySnapshot(published());
     const [first] = OLD_BUILDS;
-    expect(first.reads(legacy)).toBe(true);
+    expect(first!.reads(legacy)).toBe(true);
     expect(
-      first.reads({
+      first!.reads({
         ...legacy,
         competitions: [...legacy.competitions, legacy.competitions[0]],
       }),

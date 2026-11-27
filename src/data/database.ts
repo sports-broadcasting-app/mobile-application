@@ -1,5 +1,13 @@
 import * as SQLite from 'expo-sqlite';
 import {
+  isMatch,
+  isRaceSession,
+  isStanding,
+  isTeam,
+  isTransfer,
+} from '../utils/guards';
+import { parseJson } from '../utils/json';
+import {
   CompetitionSlug,
   Match,
   RaceSession,
@@ -107,8 +115,15 @@ function getDb(): Promise<SQLite.SQLiteDatabase> {
   return dbPromise;
 }
 
-function parseRows<T>(rows: { payload: string }[]): T[] {
-  return rows.map((row) => JSON.parse(row.payload) as T);
+/**
+ * Rows saved by `saveSnapshot`, read back through `is`: one that does not
+ * pass (an older build's leftover) is skipped instead of breaking a screen.
+ */
+function parseRows<T>(
+  rows: { payload: string }[],
+  is: (value: unknown) => value is T,
+): T[] {
+  return rows.map((row) => parseJson(row.payload)).filter(is);
 }
 
 /** Replaces the competition data atomically. Favorites are never touched. */
@@ -217,7 +232,7 @@ export async function getMatchesBetween(
       ORDER BY startsAtMs ASC`,
     [fromMs, toMs],
   );
-  return parseRows<Match>(rows);
+  return parseRows(rows, isMatch);
 }
 
 /**
@@ -251,7 +266,7 @@ export async function getNextMatches(
           ORDER BY startsAtMs ASC LIMIT ?`,
         [fromMs, limit],
       );
-  return parseRows<Match>(rows);
+  return parseRows(rows, isMatch);
 }
 
 /**
@@ -293,7 +308,7 @@ export async function getUpcomingFavoriteMatches(
       limit,
     ],
   );
-  return parseRows<Match>(rows);
+  return parseRows(rows, isMatch);
 }
 
 export async function getSessionsBetween(
@@ -307,7 +322,7 @@ export async function getSessionsBetween(
       ORDER BY startsAtMs ASC`,
     [fromMs, toMs],
   );
-  return parseRows<RaceSession>(rows);
+  return parseRows(rows, isRaceSession);
 }
 
 /** The next sessions from `fromMs` on of these competitions, soonest first. */
@@ -324,7 +339,7 @@ export async function getNextSessions(
       ORDER BY startsAtMs ASC LIMIT ?`,
     [fromMs, ...competitions, limit],
   );
-  return parseRows<RaceSession>(rows);
+  return parseRows(rows, isRaceSession);
 }
 
 /** Every session of one race weekend, in order. */
@@ -337,7 +352,7 @@ export async function getGrandPrix(
       ORDER BY startsAtMs ASC`,
     [grandPrixId],
   );
-  return parseRows<RaceSession>(rows);
+  return parseRows(rows, isRaceSession);
 }
 
 /**
@@ -361,7 +376,7 @@ export async function getUpcomingSessions(
       ORDER BY startsAtMs ASC LIMIT ?`,
     [fromMs, ...competitions, ...kinds, limit],
   );
-  return parseRows<RaceSession>(rows);
+  return parseRows(rows, isRaceSession);
 }
 
 /**
@@ -393,7 +408,8 @@ export async function getMatch(id: string): Promise<Match | null> {
     'SELECT payload FROM matches WHERE id = ?',
     [id],
   );
-  return row ? (JSON.parse(row.payload) as Match) : null;
+  const match = row ? parseJson(row.payload) : null;
+  return isMatch(match) ? match : null;
 }
 
 export async function getTeams(competition?: CompetitionSlug): Promise<Team[]> {
@@ -404,7 +420,7 @@ export async function getTeams(competition?: CompetitionSlug): Promise<Team[]> {
         [competition],
       )
     : await db.getAllAsync<{ payload: string }>('SELECT payload FROM teams');
-  return parseRows<Team>(rows).sort((a, b) => a.name.localeCompare(b.name));
+  return parseRows(rows, isTeam).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getStandings(
@@ -415,7 +431,7 @@ export async function getStandings(
     'SELECT payload FROM standings WHERE competition = ? ORDER BY sortOrder ASC',
     [competition],
   );
-  return parseRows<Standing>(rows);
+  return parseRows(rows, isStanding);
 }
 
 /** Newest first; transfers without a date go last. */
@@ -428,7 +444,7 @@ export async function getTransfers(
       ORDER BY date IS NULL, date DESC, id ASC`,
     [competition],
   );
-  return parseRows<Transfer>(rows);
+  return parseRows(rows, isTransfer);
 }
 
 export async function countTransfers(

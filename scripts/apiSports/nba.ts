@@ -1,3 +1,5 @@
+import { pairLines, sum } from '../lines.ts';
+import { asObject, objectsOf, parseJson } from '../../src/utils/json.ts';
 import type {
   CompetitionData,
   Match,
@@ -23,8 +25,6 @@ const LOOKBACK_MS = 36 * 60 * 60 * 1000;
 /** ge and API-Sports start times of the same game differ by minutes. */
 const SAME_GAME_MS = 6 * 60 * 60 * 1000;
 
-type Raw = Record<string, unknown>;
-
 /** The part of an API-Sports game the collector reads. */
 export interface NbaGame {
   start: number;
@@ -36,9 +36,6 @@ export interface NbaGame {
   homeLines: number[];
   awayLines: number[];
 }
-
-const asObject = (value: unknown): Raw =>
-  value && typeof value === 'object' ? (value as Raw) : {};
 
 const toText = (value: unknown): string =>
   typeof value === 'string' ? value.trim() : '';
@@ -54,7 +51,7 @@ function toLines(value: unknown): number[] | null {
  * plan) so the caller can log it and publish without quarters.
  */
 export function parseNbaGames(json: string): NbaGame[] {
-  const body = asObject(JSON.parse(json));
+  const body = asObject(parseJson(json));
   const errors = body.errors;
   const hasErrors = Array.isArray(errors)
     ? errors.length > 0
@@ -63,7 +60,7 @@ export function parseNbaGames(json: string): NbaGame[] {
   if (!Array.isArray(body.response)) return [];
 
   const games: NbaGame[] = [];
-  for (const raw of body.response as Raw[]) {
+  for (const raw of objectsOf(body.response)) {
     const teams = asObject(raw.teams);
     const home = asObject(teams.home);
     const away = asObject(teams.visitors);
@@ -85,8 +82,6 @@ export function parseNbaGames(json: string): NbaGame[] {
   }
   return games;
 }
-
-const sum = (lines: number[]) => lines.reduce((total, n) => total + n, 0);
 
 /** Whether quarter scores add up to the final score of the match. */
 export function periodsMatchScore(
@@ -139,11 +134,8 @@ export function findPeriods(
     } else {
       continue;
     }
-    if (homeLines.length !== awayLines.length) return null;
-    const periods = homeLines.map((points, i) => ({
-      home: points,
-      away: awayLines[i],
-    }));
+    const periods = pairLines(homeLines, awayLines);
+    if (!periods) return null;
     return periodsMatchScore(periods, match.homeScore, match.awayScore)
       ? periods
       : null;
@@ -174,9 +166,9 @@ export async function addNbaQuarters(
   { key, now, fetchText }: QuarterOptions,
 ): Promise<string> {
   const kept = new Map(
-    (previous?.matches ?? [])
-      .filter((m) => m.periodScores)
-      .map((m) => [m.id, m.periodScores as SetScore[]]),
+    (previous?.matches ?? []).flatMap((m): [string, SetScore[]][] =>
+      m.periodScores ? [[m.id, m.periodScores]] : [],
+    ),
   );
   let reused = 0;
   for (const match of competition.matches) {

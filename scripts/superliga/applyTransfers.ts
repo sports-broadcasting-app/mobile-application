@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
-import type { Snapshot } from '../../src/types/snapshot';
-import { resolveTransfers, type TransferFile } from './transfers.ts';
+import { isSnapshot } from '../../src/utils/guards.ts';
+import { parseJson } from '../../src/utils/json.ts';
+import { resolveTransfers, toTransferFile } from './transfers.ts';
 
 const TRANSFERS_FILE = new URL('./transfers.json', import.meta.url);
 
@@ -13,10 +14,11 @@ async function main(): Promise<void> {
   const [path] = process.argv.slice(2);
   if (!path) throw new Error('Missing the snapshot path');
 
-  const snapshot = JSON.parse(await readFile(path, 'utf8')) as Snapshot;
-  const transferFile = JSON.parse(
-    await readFile(TRANSFERS_FILE, 'utf8'),
-  ) as TransferFile;
+  const snapshot = parseJson(await readFile(path, 'utf8'));
+  if (!isSnapshot(snapshot)) throw new Error(`${path} is not a snapshot`);
+  const transferFile = toTransferFile(
+    parseJson(await readFile(TRANSFERS_FILE, 'utf8')),
+  );
 
   for (const competition of snapshot.competitions) {
     if (competition.sport !== 'volei') continue;
