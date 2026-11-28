@@ -1,1 +1,1 @@
-export { default } from '../src/screens/TransfersScreen';
+export { default } from '@/pages/transfers/ui/TransfersScreen';

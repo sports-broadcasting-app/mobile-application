@@ -1,1 +1,1 @@
-export { default } from '../../src/screens/StandingsScreen';
+export { default } from '@/pages/standings/ui/StandingsScreen';

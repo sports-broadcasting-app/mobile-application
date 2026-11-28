@@ -13,7 +13,7 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - **Never use or extract the CBF CMS token.** The Brasileirão comes from the public ge table service the ge page itself calls.
 - **Privacy:** the CBV page holds contact e-mails and rosters. `parseCbv.ts` copies whitelisted fields only; never widen the copy to "everything".
 - **One source failing must not break the published file.** Keep `collectWithFallback` semantics: a failed source keeps its competitions from the previous snapshot; a league never published yet is left out with a `::warning`.
-- **The snapshot is a contract** with installed apps (`src/types/snapshot.ts`). Only add optional fields; never rename or remove one. The legacy `superliga.json` must keep being produced.
+- **The snapshot is a contract** with installed apps (`src/shared/api/snapshot.ts`). Only add optional fields; never rename or remove one. The legacy `superliga.json` must keep being produced.
 - **Transfers** (`scripts/superliga/transfers.json`): facts only (athlete, clubs, date) with the article URL in `source`; never copy article text.
 - `startsAt` always carries an offset; compare instants, never slice the string.
 
@@ -21,8 +21,8 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 
 1. Create `scripts/<league>/collect.ts` exporting a `MultisportLeague` (slug, sport, pageUrl, codes, matchLengthMs, roundLabel, knockoutRounds) and a `collect<League>` wrapper, like `scripts/nba/collect.ts`.
 2. Register it as a `Source` in `scripts/collect.ts`, passing `previousOf('<slug>')`.
-3. App side: add the slug (and sport, if new) to `src/types/snapshot.ts` and `src/constants/competitions.ts` (label, standings columns), the glyph in `SportIcon` if the sport is new, and nicknames in `src/utils/teamName.ts`.
-4. Save fixtures (`<slug>-classificacao.html`, `<slug>-<phase>-rodada-<n>.json`) and cover them in `src/__tests__/parseGeMultisport.test.ts`.
+3. App side: add the slug (and sport, if new) to `src/shared/api/snapshot.ts` and `src/shared/config/competitions.ts` (label, standings columns), the glyph in `SportIcon` if the sport is new, and nicknames in `src/shared/lib/teamName.ts`.
+4. Save fixtures (`<slug>-classificacao.html`, `<slug>-<phase>-rodada-<n>.json`) and cover them in `scripts/multisport/parseGe.test.ts`.
 5. Update the tests that count competitions (CompetitionContext, screens, syncService).
 6. Update the collector bullets and the competitions list in CLAUDE.md.
 
@@ -33,7 +33,7 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - A round is reusable when it is settled (every game finished and the last one started over `SETTLED_AFTER_MS`, 36 h, ago) or starts more than `LOOKAHEAD_MS` (10 days) ahead. Reused games are keyed by `roundKey(phase label, round)`; a game fetched in this run wins over a reused one.
 - **Full refresh (by age, not by hour):** `needsFullRefresh(previous, now)` is true when `previous.fullRefreshAt` is missing, unparseable or at least 24 h old (`FULL_REFRESH_EVERY_MS`). Then nothing is reused and the result carries `fullRefreshAt = now`; otherwise it keeps the previous value. A fixed UTC hour did not work because GitHub delays scheduled runs past it. Offline (fixtures) runs are always full.
 - The log line says "`<League>: n rounds asked, m kept`", with "(full refresh)" appended on a full run. Normal sizes: NFL ~3 asked / 15 kept, NBA ~14 / 51; a full run asks every round (NFL 18, NBA 65+).
-- `fullRefreshAt` is an optional field of `CompetitionData` (`src/types/snapshot.ts`); the app ignores it. Tests: the `needsFullRefresh` block in `src/__tests__/parseGeMultisport.test.ts`.
+- `fullRefreshAt` is an optional field of `CompetitionData` (`src/shared/api/snapshot.ts`); the app ignores it. Tests: the `needsFullRefresh` block in `scripts/multisport/parseGe.test.ts`.
 
 ## Brasileirão goals and red cards (1.4, `Match.events`)
 
@@ -64,14 +64,14 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 - Problem: ge's `liveWatchSources` is empty for NFL games streamed by Netflix/Prime Video in Brazil (checked 2026-11-25 on the ge agenda GraphQL: LAR x GB and PIT x DEN both `[]`); `toChannels` drops nothing, the source simply lacks them.
 - `scripts/broadcasts.json` (slug → `{date, home, away, channels, source}`), applied in `scripts/collect.ts` after collected + kept competitions are merged, before `assertValidSnapshot`. `applyBroadcasts` matches by `brasiliaDate(startsAt)` and team code/name (`normalizeForSearch`, either order), appends channels without repeats; throws on bad date/source/channels/team, warns on a missing game.
 - Why not automatic: Big Balls `broadcast` is the US network; mapping "Prime Video" would mark every Thursday Night Football game, which is not on Prime in Brazil. Every line needs a Brazilian source.
-- Check: `yarn jest src/__tests__/broadcasts.test.ts` (also validates the real file's format).
+- Check: `yarn jest scripts/broadcasts.test.ts` (also validates the real file's format).
 
 ## Formula 1 (`scripts/f1/`, published in `series`, PR #46)
 
 - Source: the ge agenda GraphQL (`multisportTabAgenda(filter:{date})`, operation `GetMotorsportAgenda`, `AGENDA_QUERY` in `scripts/f1/parseGe.ts`), the query ge.globo.com/agenda makes. Each session is a `DisputeEventKind` with modality "Fórmula 1": `dispute.id`, `startDate` + `startHour` (Brasília wall clock → `toInstant`), `moment` PAST/NOW/FUTURE → finished/live/scheduled, `phase.name` ("1º treino livre", "Classificação Sprint", "Corrida"…) → `toKind`, `location.popularName`, `liveWatchSources` → `toChannels`. Championship "Grande Prêmio do Catar - Fórmula 1" → `toGrandPrix` "GP do Catar"; `toGrandPrixId` = slug + year. No results or standings anywhere on ge; jolpi.ca blocks Claude, OpenF1 is non-commercial (see memory).
 - `collectF1` (`scripts/f1/collect.ts`): `datesToAsk` = yesterday..+27 days, Thu–Sun only (16 requests) in a full run; in a live run the Brasília dates of published sessions in `inLiveWindow(…, 'automobilismo')` (2 h). Dates answered replace their published sessions; others are kept (closed as finished 6 h after start, dropped after 400 days). Zero sessions for dates that had published ones throws (fallback keeps the file).
 - **`series`, never `competitions`:** builds up to 1.4 reject the whole file when an entry of `competitions` has no teams. `loadPrevious` merges `series` into `competitions`; `toPublished` (`scripts/fallback.ts`) splits teamless ones out; `assertValidSnapshot` throws if one lands in `competitions`; `assertValidCompetition` validates a series by sessions (unique ids, dates, weekend).
-- Check: `yarn jest src/__tests__/collectF1.test.ts`; real run of the F1 part only (no CBV): import `collectF1` with `postJson` and a fixed `now`.
+- Check: `yarn jest scripts/f1/collect.test.ts`; real run of the F1 part only (no CBV): import `collectF1` with `postJson` and a fixed `now`.
 
 ## CBV games with a club outside the table (PRs #47, #48)
 
@@ -93,15 +93,20 @@ You maintain the Onde Passa data collector: `scripts/collect.ts` and its folders
 
 ## Typed reading, no casts (PR #53)
 
-- Every parser reads `unknown` through `src/utils/json.ts` (`parseJson`, `asObject`, `objectsOf`, `asList`, `toText`, `toNumber`, `readBalanced`), shared with the app; the local copies in the CBV and ge parsers are gone. The NBA/NFL/F1 parsers keep their own `toText` (they trim, and NBA/NFL return `''`).
+- Every parser reads `unknown` through `src/shared/lib/json.ts` (`parseJson`, `asObject`, `objectsOf`, `asList`, `toText`, `toNumber`, `readBalanced`), shared with the app; the local copies in the CBV and ge parsers are gone. The NBA/NFL/F1 parsers keep their own `toText` (they trim, and NBA/NFL return `''`).
 - `scripts/lines.ts`: `sum` and `pairLines` (two teams' points per period, null when the counts differ), used by both score enrichers.
-- The published file is checked with `isSnapshot` (`src/utils/guards.ts`) in `loadPrevious` and `applyTransfers`; `transfers.json` and `broadcasts.json` go through `toTransferFile` / `toBroadcastFile` (wrong-kind fields read as empty, so `resolveTransfers` / `applyBroadcasts` reject the line). Their types are keyed by `string`. Optional snapshot fields (`group`, `fullRefreshAt`, `transfers`) are spread in only when present.
+- The published file is checked with `isSnapshot` (`src/shared/lib/guards.ts`) in `loadPrevious` and `applyTransfers`; `transfers.json` and `broadcasts.json` go through `toTransferFile` / `toBroadcastFile` (wrong-kind fields read as empty, so `resolveTransfers` / `applyBroadcasts` reject the line). Their types are keyed by `string`. Optional snapshot fields (`group`, `fullRefreshAt`, `transfers`) are spread in only when present.
 - Checked on real data: the published file of 2026-11-27 passes `isSnapshot` and every row guard (100%), and both curated files resolve completely.
 
 ## Shared score engine and SourceIO (PR #54)
 
 - `scripts/periodScores.ts`: `addPeriodScores(competition, previous, provider, { key, now, fetchText })` does the reuse, the choice of UTC dates, the fetch and the apply for every score API; `findGameScore` finds a game by teams (code or name, either order) within 6 h and checks the lines against the API total when there is one; `periodsMatchScore` (≥ 4 periods adding up). A provider (`ScoreProvider`) is `label`, `url(date)`, `parse` → `ExternalGame[]`, `maxDatesPerRun`, `fillsScores` (live and missing final scores, NFL) and optional `askAgainAfterMs` (kept in `sourceChecks`, NBA). `scripts/apiSports/nba.ts` and `scripts/bigBalls/nfl.ts` are only their parser and provider. Parsers map unusable games to `status: 'scheduled'` (API-NBA anything but "Finished"; Big Balls a game without a score), which the engine skips. A new score API = a parser + a provider; log lines stay `<label>: N date(s) asked, …`.
-- `scripts/source.ts`: `SourceIO` (`offline`, `get` for a required page, `find` for an optional one, `post` for GraphQL), each request naming its URL and its fixture file; `networkIO` and `fixturesIO(dir)`. Collectors take `io` instead of `fixturesDir` (`collectSuperliga(io)`, `collectSerieA(io, …)`, `collectMultisport(league, io, …)`, F1's `fetchAgenda` through `io.post`); `scripts/collect.ts` picks one. `io.offline` replaces every fixtures check (no live shortcut, every round asked, no API keys). `src/__tests__/sourceIO.test.ts` builds the Brasileirão from in-memory pages (the orchestration was untested before).
+- `scripts/source.ts`: `SourceIO` (`offline`, `get` for a required page, `find` for an optional one, `post` for GraphQL), each request naming its URL and its fixture file; `networkIO` and `fixturesIO(dir)`. Collectors take `io` instead of `fixturesDir` (`collectSuperliga(io)`, `collectSerieA(io, …)`, `collectMultisport(league, io, …)`, F1's `fetchAgenda` through `io.post`); `scripts/collect.ts` picks one. `io.offline` replaces every fixtures check (no live shortcut, every round asked, no API keys). `scripts/source.test.ts` builds the Brasileirão from in-memory pages (the orchestration was untested before).
+
+## Where tests and shared code live (PR #55)
+
+- Collector tests sit next to their file: `scripts/superliga/parseCbv.test.ts`, `scripts/brasileirao/parseGe.test.ts`, `scripts/apiSports/nba.test.ts`, `scripts/source.test.ts`, `scripts/windowMirror.test.ts`… (they run in the same `yarn test`).
+- What the collector imports from the app moved under `src/shared/`: the contract `src/shared/api/snapshot.ts`, and `src/shared/lib/json.ts`, `guards.ts`, `search.ts`. Those files must keep relative imports with the `.ts` extension (Node runs them; it has no `@/` alias), which the app's Feature-Sliced layout allows (CLAUDE.md, Architecture).
 
 ## Checking your work
 

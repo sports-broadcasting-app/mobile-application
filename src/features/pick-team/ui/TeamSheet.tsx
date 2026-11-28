@@ -1,0 +1,170 @@
+import { useEffect, useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { AppText } from '@/shared/ui/AppText';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { BottomSheet } from '@/shared/ui/BottomSheet';
+import { SearchField } from '@/shared/ui/SearchField';
+import { TeamCircle } from '@/entities/team/ui/TeamCircle';
+import { useFavorites } from '@/entities/team/model/FavoritesContext';
+import { useTheme } from '@/shared/theme/ThemeContext';
+import { useTeams } from '@/shared/api/queries';
+import { CompetitionSlug, Team } from '@/shared/api/snapshot';
+import { normalizeForSearch } from '@/shared/lib/search';
+import { getTeamName, teamSearchText } from '@/shared/lib/teamName';
+import { getCompetition } from '@/shared/config/competitions';
+import { iconSize, radius, spacing } from '@/shared/theme/designTokens';
+
+interface TeamSheetProps {
+  /** The competition to pick a team in; null keeps the sheet closed. */
+  competition: CompetitionSlug | null;
+  onClose: () => void;
+  /** After a team is chosen (not when one is removed). */
+  onPicked?: (competition: CompetitionSlug, team: Team) => void;
+}
+
+/** "Qual é o seu time?": one favorite per competition, or none. */
+export function TeamSheet({ competition, onClose, onPicked }: TeamSheetProps) {
+  const { colors } = useTheme();
+  const { favorites, setFavorite } = useFavorites();
+  const [query, setQuery] = useState('');
+  // Kept while the sheet slides out, so its content does not blank.
+  const [shown, setShown] = useState<CompetitionSlug | null>(competition);
+  useEffect(() => {
+    if (competition) {
+      setShown(competition);
+      setQuery('');
+    }
+  }, [competition]);
+
+  const { data: teams } = useTeams(shown ?? 'masculina');
+  const selected = shown ? favorites[shown] : undefined;
+
+  const visibleTeams = useMemo(() => {
+    const term = normalizeForSearch(query);
+    return (teams ?? [])
+      .filter(
+        (team) =>
+          !term ||
+          normalizeForSearch(teamSearchText(team.name, team.code)).includes(
+            term,
+          ),
+      )
+      .sort((a, b) => getTeamName(a.name).localeCompare(getTeamName(b.name)));
+  }, [teams, query]);
+
+  const pick = (team: Team | null) => {
+    if (!shown) return;
+    setFavorite(shown, team ? team.id : null).catch(() => {});
+    onClose();
+    if (team) onPicked?.(shown, team);
+  };
+
+  return (
+    <BottomSheet
+      visible={competition !== null}
+      onClose={onClose}
+      eyebrow={shown ? getCompetition(shown).name : undefined}
+      title="Qual é o seu time?"
+      message="Os jogos dele aparecem primeiro e você recebe o aviso antes de começar."
+      testID="team-sheet"
+      fullHeight
+      footer={
+        selected ? (
+          <TouchableOpacity
+            accessibilityRole="button"
+            testID="team-none"
+            style={[styles.none, { borderColor: colors.border }]}
+            onPress={() => pick(null)}
+          >
+            <AppText variant="label" tone="secondary">
+              Sem time nesta competição
+            </AppText>
+          </TouchableOpacity>
+        ) : undefined
+      }
+    >
+      <SearchField
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Buscar time"
+        testID="team-search"
+        inset
+      />
+      <ScrollView keyboardShouldPersistTaps="handled">
+        {visibleTeams.map((team) => {
+          const on = selected === team.id;
+          return (
+            <TouchableOpacity
+              key={team.id}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: on, checked: on }}
+              testID={`team-option-${team.id}`}
+              style={[styles.row, { borderBottomColor: colors.borderLight }]}
+              onPress={() => pick(team)}
+            >
+              <TeamCircle team={team} size={32} />
+              <AppText variant="label" numberOfLines={1} style={styles.name}>
+                {getTeamName(team.name)}
+              </AppText>
+              <View
+                style={[
+                  styles.radio,
+                  on
+                    ? { backgroundColor: colors.primary }
+                    : [styles.unchecked, { borderColor: colors.controlBorder }],
+                ]}
+              >
+                {on ? (
+                  <MaterialCommunityIcons
+                    name="check"
+                    size={iconSize.sm - 2}
+                    color={colors.onPrimary}
+                  />
+                ) : null}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+        {teams !== undefined && visibleTeams.length === 0 && (
+          <AppText variant="body" tone="secondary" style={styles.empty}>
+            Nenhum time encontrado
+          </AppText>
+        )}
+      </ScrollView>
+    </BottomSheet>
+  );
+}
+
+const styles = StyleSheet.create({
+  unchecked: {
+    borderWidth: 2,
+  },
+  row: {
+    alignItems: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: spacing.md,
+    minHeight: 52,
+    paddingVertical: spacing.xs,
+  },
+  name: {
+    flex: 1,
+  },
+  radio: {
+    alignItems: 'center',
+    borderRadius: radius.pill,
+    height: 22,
+    justifyContent: 'center',
+    width: 22,
+  },
+  empty: {
+    paddingVertical: spacing.lg,
+    textAlign: 'center',
+  },
+  none: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    paddingVertical: spacing.md,
+  },
+});

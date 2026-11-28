@@ -1,7 +1,7 @@
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { CompetitionSlug } from '../src/types/snapshot';
-import { parseJson } from '../src/utils/json.ts';
+import type { CompetitionSlug } from '../src/shared/api/snapshot';
+import { parseJson } from '../src/shared/lib/json.ts';
 import { collectSerieA } from './brasileirao/collect.ts';
 import { addNbaQuarters } from './apiSports/nba.ts';
 import { addNflScores } from './bigBalls/nfl.ts';

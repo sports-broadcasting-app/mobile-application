@@ -2,10 +2,10 @@ import type {
   CompetitionData,
   CompetitionSlug,
   Snapshot,
-} from '../src/types/snapshot';
+} from '../src/shared/api/snapshot';
 import { fetchText } from './http.ts';
-import { isSnapshot } from '../src/utils/guards.ts';
-import { parseJson } from '../src/utils/json.ts';
+import { isSnapshot } from '../src/shared/lib/guards.ts';
+import { parseJson } from '../src/shared/lib/json.ts';
 import { assertValidCompetition } from './validate.ts';
 
 /** One site the collector reads; the Superliga page yields two competitions. */

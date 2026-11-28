@@ -11,7 +11,7 @@
  * `series` because of the `teams` rule below.
  */
 
-import { asList, asObject } from '../src/utils/json.ts';
+import { asList, asObject } from '../src/shared/lib/json.ts';
 
 interface OldBuild {
   builds: string;

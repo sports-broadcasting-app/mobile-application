@@ -3,7 +3,7 @@ import type {
   CompetitionSlug,
   Match,
   Sport,
-} from '../../src/types/snapshot';
+} from '../../src/shared/api/snapshot';
 import type { SourceIO } from '../source.ts';
 import { anyInLiveWindow } from '../schedule.ts';
 import {

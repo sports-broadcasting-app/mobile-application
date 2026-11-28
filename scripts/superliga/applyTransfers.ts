@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
-import { isSnapshot } from '../../src/utils/guards.ts';
-import { parseJson } from '../../src/utils/json.ts';
+import { isSnapshot } from '../../src/shared/lib/guards.ts';
+import { parseJson } from '../../src/shared/lib/json.ts';
 import { resolveTransfers, toTransferFile } from './transfers.ts';
 
 const TRANSFERS_FILE = new URL('./transfers.json', import.meta.url);

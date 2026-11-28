@@ -21,29 +21,48 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 
 ```
 .
-├── app/                        # Expo Router file-based routes (re-export src/screens)
-│   ├── _layout.tsx             # Providers, SyncGate, root Stack
+├── app/                        # Expo Router routes only, each re-exporting a page (`@/pages/...`)
+│   ├── _layout.tsx             # Providers, gates, root Stack
 │   ├── (tabs)/                 # Jogos, Classificacao, Configuracoes
-│   └── match/[id].tsx          # Match detail
-├── src/
-│   ├── components/             # building blocks (AppText, Card, CheckRow, SwitchRow, ScheduleRow, ChannelButtons...) and MatchCard, StandingsList...
-│   ├── screens/                # Home, Standings, Favorites, MatchDetail
-│   ├── contexts/               # ThemeContext, SyncContext, FavoritesContext
-│   ├── data/database.ts        # SQLite schema and every query
-│   ├── services/               # snapshotService (download), syncService (freshness rules)
-│   ├── hooks/useSuperliga.ts   # React Query reads over SQLite
-│   ├── types/snapshot.ts       # Snapshot contract, shared with the collector
-│   ├── constants/              # config, competitions (slugs, labels, standings columns), theme, designTokens
-│   ├── utils/                  # date, broadcast, teamColor
-│   └── __tests__/              # Test files
+│   └── match/[id].tsx, grand-prix/[id].tsx, transferencias.tsx
+├── src/                        # Feature-Sliced Design, see Architecture
+│   ├── app/                    # start-up: AnimatedSplash, SyncGate, OnboardingGate, ErrorBoundary, NotificationResponder
+│   ├── pages/                  # home, match, grand-prix, standings, transfers, settings, onboarding
+│   ├── features/               # follow-competitions, pick-team, reminders, watch-match, choose-theme, ads
+│   ├── entities/               # competition, team, match, session, broadcast
+│   ├── shared/                 # ui (AppText, Card, rows, sheets…), theme, api (snapshot contract, SQLite, queries, sync), lib, config
+│   └── test/                   # test helpers: utils (render with providers), fixtures, sqlite mock, setup
 ├── scripts/collect.ts          # Collector entry point: writes onde-passa.json and the legacy superliga.json
+├── scripts/source.ts           # SourceIO: network or saved pages for every collector
+├── scripts/periodScores.ts     # engine for score APIs (apiSports/, bigBalls/ are providers)
 ├── scripts/superliga/          # CBV parser for both Superligas, curated transfers
 ├── scripts/brasileirao/        # ge parser for the Brasileirão Série A
 ├── scripts/multisport/         # ge "multisport" pages (standings page + matches GraphQL), shared by NFL and NBA
 ├── scripts/nfl/, scripts/nba/  # league configs for the multisport collector
 ├── scripts/f1/                 # Formula 1 sessions from the ge agenda GraphQL (published in `series`)
+├── infra/cloudflare/           # the data trigger Worker
 └── .github/workflows/          # Scheduled collector, publishes to GitHub Pages
 ```
+
+Tests sit next to the file they test (`AppText.tsx` + `AppText.test.tsx`), in `src/` and in `scripts/`; tests across several pages live in `src/pages/` (`screens.test.tsx`).
+
+## Architecture (Feature-Sliced Design)
+
+The app follows [Feature-Sliced Design](https://feature-sliced.design). Layers, from top to bottom:
+
+| Layer          | What goes there                                            | Examples                                                                                                       |
+| -------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `src/app`      | start-up and global wiring, used only by `app/_layout.tsx` | `SyncGate`, `OnboardingGate`, `NotificationResponder`, splash                                                  |
+| `src/pages`    | one slice per screen: the screen and what only it uses     | `pages/home` (`HomeScreen`, `MatchCard`, `DayStrip`, `useHomeDay`, `home.ts`)                                  |
+| `src/features` | a user action that changes something                       | `follow-competitions`, `pick-team`, `reminders`, `watch-match`, `choose-theme`, `ads`                          |
+| `src/entities` | the business things the app shows                          | `competition` (followed list), `team` (favorites, `TeamCircle`), `match`, `session`, `broadcast` (channels)    |
+| `src/shared`   | no business meaning, used everywhere                       | `ui`, `theme`, `api` (snapshot contract, SQLite, React Query reads, sync), `lib`, `config` (competitions list) |
+
+- **Slices and segments**: inside a layer, one folder per slice (`features/reminders`); inside a slice, segments: `ui/` (components), `model/` (contexts, hooks, state), `api/` (I/O), `lib/` (pure helpers), `config/`. `shared` has segments only.
+- **The import rule** (ESLint `no-restricted-imports`, `layerRule` in `eslint.config.mjs`): a layer imports only from layers below it, and never from another slice of its own layer. Inside a slice, imports are relative; another slice or layer is reached by its `@/` path (`@/entities/team/ui/TeamCircle`), and `../../` (leaving the slice) is refused so every crossing goes through a checked `@/` path. Tests and `src/test/` are exempt. Files the collector runs in Node (`shared/lib/json.ts`, `guards.ts`, `search.ts`, `shared/api/snapshot.ts`) keep relative imports with the `.ts` extension: Node does not resolve `@/`.
+- **Where a new file goes**: used by one screen → that page's slice; a user action reused by screens → a feature; data about a business thing → an entity; generic → shared. When two slices of the same layer need each other, move the shared part down a layer (as `openChannel` moved to `entities/broadcast` and the competitions list to `shared/config`).
+- **No barrel files** (`index.ts`): imports name the file (`@/features/reminders/model/NotificationsContext`), which keeps `jest.mock` paths exact.
+- **`src/app` vs `app/`**: Expo Router would take `src/app` as the routes folder when it exists; `app.json` pins it with the `expo-router` plugin option `"root": "./app"`. Never put routes in `src/app`, nor screens in `app/`.
 
 ## Navigation Flow
 
@@ -114,11 +133,11 @@ App → downloads the JSON (EXPO_PUBLIC_DATA_URL) → writes SQLite → screens 
   - `full` at **06:00 Brasília** (09:00 UTC): everything, once a day (also when the file is over 26 h old, i.e. the morning run was missed);
   - `live` during **game windows** (30 min before kickoff until 30 min after the expected end, or while a game is live, up to 6 h after its expected end (`STALE_LIVE_MS`: CBV once left a game live for days), or an NFL game waits for its score), when the file is at least 8 min old, i.e. about every 10 minutes, listing only the competitions with a game in the window;
   - nothing otherwise (no runs at night or between games).
-    The window rule lives in `scripts/schedule.ts` (`inLiveWindow`, lengths per sport, F1 sessions 2 h) and is mirrored in the Worker, which also reads the sessions in `series`: keep both in sync (`src/__tests__/windowMirror.test.ts` runs both over the same games for every sport and fails on any difference; the Worker is type-checked through JSDoc against `src/types/snapshot.ts` and linted). Its secret `GITHUB_TOKEN` is a fine-grained token (this repo, Actions read/write) that expires: a 401 in the Worker logs means renew it. The workflow's own cron (`40 9 * * *`) only backs up the morning run: its `gate` job skips unless the published file is over 2 h old.
+    The window rule lives in `scripts/schedule.ts` (`inLiveWindow`, lengths per sport, F1 sessions 2 h) and is mirrored in the Worker, which also reads the sessions in `series`: keep both in sync (`scripts/windowMirror.test.ts` runs both over the same games for every sport and fails on any difference; the Worker is type-checked through JSDoc against `src/shared/api/snapshot.ts` and linted). Its secret `GITHUB_TOKEN` is a fine-grained token (this repo, Actions read/write) that expires: a 401 in the Worker logs means renew it. The workflow's own cron (`40 9 * * *`) only backs up the morning run: its `gate` job skips unless the published file is over 2 h old.
 - **Live runs**: `COLLECT_MODE=live` with `COLLECT_COMPETITIONS` (from the inputs) makes `scripts/collect.ts` collect only the listed sources (`planSources`); the others stay as published with their own `updatedAt`. Inside a listed source, only rounds with a game in its window are asked (Brasileirão also its standings and the pages of those games; NFL/NBA the standings page and today's round), every other round, and the broadcasters already found, come from the published file. A live run makes ~5 requests in ~1 min, against ~68 in ~3.5 min for a full one. Live runs never do the multisport full refresh.
 - **Collector resilience**: `scripts/http.ts` retries timeouts, network errors, 5xx and 429 twice (5 s, 15 s); other statuses fail at once. `scripts/fallback.ts` validates each source on its own: one that fails or looks suspicious keeps its competitions from the published file (`PREVIOUS_SNAPSHOT_URL`, the R2 copy, with their old `updatedAt`) and leaves a `::warning` on the run. A league never published yet (just added) that fails is left out with a warning. CBV agenda games with a club outside the table (`withoutForeignMatches`): when one unknown id meets the only table club without a game, it is the same club renumbered and its games take the table id; otherwise up to `MAX_FOREIGN_MATCHES` (3) games are left out and more reject the source, with the ids in the error. Each case leaves a `::warning`. The run fails only when the published file could not be read and a source failed, or when every source failed. Offline (fixtures) runs never fall back. The Pages upload tries twice and the deploy three times, since GitHub's artifact and OIDC services drop now and then; the R2 upload (AWS CLI, secrets `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, cache 5 min) runs even when Pages failed.
 
-- **Competitions**: `masculina` and `feminina` (volleyball, CBV), `serie-a` (football, ge), `nfl` (American football, ge), `nba` (basketball, ge) and `f1` (motorsport, `automobilismo`, ge agenda). `src/constants/competitions.ts` is the single list: slug, sport, names and the standings columns of each sport. The app ignores competitions it does not know, so a sport can be added to the file before the app update ships.
+- **Competitions**: `masculina` and `feminina` (volleyball, CBV), `serie-a` (football, ge), `nfl` (American football, ge), `nba` (basketball, ge) and `f1` (motorsport, `automobilismo`, ge agenda). `src/shared/config/competitions.ts` is the single list: slug, sport, names and the standings columns of each sport. The app ignores competitions it does not know, so a sport can be added to the file before the app update ships.
 - **Scores**: `homeScore`/`awayScore` are sets in volleyball, goals in football and points in the NFL; `setScores` is empty outside volleyball. Football matches may carry `events` (goals, own goals, red cards with side, player, period and minute) from the ge live feed; the match detail shows them with the score by half. Quarter scores for the NFL/NBA are not available from ge. `Standing.scoredFor`/`scoredAgainst` follow the same rule, and `draws` is always 0 in volleyball. `Standing.group` names the NFL division ("AFC Leste") or the NBA conference, `position` counts within it, and `points` is 0; `StandingsList` renders one section per group.
 - **Legacy file**: the first release reads `superliga.json` (version 1, Superligas only). `scripts/legacy.ts` keeps publishing it from the new snapshot until those installs are gone.
 - **Builds already released**: `scripts/oldBuilds.ts` holds frozen copies of what each released build checks before taking the file (first release: `superliga.json` with exactly the two Superligas; 1.0 to 1.4: `version` 2, every competition with teams, one slug it knows). Every run calls `assertOldBuildsRead` before writing, and `oldBuilds.test.ts` checks a full snapshot on every PR. Never edit a frozen reader to make something pass; add one when a new build changes its checks.
@@ -194,15 +213,15 @@ eas update --channel production --message "description"    # Update production b
 ## Code Conventions
 
 - **Always use TypeScript strict mode** — no `any` types unless absolutely necessary
-- **No casts** (`as X`, non-null `!`) in `src/`, `scripts/` and `app/`; ESLint enforces it (`consistent-type-assertions: never`, `no-non-null-assertion`), tests excepted. `as const` and `satisfies` are fine. Data from outside (source pages, APIs, SQLite, AsyncStorage, the published file, `transfers.json`/`broadcasts.json`) is read as `unknown` and checked: `src/utils/json.ts` (`parseJson`, `asObject`, `objectsOf`, `asList`, `toText`, `toNumber`, `readBalanced`) and `src/utils/guards.ts` (`isSnapshot`, `isMatch`, `isTeam`, `isStanding`, `isRaceSession`, `isTransfer`); curated files through `toTransferFile` / `toBroadcastFile`. Both utils are imported by the collector too, so their own imports carry the `.ts` extension.
+- **No casts** (`as X`, non-null `!`) in `src/`, `scripts/` and `app/`; ESLint enforces it (`consistent-type-assertions: never`, `no-non-null-assertion`), tests excepted. `as const` and `satisfies` are fine. Data from outside (source pages, APIs, SQLite, AsyncStorage, the published file, `transfers.json`/`broadcasts.json`) is read as `unknown` and checked: `src/shared/lib/json.ts` (`parseJson`, `asObject`, `objectsOf`, `asList`, `toText`, `toNumber`, `readBalanced`) and `src/shared/lib/guards.ts` (`isSnapshot`, `isMatch`, `isTeam`, `isStanding`, `isRaceSession`, `isTransfer`); curated files through `toTransferFile` / `toBroadcastFile`. Both utils are imported by the collector too, so their own imports carry the `.ts` extension.
 - **`noUncheckedIndexedAccess`**: `list[0]` may be `undefined`. Destructure and check (`const [first] = list; if (!first) …`) instead of indexing; a named default (`DEFAULT_COMPETITION`, the first palette color) where a value must exist. Optional props that callers fill from maybe-missing values are declared `prop?: T | undefined` (`exactOptionalPropertyTypes`); snapshot fields stay exact and are only spread in when present (`...(group ? { group } : {})`).
-- **Route files** in `app/` import from `../../src/` (relative paths)
+- **Route files** in `app/` only re-export a page: `export { default } from '@/pages/home/ui/HomeScreen';`
 - **Component files**: PascalCase (e.g., `MatchCard.tsx`)
 - **Hook files**: camelCase with `use` prefix (e.g., `useTodayMatches.ts`)
 - **Utility files**: camelCase (e.g., `championshipLabel.ts`)
-- **Test files**: Co-locate tests in `src/__tests__/` directory (casts and `!` are allowed there: `list[0]!` when the test would fail anyway without it)
+- **Test files**: next to the file they test, named `<File>.test.ts(x)` (casts and `!` are allowed there: `list[0]!` when the test would fail anyway without it); helpers in `src/test/`
 - **Styles**: Use `StyleSheet.create()` for layout/spacing; override colors via style arrays `[styles.card, { backgroundColor: colors.surface }]`
-- **Theming**: Always use `useTheme()` for colors — never hardcode color values. ESLint enforces it in `src/components`, `src/screens` and `app/` (hex/rgb/hsl literals, a bare `Switch` instead of `ThemedSwitch`, inline styles are errors); a palette that is data (team colors with `TEAM_TEXT_COLOR`, the splash) lives in `src/utils` or `src/constants`
+- **Theming**: Always use `useTheme()` for colors — never hardcode color values. ESLint enforces it in every `.tsx` of `src/` and `app/` (tests aside) (hex/rgb/hsl literals, a bare `Switch` instead of `ThemedSwitch`, inline styles are errors); a palette that is data (team colors with `TEAM_TEXT_COLOR`, the splash) lives in a `.ts` file (`src/entities/team/lib/teamColor.ts`, `src/app/splash.ts`)
 - **Functional components only**: No class components
 - **Named exports** for components; default export for route/screen components
 - **Expo Router hooks**: `useRouter()` for navigation, `useLocalSearchParams()` for route params, `<Stack.Screen options={...}/>` for dynamic headers
@@ -212,7 +231,7 @@ eas update --channel production --message "description"    # Update production b
 - Every new component/hook must have at least one test
 - Use `@testing-library/react-native` for component tests
 - Mock `expo-router` in tests: `jest.mock('expo-router', () => ({ useRouter, useLocalSearchParams, Stack: { Screen: () => null } }))`
-- Mock `../data/database` for screen tests; for tests of the SQL itself, mock `expo-sqlite` with `createExpoSqliteMock()` from `src/test-sqlite.ts` (real SQLite through `node:sqlite`)
+- Mock `@/shared/api/database` for screen tests (mock paths use the same `@/` paths as the imports); for tests of the SQL itself, mock `expo-sqlite` with `createExpoSqliteMock()` from `src/test/sqlite.ts` (real SQLite through `node:sqlite`)
 - Jest runs with `TZ=America/Sao_Paulo` (set in `jest.config.js`)
 - Mock `expo-linking` in tests that use Linking: `jest.mock('expo-linking', () => ({ openURL: jest.fn() }))`
 - Test behavior, not implementation details
@@ -225,8 +244,8 @@ The app supports automatic dark/light mode via `ThemeContext`. System preference
 
 ### Architecture
 
-- **`src/constants/theme.ts`**: Defines `ThemeColors` interface, `lightTheme` and `darkTheme` palettes
-- **`src/contexts/ThemeContext.tsx`**: `ThemeProvider` (wraps app in `_layout.tsx`), `useTheme()` hook
+- **`src/shared/theme/theme.ts`**: Defines `ThemeColors` interface, `lightTheme` and `darkTheme` palettes
+- **`src/shared/theme/ThemeContext.tsx`**: `ThemeProvider` (wraps app in `_layout.tsx`), `useTheme()` hook
 - **`app.json`**: `userInterfaceStyle: "automatic"` (enables system dark mode detection)
 
 ### Usage
@@ -239,7 +258,7 @@ const { colors, toggleTheme, isDark } = useTheme();
 
 ### Color Tokens
 
-Named by role, never by component (no `watchBtnBg`): reuse these before adding one. Source of truth is `src/constants/theme.ts`.
+Named by role, never by component (no `watchBtnBg`): reuse these before adding one. Source of truth is `src/shared/theme/theme.ts`.
 
 | Token               | Light              | Dark                  | Usage                                       |
 | ------------------- | ------------------ | --------------------- | ------------------------------------------- |
@@ -265,7 +284,7 @@ Named by role, never by component (no `watchBtnBg`): reuse these before adding o
 | `overlayBg`         | black 50%          | black 70%             | Sheet backdrops                             |
 | `statusBar`         | `dark`             | `light`               | StatusBar style (`ThemedStatusBar`)         |
 
-### Tokens and building blocks (`src/constants/designTokens.ts`)
+### Tokens and building blocks (`src/shared/theme/designTokens.ts`)
 
 - `spacing`, `radius`, `typography`, `iconSize`, `shadows`: use them instead of numbers.
 - `touchTarget` (44): minimum height of anything tappable; small links get `hitSlop`.
@@ -280,7 +299,7 @@ Named by role, never by component (no `watchBtnBg`): reuse these before adding o
 - **`SwitchRow`** (`label`, `detail`, `leading`, switch) and its sport form **`SportToggleRow`**; **`CheckRow`** (`label`, `detail`, `checked`, `locked` with its hint) over **`Checkbox`** (`square` 24, `round` 22). The sheet, settings and onboarding are built from these.
 - **`ScheduleRow`** (when · title · `BroadcasterPill` or "a definir"): `MatchRow` and `SessionRow` are thin adapters over it. **`BroadcasterPill`** (`sm` in cards, `md` at the end of a row) is the only channel pill.
 - **`SheetFrame`** (modal, backdrop, handle, keyboard lift) under every sheet; **`BottomSheet`** is its titled form. **`IconButton`**: a round icon-only button (back).
-- **`ChannelButtons`**: "Assistir no X" per channel or "Transmissão a definir"; links open through `openLink` / `openChannel` (`src/utils/links.ts`), never `Linking.openURL` directly.
+- **`ChannelButtons`**: "Assistir no X" per channel or "Transmissão a definir"; links open through `openLink` / `openChannel` (`src/shared/lib/links.ts`), never `Linking.openURL` directly.
 
 ## Git Workflow
 

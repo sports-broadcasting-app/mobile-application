@@ -1,4 +1,4 @@
-import type { Match, Sport } from '../src/types/snapshot';
+import type { Match, Sport } from '../src/shared/api/snapshot';
 
 /**
  * The game window: from 30 minutes before kickoff to 30 minutes after the

@@ -47,7 +47,12 @@
     },
     "plugins": [
       "expo-image",
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "root": "./app"
+        }
+      ],
       "expo-sqlite",
       "expo-status-bar",
       "expo-font",

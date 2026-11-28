@@ -1,5 +1,5 @@
 import { NativeTabs } from 'expo-router/native-tabs';
-import { useTheme } from '../../src/contexts/ThemeContext';
+import { useTheme } from '@/shared/theme/ThemeContext';
 import jogos from '../../assets/tabs/tab-jogos.png';
 import jogosFill from '../../assets/tabs/tab-jogos-fill.png';
 import classificacao from '../../assets/tabs/tab-classificacao.png';

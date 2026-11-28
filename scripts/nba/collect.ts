@@ -1,4 +1,4 @@
-import type { CompetitionData } from '../../src/types/snapshot';
+import type { CompetitionData } from '../../src/shared/api/snapshot';
 import type { SourceIO } from '../source.ts';
 import {
   collectMultisport,

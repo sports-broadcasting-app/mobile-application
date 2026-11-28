@@ -6,7 +6,7 @@ import type {
   SetScore,
   Standing,
   Team,
-} from '../../src/types/snapshot';
+} from '../../src/shared/api/snapshot';
 import {
   asObject,
   parseJson,
@@ -14,7 +14,7 @@ import {
   toNumber,
   toText,
   type JsonObject,
-} from '../../src/utils/json.ts';
+} from '../../src/shared/lib/json.ts';
 
 const FLIGHT_CHUNK = /self\.__next_f\.push\(\[1,"((?:[^"\\]|\\.)*)"\]\)/g;
 const MAX_SETS = 5;

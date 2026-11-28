@@ -4,7 +4,7 @@ import type {
   MatchStatus,
   Standing,
   Team,
-} from '../../src/types/snapshot';
+} from '../../src/shared/api/snapshot';
 import { toChannels, toInstant } from '../brasileirao/parseGe.ts';
 import {
   asList,
@@ -14,7 +14,7 @@ import {
   toNumber,
   toText,
   type JsonObject,
-} from '../../src/utils/json.ts';
+} from '../../src/shared/lib/json.ts';
 
 /**
  * The ge "multisport" pages (NFL, NBA): a standings page that embeds the

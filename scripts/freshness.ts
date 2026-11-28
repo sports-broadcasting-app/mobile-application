@@ -1,4 +1,4 @@
-import type { CompetitionData } from '../src/types/snapshot';
+import type { CompetitionData } from '../src/shared/api/snapshot';
 import { inLiveWindow, WINDOW_MARGIN_MS } from './schedule.ts';
 
 const HOUR_MS = 60 * 60 * 1000;

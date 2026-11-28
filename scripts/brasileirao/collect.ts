@@ -1,4 +1,7 @@
-import type { CompetitionData, MatchEvent } from '../../src/types/snapshot';
+import type {
+  CompetitionData,
+  MatchEvent,
+} from '../../src/shared/api/snapshot';
 import type { SourceIO } from '../source.ts';
 import { inLiveWindow } from '../schedule.ts';
 import {

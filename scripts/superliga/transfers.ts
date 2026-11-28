@@ -1,6 +1,10 @@
-import type { Team, Transfer, TransferClub } from '../../src/types/snapshot';
-import { normalizeForSearch } from '../../src/utils/search.ts';
-import { asObject, objectsOf } from '../../src/utils/json.ts';
+import type {
+  Team,
+  Transfer,
+  TransferClub,
+} from '../../src/shared/api/snapshot';
+import { normalizeForSearch } from '../../src/shared/lib/search.ts';
+import { asObject, objectsOf } from '../../src/shared/lib/json.ts';
 
 /**
  * One hand-curated line of transfers.json. `from` and `to` are a Superliga
