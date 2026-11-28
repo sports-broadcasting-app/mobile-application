@@ -4075,6 +4075,11 @@ expo-asset@~58.0.21:
     "@expo/image-utils" "^0.12.7"
     expo-constants "~58.0.16"
 
+expo-blur@~58.0.6:
+  version "58.0.6"
+  resolved "https://registry.yarnpkg.com/expo-blur/-/expo-blur-58.0.6.tgz#107ca3a55f0c8cb2456ddff09edd5e52b62e3081"
+  integrity sha512-gjcw+pBi/15Qy9L0vD6n+KbEbutz6owvrjbYr+74kSaNgj0DEf2qJ7cEU3EJ8/f8KcZss0/7sUWWO9FtBEg+Wg==
+
 expo-build-properties@~58.0.12:
   version "58.0.12"
   resolved "https://registry.yarnpkg.com/expo-build-properties/-/expo-build-properties-58.0.12.tgz#f22c76da740fb2246c0272d9d90f2787c885ea16"
@@ -4143,6 +4148,11 @@ expo-glass-effect@^58.0.5:
   version "58.0.5"
   resolved "https://registry.yarnpkg.com/expo-glass-effect/-/expo-glass-effect-58.0.5.tgz#dfc73c5c2b580dfb2656194184cced9d7b044228"
   integrity sha512-PkL1X/r0cTs6NG47Xp3TxRvtqSeRmPYhPOHp3GDmZB2oOxpjXge6qLi/bSSv0asFWqf+MLOlXZ+hq2Imuh0Z1g==
+
+expo-glass-effect@~58.0.6:
+  version "58.0.6"
+  resolved "https://registry.yarnpkg.com/expo-glass-effect/-/expo-glass-effect-58.0.6.tgz#764486df99bf369c7f96726a8e00a77030c7922b"
+  integrity sha512-2lkGh1LucDm9rG6jjXf1ZoqIqfsrVaSBYPyL5PT+MDmyZIp0iFxNb3kt6rxJRH8zsSoOvre2+yHoUbD/hxxAgg==
 
 expo-image@~58.0.18:
   version "58.0.18"

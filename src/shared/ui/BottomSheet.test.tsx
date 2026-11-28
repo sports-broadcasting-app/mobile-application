@@ -1,8 +1,30 @@
 import { Keyboard, Platform, Text } from 'react-native';
-import { act, render, screen } from '@/test/utils';
+import { act, fireEvent, render, screen } from '@/test/utils';
 import { BottomSheet } from './BottomSheet';
 
 type Listener = (event: { endCoordinates: { height: number } }) => void;
+
+describe('BottomSheet close button', () => {
+  it('closes from the X when asked for one', () => {
+    const onClose = jest.fn();
+    render(
+      <BottomSheet visible onClose={onClose} title="Time" closeButton>
+        <Text>conteudo</Text>
+      </BottomSheet>,
+    );
+    fireEvent.press(screen.getByRole('button', { name: 'Fechar' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('has no X by default (its footer has a way out)', () => {
+    render(
+      <BottomSheet visible onClose={jest.fn()} title="Time">
+        <Text>conteudo</Text>
+      </BottomSheet>,
+    );
+    expect(screen.queryByRole('button', { name: 'Fechar' })).toBeNull();
+  });
+});
 
 describe('BottomSheet keyboard on Android', () => {
   const original = Platform.OS;

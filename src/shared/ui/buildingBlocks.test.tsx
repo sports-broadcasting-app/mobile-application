@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { fireEvent, render, screen } from '@/test/utils';
 import { AppText } from './AppText';
@@ -63,7 +63,7 @@ describe('AppText', () => {
 describe('Checkbox and CheckRow', () => {
   it('fills the box when checked', () => {
     render(<Checkbox checked />);
-    const box = screen.toJSON() as unknown as { props: { style: unknown } };
+    const box = screen.UNSAFE_getByType(Checkbox).findByType(View);
     expect(flat(box.props.style).backgroundColor).toBe(lightTheme.primary);
   });
 
