@@ -74,7 +74,10 @@ describe('MatchCard', () => {
         includeHiddenElements: true,
       }),
     ).toBeNull();
-    expect(screen.getByTestId('favorite-star')).toBeTruthy();
+    // Decorative: the card's label already says "jogo do seu time".
+    expect(
+      screen.getByTestId('favorite-star', { includeHiddenElements: true }),
+    ).toBeTruthy();
   });
 
   it('says a finished game without a channel is over', async () => {

@@ -71,6 +71,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   (useSync as jest.Mock).mockReturnValue({
     lastSyncAt: Date.now(),
+    dataVersion: 'v1',
     refreshing: false,
     refreshFailed: false,
     refresh: jest.fn(),

@@ -46,7 +46,11 @@ describe('Formula 1 in the snapshot', () => {
   });
 
   it('stores the sessions and reads them by day, weekend and kind', async () => {
-    await saveSnapshot(withSeries(published()), 1000);
+    await saveSnapshot(withSeries(published()), {
+      syncedAt: 1000,
+      key: 'k1000',
+      etag: null,
+    });
     const friday = Date.parse('2026-11-27T00:00:00-03:00');
     const saturday = Date.parse('2026-11-28T00:00:00-03:00');
     expect(

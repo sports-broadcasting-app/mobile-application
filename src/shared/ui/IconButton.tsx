@@ -4,11 +4,10 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from './Icon';
+import type { IconName } from './icons';
 import { useTheme } from '@/shared/theme/ThemeContext';
 import { iconSize, radius, touchTarget } from '@/shared/theme/designTokens';
-
-type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
 interface IconButtonProps {
   icon: IconName;
@@ -48,11 +47,7 @@ export function IconButton({
       ]}
       onPress={onPress}
     >
-      <MaterialCommunityIcons
-        name={icon}
-        size={iconSize.md}
-        color={colors.textPrimary}
-      />
+      <Icon name={icon} size={iconSize.md} color={colors.textPrimary} />
     </TouchableOpacity>
   );
 }

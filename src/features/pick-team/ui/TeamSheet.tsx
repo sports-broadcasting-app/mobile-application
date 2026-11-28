@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { AppText } from '@/shared/ui/AppText';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from '@/shared/ui/Icon';
 import { BottomSheet } from '@/shared/ui/BottomSheet';
 import { SearchField } from '@/shared/ui/SearchField';
 import { TeamCircle } from '@/entities/team/ui/TeamCircle';
@@ -116,7 +116,7 @@ export function TeamSheet({ competition, onClose, onPicked }: TeamSheetProps) {
                 ]}
               >
                 {on ? (
-                  <MaterialCommunityIcons
+                  <Icon
                     name="check"
                     size={iconSize.sm - 2}
                     color={colors.onPrimary}

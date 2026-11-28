@@ -63,6 +63,8 @@ Report: last success, real interval between scheduled runs vs the cron, age of `
 
 ## Known behaviors and past incidents
 
+- **The app relies on R2's ETag (performance PR):** builds from 1.6 send `If-None-Match` with the last ETag and treat 304 as "same data" (no download, no write). R2 answers it (checked 2026-11-28: weak `W/"…"` ETag, `cache-control: public, max-age=300`, brotli). Keep the file on R2/Cloudflare or another host that answers conditional requests; a host without ETags only costs full downloads, the app still compares fingerprints.
+
 - **GitHub cron is best effort.** Scheduled runs get delayed or dropped under load; this repo saw gaps of 6–9 h on a 30-min cron. That is why the Worker `onde-passa-trigger` (`infra/cloudflare/data-trigger/worker.js`) dispatches the workflow every 30 min. Runs with event `workflow_dispatch` about every 30 min mean it works; only `schedule` runs mean the Worker stopped — check its logs in the Cloudflare dashboard. A 401 there means the fine-grained token in its secret `GITHUB_TOKEN` expired: the user creates a new one (this repo only, Actions read/write) and replaces the secret.
 - **Full refresh:** the multisport collector asks every round when the league's `fullRefreshAt` is over 24 h old (`needsFullRefresh`); the run log says "(full refresh)".
 - **deploy-pages OIDC timeout** ("Failed to get OIDC token"): transient on GitHub's side; the workflow already tries three times and the R2 upload runs even when Pages failed.

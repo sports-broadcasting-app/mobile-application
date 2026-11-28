@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { AppText } from '@/shared/ui/AppText';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from '@/shared/ui/Icon';
 import { useTheme } from '@/shared/theme/ThemeContext';
 import { RaceSession } from '@/shared/api/snapshot';
 import { formatTime } from '@/shared/lib/date';
@@ -67,7 +67,7 @@ export const GrandPrixCard = React.memo(function GrandPrixCard({
             </AppText>
           ) : null}
         </View>
-        <MaterialCommunityIcons
+        <Icon
           name="chevron-right"
           size={iconSize.md}
           color={colors.textTertiary}

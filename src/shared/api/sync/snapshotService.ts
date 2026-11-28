@@ -3,7 +3,11 @@ import {
   resolveTransfers,
   toTransferFile,
 } from '../../../../scripts/superliga/transfers.ts';
-import { isCompetitionSlug } from '@/shared/config/competitions';
+import {
+  ALL_COMPETITIONS,
+  isCompetitionSlug,
+} from '@/shared/config/competitions';
+import { fingerprint } from '@/shared/lib/hash';
 import { DATA_URL } from '@/shared/config/config';
 import { Snapshot } from '../snapshot';
 import { isSnapshot } from '@/shared/lib/guards';
@@ -69,16 +73,48 @@ export function withBundledTransfers(snapshot: Snapshot): Snapshot {
   return snapshot;
 }
 
-export async function fetchSnapshot(): Promise<Snapshot> {
+let revision: string | null = null;
+
+/**
+ * What this build adds to the file (the competitions it keeps, the bundled
+ * transfers), as a fingerprint. A saved ETag is only trusted by the build
+ * that saved it: after an update, the same file may be shaped differently.
+ */
+export function transformRevision(): string {
+  revision ??= fingerprint(
+    JSON.stringify([ALL_COMPETITIONS, bundledTransfers]),
+  );
+  return revision;
+}
+
+/** A download: the file, or word that it is the one already saved. */
+export type FetchResult =
+  | { kind: 'unchanged' }
+  | { kind: 'snapshot'; snapshot: Snapshot; etag: string | null };
+
+/**
+ * Downloads the published file. With the `etag` of the saved one, the server
+ * answers 304 while the file is the same: no body to download or parse.
+ */
+export async function fetchSnapshot(
+  etag: string | null = null,
+): Promise<FetchResult> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   const startedAt = Date.now();
-  logSync('download started', { url: DATA_URL });
+  logSync('download started', { url: DATA_URL, conditional: etag !== null });
 
   try {
     const response = await fetch(DATA_URL, {
       signal: controller.signal,
+      ...(etag ? { headers: { 'If-None-Match': etag } } : {}),
     });
+    if (response.status === 304) {
+      logSync('download not modified', {
+        durationMs: Date.now() - startedAt,
+      });
+      return { kind: 'unchanged' };
+    }
     const body = await response.text();
     logSync('download finished', {
       status: response.status,
@@ -102,7 +138,11 @@ export async function fetchSnapshot(): Promise<Snapshot> {
       });
       throw new Error('Dados inválidos');
     }
-    return withBundledTransfers(keepKnownCompetitions(withSeries(data)));
+    return {
+      kind: 'snapshot',
+      snapshot: withBundledTransfers(keepKnownCompetitions(withSeries(data))),
+      etag: response.headers.get('etag'),
+    };
   } catch (error) {
     logSync('download failed', {
       url: DATA_URL,

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { SectionList, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { AppText } from '@/shared/ui/AppText';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from '@/shared/ui/Icon';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { SearchField } from '@/shared/ui/SearchField';
 import { SegmentedChips } from '@/shared/ui/SegmentedChips';
@@ -122,7 +122,7 @@ export default function TransfersScreen() {
             hitSlop={spacing.sm}
             onPress={() => setSelectedTeam(null)}
           >
-            <MaterialCommunityIcons
+            <Icon
               name="close-circle"
               size={iconSize.md}
               color={colors.textTertiary}
@@ -153,7 +153,7 @@ export default function TransfersScreen() {
               >
                 {getTeamName(team.name)}
               </AppText>
-              <MaterialCommunityIcons
+              <Icon
                 name="chevron-right"
                 size={iconSize.md}
                 color={colors.textTertiary}

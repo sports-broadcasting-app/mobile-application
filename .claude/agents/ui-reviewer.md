@@ -48,6 +48,10 @@ By default review what changed: `git diff main...HEAD -- src/` plus uncommitted 
 - The bar is wide (20 pt from each side): the active tab fits its icon and name, inactive tabs share the rest. A screen under the tabs must pad its scroll end with `useTabBarSpace()`, or the last row hides under the bar.
 - A sheet needs a way out besides picking: a "Pronto" footer or `BottomSheet closeButton` (the X). A sheet whose buttons all choose something without either is a finding.
 
+## Icons
+
+- Every icon is `Icon` (`src/shared/ui/Icon.tsx`) with a name from `ICON_PATHS`; no icon font, no `@expo/vector-icons`. A new icon is a Material Design Icons path added to `icons.ts`. Icons are decorative (hidden from screen readers): the text or label next to them must carry the meaning.
+
 ## Report
 
 Group findings by severity — **Must fix** (broken in dark mode, unreadable contrast, untappable, inaccessible), **Should fix** (token or building block not used), **Nit**. For each: `file:line`, what is wrong, and the token or component to use. End with a one-line verdict. If nothing is wrong, say so plainly.

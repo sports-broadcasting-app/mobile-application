@@ -12,7 +12,7 @@ jest.mock('expo-linking', () => ({
   openSettings: jest.fn(() => Promise.resolve()),
 }));
 jest.mock('@/shared/api/sync/SyncContext', () => ({
-  useSync: () => ({ lastSyncAt: 1000 }),
+  useSync: () => ({ lastSyncAt: 1000, dataVersion: 'v1' }),
 }));
 jest.mock('../model/NotificationsContext', () => ({
   useNotifications: jest.fn(),

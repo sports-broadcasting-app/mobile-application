@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from './Icon';
 import { useTheme } from '@/shared/theme/ThemeContext';
 import { iconSize, radius } from '@/shared/theme/designTokens';
 
@@ -23,7 +23,7 @@ export function Checkbox({ checked, shape = 'square' }: CheckboxProps) {
       ]}
     >
       {checked ? (
-        <MaterialCommunityIcons
+        <Icon
           name="check"
           size={shape === 'round' ? iconSize.sm - 2 : iconSize.sm}
           color={colors.onPrimary}

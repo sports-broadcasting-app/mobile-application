@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from '@/shared/ui/Icon';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { AppText } from '@/shared/ui/AppText';
 import { Card } from '@/shared/ui/Card';
@@ -186,7 +186,7 @@ export default function GrandPrixScreen() {
                       style={styles.bell}
                       onPress={() => toggleKind(session)}
                     >
-                      <MaterialCommunityIcons
+                      <Icon
                         name={ringing ? 'bell-ring' : 'bell-outline'}
                         size={iconSize.md}
                         color={ringing ? colors.primary : colors.textTertiary}

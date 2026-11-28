@@ -20,6 +20,11 @@ import {
 
 const DB_NAME = 'superliga.db';
 const LAST_SYNC_KEY = 'lastSyncAt';
+/** `fingerprint` of the snapshot the data tables hold. */
+const SNAPSHOT_KEY = 'snapshotKey';
+/** ETag of the file that snapshot came from, for a conditional download. */
+const ETAG_KEY = 'etag';
+const SYNC_KEYS = [LAST_SYNC_KEY, SNAPSHOT_KEY, ETAG_KEY] as const;
 const SCHEMA_KEY = 'schemaVersion';
 /** Bump when the stored payloads change shape; favorites are always kept. */
 const SCHEMA_VERSION = '4';
@@ -140,99 +145,177 @@ async function queryRows<T>(
   return parseRows(await db.getAllAsync<{ payload: string }>(sql, params), is);
 }
 
-/** Replaces the competition data atomically. Favorites are never touched. */
-export async function saveSnapshot(
-  snapshot: Snapshot,
-  syncedAt: number,
+/**
+ * Most `?` one statement may bind: 999 is the limit of older SQLite builds,
+ * so it holds on any device. A multi-row INSERT of this size writes a whole
+ * table in a few calls instead of one native call per row.
+ */
+const MAX_BOUND_PARAMS = 999;
+
+/** Writes `rows` (one value per column each) in as few statements as fit. */
+async function insertRows(
+  db: SQLite.SQLiteDatabase,
+  table: string,
+  columns: readonly string[],
+  rows: SQLite.SQLiteBindValue[][],
 ): Promise<void> {
-  const db = await getDb();
-
-  await db.withTransactionAsync(async () => {
-    await db.runAsync('DELETE FROM teams');
-    await db.runAsync('DELETE FROM matches');
-    await db.runAsync('DELETE FROM standings');
-    await db.runAsync('DELETE FROM transfers');
-    await db.runAsync('DELETE FROM sessions');
-
-    for (const competition of snapshot.competitions) {
-      for (const team of competition.teams) {
-        await db.runAsync(
-          'INSERT OR REPLACE INTO teams (id, competition, payload) VALUES (?, ?, ?)',
-          [team.id, competition.slug, JSON.stringify(team)],
-        );
-      }
-
-      for (const match of competition.matches) {
-        await db.runAsync(
-          `INSERT OR REPLACE INTO matches (id, competition, startsAtMs, payload)
-            VALUES (?, ?, ?, ?)`,
-          [
-            match.id,
-            competition.slug,
-            Date.parse(match.startsAt),
-            JSON.stringify(match),
-          ],
-        );
-      }
-
-      // The snapshot order is the display order: positions restart in each
-      // group of a divided table, so sorting by them would interleave groups.
-      for (const [index, standing] of competition.standings.entries()) {
-        await db.runAsync(
-          `INSERT OR REPLACE INTO standings (competition, teamId, position, sortOrder, payload)
-            VALUES (?, ?, ?, ?, ?)`,
-          [
-            competition.slug,
-            standing.teamId,
-            standing.position,
-            index,
-            JSON.stringify(standing),
-          ],
-        );
-      }
-
-      for (const session of competition.sessions ?? []) {
-        await db.runAsync(
-          `INSERT OR REPLACE INTO sessions (id, competition, grandPrixId, startsAtMs, payload)
-            VALUES (?, ?, ?, ?, ?)`,
-          [
-            session.id,
-            competition.slug,
-            session.grandPrixId,
-            Date.parse(session.startsAt),
-            JSON.stringify(session),
-          ],
-        );
-      }
-
-      for (const transfer of competition.transfers ?? []) {
-        await db.runAsync(
-          `INSERT OR REPLACE INTO transfers (id, competition, date, payload)
-            VALUES (?, ?, ?, ?)`,
-          [
-            transfer.id,
-            competition.slug,
-            transfer.date,
-            JSON.stringify(transfer),
-          ],
-        );
-      }
-    }
-
+  const tuple = `(${placeholders(columns)})`;
+  const perStatement = Math.floor(MAX_BOUND_PARAMS / columns.length);
+  for (let start = 0; start < rows.length; start += perStatement) {
+    const chunk = rows.slice(start, start + perStatement);
     await db.runAsync(
-      'INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)',
-      [LAST_SYNC_KEY, String(syncedAt)],
+      `INSERT OR REPLACE INTO ${table} (${columns.join(', ')})
+        VALUES ${chunk.map(() => tuple).join(', ')}`,
+      chunk.flat(),
     );
-  });
+  }
+}
+
+/** What the last sync left: when, which data and the file's ETag. */
+export interface SyncState {
+  lastSyncAt: number | null;
+  /** `fingerprint` of the saved snapshot; null before the first save. */
+  snapshotKey: string | null;
+  etag: string | null;
+}
+
+export async function getSyncState(): Promise<SyncState> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ key: string; value: string }>(
+    `SELECT key, value FROM meta WHERE key IN (${placeholders(SYNC_KEYS)})`,
+    [...SYNC_KEYS],
+  );
+  const value = (key: string) =>
+    rows.find((row) => row.key === key)?.value ?? null;
+  const lastSyncAt = value(LAST_SYNC_KEY);
+  return {
+    lastSyncAt: lastSyncAt === null ? null : Number(lastSyncAt),
+    snapshotKey: value(SNAPSHOT_KEY),
+    etag: value(ETAG_KEY),
+  };
 }
 
 export async function getLastSyncAt(): Promise<number | null> {
+  return (await getSyncState()).lastSyncAt;
+}
+
+async function writeSyncMeta(
+  db: SQLite.SQLiteDatabase,
+  syncedAt: number,
+  etag: string | null,
+  snapshotKey?: string,
+): Promise<void> {
+  const entries: [string, string][] = [[LAST_SYNC_KEY, String(syncedAt)]];
+  if (snapshotKey !== undefined) entries.push([SNAPSHOT_KEY, snapshotKey]);
+  if (etag !== null) entries.push([ETAG_KEY, etag]);
+  await insertRows(db, 'meta', ['key', 'value'], entries);
+  if (etag === null)
+    await db.runAsync('DELETE FROM meta WHERE key = ?', [ETAG_KEY]);
+}
+
+/**
+ * The data did not change: only the time of the check (and the ETag) moves,
+ * so the screens keep their rows and nothing is written again.
+ */
+export async function markSynced(
+  syncedAt: number,
+  etag: string | null,
+): Promise<void> {
   const db = await getDb();
-  const row = await db.getFirstAsync<{ value: string }>(
-    'SELECT value FROM meta WHERE key = ?',
-    [LAST_SYNC_KEY],
-  );
-  return row ? Number(row.value) : null;
+  await writeSyncMeta(db, syncedAt, etag);
+}
+
+/**
+ * Replaces the competition data atomically, with the snapshot's `key` and
+ * the file's ETag. Favorites are never touched.
+ */
+export async function saveSnapshot(
+  snapshot: Snapshot,
+  {
+    syncedAt,
+    key,
+    etag,
+  }: { syncedAt: number; key: string; etag: string | null },
+): Promise<void> {
+  const db = await getDb();
+  const { competitions } = snapshot;
+
+  await db.withTransactionAsync(async () => {
+    await db.execAsync(`
+      DELETE FROM teams;
+      DELETE FROM matches;
+      DELETE FROM standings;
+      DELETE FROM transfers;
+      DELETE FROM sessions;
+    `);
+
+    await insertRows(
+      db,
+      'teams',
+      ['id', 'competition', 'payload'],
+      competitions.flatMap(({ slug, teams }) =>
+        teams.map((team) => [team.id, slug, JSON.stringify(team)]),
+      ),
+    );
+    await insertRows(
+      db,
+      'matches',
+      ['id', 'competition', 'startsAtMs', 'payload'],
+      competitions.flatMap(({ slug, matches }) =>
+        matches.map((match) => [
+          match.id,
+          slug,
+          Date.parse(match.startsAt),
+          JSON.stringify(match),
+        ]),
+      ),
+    );
+    // The snapshot order is the display order: positions restart in each
+    // group of a divided table, so sorting by them would interleave groups.
+    await insertRows(
+      db,
+      'standings',
+      ['competition', 'teamId', 'position', 'sortOrder', 'payload'],
+      competitions.flatMap(({ slug, standings }) =>
+        standings.map((standing, index) => [
+          slug,
+          standing.teamId,
+          standing.position,
+          index,
+          JSON.stringify(standing),
+        ]),
+      ),
+    );
+    await insertRows(
+      db,
+      'sessions',
+      ['id', 'competition', 'grandPrixId', 'startsAtMs', 'payload'],
+      competitions.flatMap(({ slug, sessions }) =>
+        (sessions ?? []).map((session) => [
+          session.id,
+          slug,
+          session.grandPrixId,
+          Date.parse(session.startsAt),
+          JSON.stringify(session),
+        ]),
+      ),
+    );
+    await insertRows(
+      db,
+      'transfers',
+      ['id', 'competition', 'date', 'payload'],
+      competitions.flatMap(({ slug, transfers }) =>
+        (transfers ?? []).map((transfer) => [
+          transfer.id,
+          slug,
+          transfer.date,
+          JSON.stringify(transfer),
+        ]),
+      ),
+    );
+
+    await writeSyncMeta(db, syncedAt, etag, key);
+  });
 }
 
 export async function getMatchesBetween(

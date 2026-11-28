@@ -4,7 +4,7 @@ import { fireEvent, render, screen, waitFor } from '@/test/utils';
 import { OnboardingGate } from '@/app/OnboardingGate';
 
 jest.mock('@/shared/api/sync/SyncContext', () => ({
-  useSync: () => ({ lastSyncAt: 1000 }),
+  useSync: () => ({ lastSyncAt: 1000, dataVersion: 'v1' }),
 }));
 jest.mock('@/shared/api/database', () => ({
   getFavorites: jest.fn(async () => ({})),

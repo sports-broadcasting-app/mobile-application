@@ -9,7 +9,9 @@ import {
   getStandings,
   getTeams,
   getTransfers,
+  getSyncState,
   getUpcomingFavoriteMatches,
+  markSynced,
   saveFavorite,
   saveSnapshot,
 } from './database';
@@ -31,7 +33,11 @@ describe('database', () => {
   beforeEach(async () => {
     await deleteFavorite('masculina');
     await deleteFavorite('feminina');
-    await saveSnapshot(buildSnapshot([scheduledMatch]), 1000);
+    await saveSnapshot(buildSnapshot([scheduledMatch]), {
+      syncedAt: 1000,
+      key: 'k1000',
+      etag: null,
+    });
   });
 
   it('reads back the stored snapshot', async () => {
@@ -55,7 +61,7 @@ describe('database', () => {
       { ...second!, teamId: '9', position: 1, group: 'B' },
     ];
     snapshot.competitions[0]!.teams.push({ ...homeTeam, id: '9' });
-    await saveSnapshot(snapshot, 3000);
+    await saveSnapshot(snapshot, { syncedAt: 3000, key: 'k3000', etag: null });
     const standings = await getStandings('masculina');
     expect(standings.map((row) => [row.group, row.position])).toEqual([
       ['A', 1],
@@ -81,7 +87,11 @@ describe('database', () => {
   });
 
   it('removes matches that left the source', async () => {
-    await saveSnapshot(buildSnapshot([finishedMatch]), 2000);
+    await saveSnapshot(buildSnapshot([finishedMatch]), {
+      syncedAt: 2000,
+      key: 'k2000',
+      etag: null,
+    });
     expect(await getMatch('100')).toBeNull();
     expect(await getLastSyncAt()).toBe(2000);
   });
@@ -89,7 +99,11 @@ describe('database', () => {
   it('keeps favorites when the data is replaced', async () => {
     await saveFavorite('masculina', '1');
     await saveFavorite('feminina', '3');
-    await saveSnapshot(buildSnapshot([finishedMatch]), 2000);
+    await saveSnapshot(buildSnapshot([finishedMatch]), {
+      syncedAt: 2000,
+      key: 'k2000',
+      etag: null,
+    });
     expect(await getFavorites()).toEqual({ masculina: '1', feminina: '3' });
   });
 
@@ -105,7 +119,7 @@ describe('database', () => {
   it('accepts a snapshot without transfers', async () => {
     const snapshot = buildSnapshot([scheduledMatch]);
     delete snapshot.competitions[0]!.transfers;
-    await saveSnapshot(snapshot, 2000);
+    await saveSnapshot(snapshot, { syncedAt: 2000, key: 'k2000', etag: null });
     expect(await countTransfers('masculina')).toBe(0);
   });
 
@@ -131,7 +145,7 @@ describe('database', () => {
     };
     await saveSnapshot(
       buildSnapshot([later, scheduledMatch, finishedMatch, others]),
-      2000,
+      { syncedAt: 2000, key: 'k2000', etag: null },
     );
     const from = new Date(2026, 9, 1).getTime();
 
@@ -160,8 +174,52 @@ describe('database', () => {
 
   it('keeps the previous data if saving fails midway', async () => {
     const broken = buildSnapshot([{ ...finishedMatch, startsAt: 'invalid' }]);
-    await expect(saveSnapshot(broken, 2000)).rejects.toThrow();
+    await expect(
+      saveSnapshot(broken, { syncedAt: 2000, key: 'k2000', etag: null }),
+    ).rejects.toThrow();
     expect(await getMatch('100')).toEqual(scheduledMatch);
     expect(await getLastSyncAt()).toBe(1000);
+  });
+
+  it('saves more rows than one statement can bind', async () => {
+    // 600 matches × 4 columns is well over the 999 bound values of a statement.
+    const many = Array.from({ length: 600 }, (_, index) => ({
+      ...scheduledMatch,
+      id: `m${index}`,
+      startsAt: new Date(Date.UTC(2026, 9, 1, 0, index)).toISOString(),
+    }));
+    await saveSnapshot(buildSnapshot(many), {
+      syncedAt: 5000,
+      key: 'many',
+      etag: 'rev W/"x"',
+    });
+    const saved = await getMatchesBetween(0, Number.MAX_SAFE_INTEGER);
+    expect(saved).toHaveLength(600);
+    expect(saved[0]!.id).toBe('m0');
+    expect(saved[599]!.id).toBe('m599');
+    expect(await getSyncState()).toEqual({
+      lastSyncAt: 5000,
+      snapshotKey: 'many',
+      etag: 'rev W/"x"',
+    });
+  });
+
+  it('moves only the check time when the data did not change', async () => {
+    await saveSnapshot(buildSnapshot([scheduledMatch]), {
+      syncedAt: 1000,
+      key: 'same',
+      etag: 'rev W/"a"',
+    });
+    await markSynced(9000, 'rev W/"b"');
+    expect(await getSyncState()).toEqual({
+      lastSyncAt: 9000,
+      snapshotKey: 'same',
+      etag: 'rev W/"b"',
+    });
+    expect(await getMatch(scheduledMatch.id)).toMatchObject({
+      id: scheduledMatch.id,
+    });
+    await markSynced(9500, null);
+    expect((await getSyncState()).etag).toBeNull();
   });
 });

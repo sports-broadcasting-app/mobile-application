@@ -26,9 +26,9 @@ const STATUS_ORDER: Record<Match['status'], number> = {
 };
 
 export function useTeamsById(): Map<string, Team> {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   const { data } = useQuery({
-    queryKey: ['teams', lastSyncAt],
+    queryKey: ['teams', dataVersion],
     queryFn: () => getTeams(),
   });
   return useMemo(
@@ -38,9 +38,9 @@ export function useTeamsById(): Map<string, Team> {
 }
 
 export function useTeams(competition: CompetitionSlug) {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   return useQuery({
-    queryKey: ['teams', competition, lastSyncAt],
+    queryKey: ['teams', competition, dataVersion],
     queryFn: () => getTeams(competition),
   });
 }
@@ -61,10 +61,10 @@ export function sortForDisplay(
 }
 
 export function useDayMatches(day: Date) {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   const { start, end } = getDayBounds(day);
   return useQuery({
-    queryKey: ['matches', start, lastSyncAt],
+    queryKey: ['matches', start, dataVersion],
     queryFn: () => getMatchesBetween(start, end),
   });
 }
@@ -74,52 +74,52 @@ export function useNextMatches(
   competitions: CompetitionSlug[],
   enabled: boolean,
 ) {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   return useQuery({
-    queryKey: ['nextMatches', fromMs, competitions.join(','), lastSyncAt],
+    queryKey: ['nextMatches', fromMs, competitions.join(','), dataVersion],
     queryFn: () => getNextMatches(fromMs, NEXT_MATCHES_LIMIT, competitions),
     enabled,
   });
 }
 
 export function useMatch(id: string) {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   return useQuery({
-    queryKey: ['match', id, lastSyncAt],
+    queryKey: ['match', id, dataVersion],
     queryFn: () => getMatch(id),
   });
 }
 
 export function useTransfers(competition: CompetitionSlug) {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   return useQuery({
-    queryKey: ['transfers', competition, lastSyncAt],
+    queryKey: ['transfers', competition, dataVersion],
     queryFn: () => getTransfers(competition),
   });
 }
 
 export function useHasTransfers(competition: CompetitionSlug): boolean {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   const { data } = useQuery({
-    queryKey: ['transferCount', competition, lastSyncAt],
+    queryKey: ['transferCount', competition, dataVersion],
     queryFn: () => countTransfers(competition),
   });
   return (data ?? 0) > 0;
 }
 
 export function useStandings(competition: CompetitionSlug) {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   return useQuery({
-    queryKey: ['standings', competition, lastSyncAt],
+    queryKey: ['standings', competition, dataVersion],
     queryFn: () => getStandings(competition),
   });
 }
 
 export function useDaySessions(day: Date) {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   const { start, end } = getDayBounds(day);
   return useQuery({
-    queryKey: ['sessions', start, lastSyncAt],
+    queryKey: ['sessions', start, dataVersion],
     queryFn: () => getSessionsBetween(start, end),
   });
 }
@@ -130,14 +130,14 @@ export function useNextSessions(
   enabled: boolean,
   limit = NEXT_MATCHES_LIMIT,
 ) {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   return useQuery({
     queryKey: [
       'nextSessions',
       fromMs,
       competitions.join(','),
       limit,
-      lastSyncAt,
+      dataVersion,
     ],
     queryFn: () => getNextSessions(fromMs, limit, competitions),
     enabled,
@@ -145,9 +145,9 @@ export function useNextSessions(
 }
 
 export function useGrandPrix(grandPrixId: string) {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   return useQuery({
-    queryKey: ['grandPrix', grandPrixId, lastSyncAt],
+    queryKey: ['grandPrix', grandPrixId, dataVersion],
     queryFn: () => getGrandPrix(grandPrixId),
   });
 }
@@ -158,9 +158,9 @@ export function useEventDays(
   toMs: number,
   competitions: CompetitionSlug[],
 ): Set<number> {
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   const { data } = useQuery({
-    queryKey: ['eventDays', fromMs, toMs, competitions.join(','), lastSyncAt],
+    queryKey: ['eventDays', fromMs, toMs, competitions.join(','), dataVersion],
     queryFn: () => getEventStarts(fromMs, toMs, competitions),
   });
   return useMemo(

@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from '@/shared/ui/Icon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppearancePicker } from '@/features/choose-theme/ui/AppearancePicker';
@@ -78,7 +78,7 @@ function LinkRow({
       <AppText numberOfLines={1} tone="secondary" style={styles.linkText}>
         {children}
       </AppText>
-      <MaterialCommunityIcons
+      <Icon
         name="chevron-right"
         size={iconSize.md}
         color={colors.textTertiary}
@@ -154,13 +154,7 @@ export default function SettingsScreen() {
       </LinkRow>
     ) : (
       <LinkRow
-        icon={
-          <MaterialCommunityIcons
-            name="plus"
-            size={iconSize.md}
-            color={colors.primary}
-          />
-        }
+        icon={<Icon name="plus" size={iconSize.md} color={colors.primary} />}
         accessibilityLabel={`Escolher seu time em ${name}`}
         testID={`pick-team-${slug}`}
         onPress={() => setPicking(slug)}
@@ -181,7 +175,7 @@ export default function SettingsScreen() {
     notificationsSupported ? (
       <LinkRow
         icon={
-          <MaterialCommunityIcons
+          <Icon
             name="bell-outline"
             size={iconSize.md}
             color={colors.textSecondary}
