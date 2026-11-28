@@ -68,7 +68,7 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 - Gotcha: Expo Router takes `src/app` as the routes folder if it exists, which bundled the tests of `src/app` (Metro failed on `@testing-library`); `app.json` sets `["expo-router", { "root": "./app" }]`. Metro must be restarted after that option changes.
 - Path strings built with `__dirname` in tests are not imports: the move missed `scripts/broadcasts.test.ts` (fixed). Search for them when moving files again.
 
-## Glass tab bar (one bar on iOS and Android)
+## Glass tab bar, one bar on iOS and Android (PR #56)
 
 - Problem: `NativeTabs` drew Liquid Glass with labels on iOS 26 and an opaque Material bar on Android. Now `app/(tabs)/_layout.tsx` re-exports `src/app/TabsLayout.tsx`: headless tabs from `expo-router/ui` (`Tabs`, `TabSlot`, `TabList asChild`, `TabTrigger asChild`) with `GlassTabBar` (`src/shared/ui`), a floating glass bar as wide as the screen less 20 pt per side; inactive tabs show only the icon and share the width (`flex: 1`), the active one the icon and its name at its own width (canvas option B, made wide on request). Same PNG template icons, drawn at 26.
 - Why headless and not `expo-router/js-tabs` with `tabBar`: Android blur needs the screens inside a `BlurTargetView` (`expo-blur`) and the bar's `BlurView` pointing at it (`blurTarget`); only the headless tabs let us build that tree. `TabList asChild` must wrap `GlassTabBar` directly and the `TabTrigger`s must be its direct children, or the router finds no tabs.
@@ -76,7 +76,7 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 - Tab screens (Home, Classificação, Configurações) dropped `contentInsetAdjustmentBehavior="automatic"` (it existed for the native bar) and pad the scroll end and `scrollIndicatorInsets` with `useTabBarSpace()` = `tabBarBottom(insets.bottom)` + `TAB_BAR_HEIGHT` (64) + 16. `AdBanner` has `marginTop: 'auto'` and the Classificação content `flexGrow: 1`, so on a short page the banner sits right above that space instead of under the capsule (AdMob forbids covering an ad); on a long page it is reached at the end of the scroll. The switch animates with `LayoutAnimation` on press. Lost from the native bar: minimize on scroll.
 - Tests: `src/shared/ui/GlassTabBar.test.tsx` (button states, position, material per platform), `src/app/TabsLayout.test.tsx` (`renderRouter`: tab switching, name moves). `@/test/utils` now wraps `SafeAreaProvider` (`TEST_SAFE_AREA`); `jest.config.js` transforms `standard-navigation` (ESM, used by `expo-router/testing-library`).
 
-## Settings competition rows and the team sheet X
+## Settings competition rows and the team sheet X (PR #56)
 
 - Configurações shows a competition's `CheckRow` when its sport has 2+ competitions or `SportInfo.listsCompetitions` (`src/shared/config/competitions.ts`): true for futebol and automobilismo (umbrellas: Brasileirão, F1, more may come), false for basquete and futebol-americano (NBA and NFL are the sport). Unchecking the only competition turns the sport off, like unchecking both Superligas. Test: `screens.test.tsx` "names the competitions of football and motorsport".
 - `BottomSheet closeButton` puts an `IconButton` X ("Fechar", `sheet-close`) beside the title; `TeamSheet` uses it because its footer only had "Sem time nesta competição" (closing used to need a pick, a swipe or the backdrop). Sheets with "Pronto" don't. Tests: `BottomSheet.test.tsx`, `screens.test.tsx` "closes the team sheet with the X".
