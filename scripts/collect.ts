@@ -15,7 +15,8 @@ import {
   type Source,
 } from './fallback.ts';
 import { staleCompetitions } from './freshness.ts';
-import { fetchText, postJson } from './http.ts';
+import { fetchText } from './http.ts';
+import { fixturesIO, networkIO } from './source.ts';
 import { collectNba } from './nba/collect.ts';
 import { collectNfl } from './nfl/collect.ts';
 import { toLegacySnapshot } from './legacy.ts';
@@ -39,17 +40,19 @@ const BROADCASTS_FILE = new URL('./broadcasts.json', import.meta.url);
 async function main(): Promise<void> {
   const [outputDir, fixturesDir] = process.argv.slice(2);
   if (!outputDir) throw new Error('Missing the output directory');
+  // Offline runs read saved pages and never touch the published file.
+  const io = fixturesDir ? fixturesIO(fixturesDir) : networkIO;
 
   const previousUrl = process.env.PREVIOUS_SNAPSHOT_URL;
   const previous =
-    previousUrl && !fixturesDir ? await loadPrevious(previousUrl) : null;
+    previousUrl && !io.offline ? await loadPrevious(previousUrl) : null;
 
   const previousOf = (slug: CompetitionSlug) =>
     previous?.competitions.find((c) => c.slug === slug);
 
   // Live runs (game windows, started by the Worker) only refresh the listed
   // competitions and only around their games; full runs refresh everything.
-  const live = fixturesDir
+  const live = io.offline
     ? null
     : liveCompetitions(
         process.env.COLLECT_MODE,
@@ -64,18 +67,13 @@ async function main(): Promise<void> {
     {
       name: 'Superliga (CBV)',
       slugs: ['masculina', 'feminina'],
-      collect: () => collectSuperliga(fixturesDir),
+      collect: () => collectSuperliga(io),
     },
     {
       name: 'Brasileirão (ge)',
       slugs: ['serie-a'],
       collect: async () => [
-        await collectSerieA(
-          fixturesDir,
-          Date.now(),
-          previousOf('serie-a'),
-          liveOptions,
-        ),
+        await collectSerieA(io, Date.now(), previousOf('serie-a'), liveOptions),
       ],
     },
     {
@@ -83,7 +81,7 @@ async function main(): Promise<void> {
       slugs: ['nfl'],
       collect: async () => {
         const nfl = await collectNfl(
-          fixturesDir,
+          io,
           Date.now(),
           previousOf('nfl'),
           liveOptions,
@@ -92,7 +90,7 @@ async function main(): Promise<void> {
         // offline runs skip it.
         console.log(
           await addNflScores(nfl, previousOf('nfl'), {
-            key: fixturesDir ? undefined : process.env.BIGBALLS_KEY,
+            key: io.offline ? undefined : process.env.BIGBALLS_KEY,
             now: Date.now(),
             fetchText: (url, key) =>
               fetchText(url, { headers: { 'x-api-key': key } }),
@@ -106,7 +104,7 @@ async function main(): Promise<void> {
       slugs: ['nba'],
       collect: async () => {
         const nba = await collectNba(
-          fixturesDir,
+          io,
           Date.now(),
           previousOf('nba'),
           liveOptions,
@@ -114,7 +112,7 @@ async function main(): Promise<void> {
         // Quarters come from API-Sports (ge has none); offline runs skip it.
         console.log(
           await addNbaQuarters(nba, previousOf('nba'), {
-            key: fixturesDir ? undefined : process.env.API_SPORTS_KEY,
+            key: io.offline ? undefined : process.env.API_SPORTS_KEY,
             now: Date.now(),
             fetchText: (url, key) =>
               fetchText(url, { headers: { 'x-apisports-key': key } }),
@@ -134,16 +132,15 @@ async function main(): Promise<void> {
           // Offline runs read f1-agenda-YYYY-MM-DD.json; a missing date is
           // a date without sessions.
           fetchAgenda: (date) =>
-            fixturesDir
-              ? readFile(
-                  join(fixturesDir, `f1-agenda-${date}.json`),
-                  'utf8',
-                ).catch(() => null)
-              : postJson('https://geql.globo.com/graphql', {
-                  operationName: 'GetMotorsportAgenda',
-                  variables: { date },
-                  query: AGENDA_QUERY,
-                }),
+            io.post(
+              'https://geql.globo.com/graphql',
+              {
+                operationName: 'GetMotorsportAgenda',
+                variables: { date },
+                query: AGENDA_QUERY,
+              },
+              `f1-agenda-${date}.json`,
+            ),
         }),
       ],
     },

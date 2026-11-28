@@ -15,6 +15,7 @@ import { Card } from '../components/Card';
 import { CompetitionsSheet } from '../components/CompetitionsSheet';
 import { DayStrip } from '../components/DayStrip';
 import { GrandPrixCard } from '../components/GrandPrixCard';
+import { IconButton } from '../components/IconButton';
 import { MatchCard } from '../components/MatchCard';
 import { MatchRow } from '../components/MatchRow';
 import { NewsCard } from '../components/NewsCard';
@@ -165,26 +166,13 @@ export default function HomeScreen() {
         scrollable
         leading={
           chips.split && (
-            <TouchableOpacity
-              accessibilityRole="button"
+            <IconButton
+              icon="chevron-left"
+              size="chip"
               accessibilityLabel="Voltar para todos os esportes"
               testID="chips-back"
-              hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
-              style={[
-                styles.backChip,
-                {
-                  backgroundColor: colors.surfaceAlt,
-                  borderColor: colors.controlBorder,
-                },
-              ]}
               onPress={() => setFilter('todos')}
-            >
-              <MaterialCommunityIcons
-                name="chevron-left"
-                size={iconSize.md}
-                color={colors.textPrimary}
-              />
-            </TouchableOpacity>
+            />
           )
         }
         trailing={
@@ -338,14 +326,6 @@ const styles = StyleSheet.create({
   sectionHeader: {
     paddingBottom: spacing.xs,
     paddingTop: spacing.md,
-  },
-  backChip: {
-    alignItems: 'center',
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    height: 36,
-    justifyContent: 'center',
-    width: 36,
   },
   editChip: {
     alignItems: 'center',

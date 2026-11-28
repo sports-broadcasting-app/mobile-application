@@ -7,7 +7,9 @@ import { Card } from '../components/Card';
 import { ChannelButtons } from '../components/ChannelButtons';
 import { Checkbox } from '../components/Checkbox';
 import { CheckRow } from '../components/CheckRow';
+import { IconButton } from '../components/IconButton';
 import { IconTile } from '../components/IconTile';
+import { SheetFrame } from '../components/SheetFrame';
 import { ScheduleRow } from '../components/ScheduleRow';
 import { SportToggleRow } from '../components/SportToggleRow';
 import { SwitchRow } from '../components/SwitchRow';
@@ -225,5 +227,39 @@ describe('ChannelButtons and links', () => {
     expect(() => openLink('https://example.com')).not.toThrow();
     expect(openChannel('Netflix')).toBe(true);
     expect(openChannel('Rádio')).toBe(false);
+  });
+});
+
+describe('IconButton and SheetFrame', () => {
+  it('is a labelled button, with the chip size padded to 44 pt', () => {
+    const onPress = jest.fn();
+    render(
+      <IconButton
+        icon="chevron-left"
+        size="chip"
+        accessibilityLabel="Voltar"
+        testID="back"
+        onPress={onPress}
+      />,
+    );
+    const button = screen.getByLabelText('Voltar');
+    expect(flat(button.props.style)).toMatchObject({ width: 36, height: 36 });
+    fireEvent.press(screen.getByTestId('back'));
+    expect(onPress).toHaveBeenCalled();
+  });
+
+  it('frames a sheet and closes from its backdrop', () => {
+    const onClose = jest.fn();
+    render(
+      <SheetFrame visible onClose={onClose} testID="sheet">
+        <AppText>conteúdo</AppText>
+      </SheetFrame>,
+    );
+    expect(screen.getByText('conteúdo')).toBeTruthy();
+    // Hidden from screen readers: the sheet is the accessibility modal.
+    fireEvent.press(
+      screen.getByTestId('sheet-backdrop', { includeHiddenElements: true }),
+    );
+    expect(onClose).toHaveBeenCalled();
   });
 });

@@ -1,7 +1,5 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import type { CompetitionData, MatchEvent } from '../../src/types/snapshot';
-import { download } from '../http.ts';
+import type { SourceIO } from '../source.ts';
 import { inLiveWindow } from '../schedule.ts';
 import {
   eventsMatchScore,
@@ -26,15 +24,6 @@ const CHANNELS_WINDOW_MS = 8 * 24 * 60 * 60 * 1000;
  * one run asking for 350 pages.
  */
 const EVENTS_BACKFILL_PER_RUN = 20;
-
-/** Reads one offline fixture, or null when it was not saved. */
-async function readFixture(dir: string, file: string): Promise<string | null> {
-  try {
-    return await readFile(join(dir, file), 'utf8');
-  } catch {
-    return null;
-  }
-}
 
 function needsChannels({ match, pageUrl }: RoundMatch, now: number): boolean {
   if (!pageUrl || match.status === 'finished') return false;
@@ -74,27 +63,26 @@ function matchPageFile(id: string): string {
  * `previous`.
  */
 export async function collectSerieA(
-  fixturesDir?: string,
+  io: SourceIO,
   now = Date.now(),
   previous?: CompetitionData,
   { live = false }: { live?: boolean } = {},
 ): Promise<CompetitionData> {
-  const liveRun = live && previous !== undefined && !fixturesDir;
+  const liveRun = live && previous !== undefined && !io.offline;
   const previousById = new Map(previous?.matches.map((m) => [m.id, m]) ?? []);
   const liveRounds = new Set(
     (previous?.matches ?? [])
       .filter((m) => inLiveWindow(m, 'futebol', now))
       .map((m) => m.round),
   );
-  const pageHtml = fixturesDir
-    ? await readFile(join(fixturesDir, `${SLUG}-tabela.html`), 'utf8')
-    : await download(PAGE_URL);
+  const pageHtml = await io.get(PAGE_URL, `${SLUG}-tabela.html`);
   const page = parseTablePage(pageHtml);
   const phaseUrl = `${TABLE_URL}/${page.tableId}/fase/${page.phaseSlug}`;
 
-  const standingsJson = fixturesDir
-    ? await readFile(join(fixturesDir, `${SLUG}-classificacao.json`), 'utf8')
-    : await download(`${phaseUrl}/classificacao/`);
+  const standingsJson = await io.get(
+    `${phaseUrl}/classificacao/`,
+    `${SLUG}-classificacao.json`,
+  );
   const { teams, standings } = parseStandings(standingsJson);
   const knownTeams = new Map(teams.map((team) => [team.id, team]));
 
@@ -108,9 +96,10 @@ export async function collectSerieA(
       }
       continue;
     }
-    const json = fixturesDir
-      ? await readFixture(fixturesDir, `${SLUG}-rodada-${round}.json`)
-      : await download(`${phaseUrl}/rodada/${round}/jogos/`);
+    const json = await io.find(
+      `${phaseUrl}/rodada/${round}/jogos/`,
+      `${SLUG}-rodada-${round}.json`,
+    );
     if (json === null) continue;
     const parsed = parseRound(json, round, SLUG, now);
     if (liveRun) {
@@ -137,7 +126,7 @@ export async function collectSerieA(
       .sort(
         (a, b) => Date.parse(b.match.startsAt) - Date.parse(a.match.startsAt),
       )
-      .slice(0, fixturesDir ? Infinity : EVENTS_BACKFILL_PER_RUN)
+      .slice(0, io.offline ? Infinity : EVENTS_BACKFILL_PER_RUN)
       .map(({ match }) => match.id),
   );
   let eventPages = 0;
@@ -164,10 +153,10 @@ export async function collectSerieA(
       (match.status === 'live' || backfill.has(match.id));
     if (!channels && !events) continue;
 
-    const html = fixturesDir
-      ? await readFixture(fixturesDir, matchPageFile(match.id))
-      : entry.pageUrl
-        ? await download(entry.pageUrl)
+    // Offline, the saved page stands in even when ge gave no link.
+    const html =
+      entry.pageUrl || io.offline
+        ? await io.find(entry.pageUrl ?? '', matchPageFile(match.id))
         : null;
     if (html === null) continue;
     if (channels) match.channels = parseChannels(html);

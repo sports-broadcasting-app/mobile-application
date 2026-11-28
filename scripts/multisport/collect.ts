@@ -1,12 +1,10 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import type {
   CompetitionData,
   CompetitionSlug,
   Match,
   Sport,
 } from '../../src/types/snapshot';
-import { download, postJson } from '../http.ts';
+import type { SourceIO } from '../source.ts';
 import { anyInLiveWindow } from '../schedule.ts';
 import {
   parseMatches,
@@ -69,15 +67,6 @@ const MATCHES_QUERY = `
     }
   }`;
 
-/** Reads one offline fixture, or null when it was not saved. */
-async function readFixture(dir: string, file: string): Promise<string | null> {
-  try {
-    return await readFile(join(dir, file), 'utf8');
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Playoff phases exist on the page before they are played; the service
  * answers them with an error. A knockout phase is asked for once the season
@@ -89,12 +78,9 @@ function isPlayable(phase: GePhase, phases: GePhase[]): boolean {
   return current !== -1 && phases.indexOf(phase) <= current;
 }
 
-function fetchRound(
-  filter: GeFilter,
-  phase: GePhase,
-  round: number,
-): Promise<string> {
-  return postJson(GRAPHQL_URL, {
+/** The GraphQL query of one round, as the ge page asks it. */
+function roundQuery(filter: GeFilter, phase: GePhase, round: number) {
+  return {
     operationName: 'GetMultisportMatchesByPhase',
     variables: {
       multisportMatchesByPhaseFilter: {
@@ -104,7 +90,7 @@ function fetchRound(
       },
     },
     query: MATCHES_QUERY,
-  });
+  };
 }
 
 const roundKey = (label: string, round: number | null) => `${label}#${round}`;
@@ -148,22 +134,19 @@ export function needsFullRefresh(
  */
 export async function collectMultisport(
   league: MultisportLeague,
-  fixturesDir?: string,
+  io: SourceIO,
   now = Date.now(),
   previous?: CompetitionData,
   { live = false }: { live?: boolean } = {},
 ): Promise<CompetitionData> {
   // Live run: only the rounds with a game in its window; never a full pass.
-  const liveRun = live && previous !== undefined && !fixturesDir;
+  const liveRun = live && previous !== undefined && !io.offline;
   const { slug, codes, matchLengthMs } = league;
-  const pageHtml = fixturesDir
-    ? await readFile(join(fixturesDir, `${slug}-classificacao.html`), 'utf8')
-    : await download(league.pageUrl);
+  const pageHtml = await io.get(league.pageUrl, `${slug}-classificacao.html`);
   const page = parseStandingsPage(pageHtml, codes);
   const knownTeams = new Map(page.teams.map((team) => [team.id, team]));
 
-  const full =
-    !liveRun && (fixturesDir !== undefined || needsFullRefresh(previous, now));
+  const full = !liveRun && (io.offline || needsFullRefresh(previous, now));
   const reusable = new Map<string, Match[]>();
   if (previous && !full) {
     for (const match of previous.matches) {
@@ -195,9 +178,11 @@ export async function collectMultisport(
       const file = `${slug}-${phase.slug}-rodada-${round}.json`;
       let parsed: Match[];
       try {
-        const json = fixturesDir
-          ? await readFixture(fixturesDir, file)
-          : await fetchRound(page.filter, phase, round);
+        const json = await io.post(
+          GRAPHQL_URL,
+          roundQuery(page.filter, phase, round),
+          file,
+        );
         if (json === null) continue;
         asked++;
         parsed = parseMatches(json, { number: round, label }, slug, now, {

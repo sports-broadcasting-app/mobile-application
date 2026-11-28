@@ -1,8 +1,6 @@
-import {
-  addNflScores,
-  findNflScore,
-  parseNflGames,
-} from '../../scripts/bigBalls/nfl';
+import { addNflScores, parseNflGames } from '../../scripts/bigBalls/nfl';
+import { findGameScore } from '../../scripts/periodScores';
+
 import type { CompetitionData, Match } from '../types/snapshot';
 
 function bbGame(over: {
@@ -97,7 +95,7 @@ describe('parseNflGames', () => {
   });
 });
 
-describe('findNflScore', () => {
+describe('findGameScore with Big Balls games', () => {
   it('orients to ge home and away whatever the API order', () => {
     const games = parseNflGames(
       answer([
@@ -107,9 +105,7 @@ describe('findNflScore', () => {
         }),
       ]),
     );
-    expect(
-      findNflScore(match, 'Dallas Cowboys', 'Tennessee Titans', games),
-    ).toEqual({
+    expect(findGameScore(match, cowboys, titans, games)).toEqual({
       homeScore: 51,
       awayScore: 30,
       periods: quarters,
@@ -119,15 +115,11 @@ describe('findNflScore', () => {
 
   it('ignores games not started and quarters that do not add up', () => {
     const scheduled = parseNflGames(answer([bbGame({ status: 'scheduled' })]));
-    expect(
-      findNflScore(match, 'Dallas Cowboys', 'Tennessee Titans', scheduled),
-    ).toBeNull();
+    expect(findGameScore(match, cowboys, titans, scheduled)).toBeNull();
     const wrong = parseNflGames(
       answer([bbGame({ home: ['Dallas Cowboys', 51, [1, 1, 1, 1]] })]),
     );
-    expect(
-      findNflScore(match, 'Dallas Cowboys', 'Tennessee Titans', wrong),
-    ).toBeNull();
+    expect(findGameScore(match, cowboys, titans, wrong)).toBeNull();
   });
 });
 

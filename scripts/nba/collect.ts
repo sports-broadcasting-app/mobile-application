@@ -1,4 +1,5 @@
 import type { CompetitionData } from '../../src/types/snapshot';
+import type { SourceIO } from '../source.ts';
 import {
   collectMultisport,
   type MultisportLeague,
@@ -23,10 +24,10 @@ export const NBA: MultisportLeague = {
  * `nba-{phase}-rodada-{n}.json`.
  */
 export function collectNba(
-  fixturesDir?: string,
+  io: SourceIO,
   now = Date.now(),
   previous?: CompetitionData,
   options: { live?: boolean } = {},
 ): Promise<CompetitionData> {
-  return collectMultisport(NBA, fixturesDir, now, previous, options);
+  return collectMultisport(NBA, io, now, previous, options);
 }

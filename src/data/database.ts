@@ -126,6 +126,20 @@ function parseRows<T>(
   return rows.map((row) => parseJson(row.payload)).filter(is);
 }
 
+/** `?, ?, ?` for an `IN (…)` of these values. */
+const placeholders = (values: readonly unknown[]) =>
+  values.map(() => '?').join(', ');
+
+/** The `payload` rows a query returns, each checked by `is`. */
+async function queryRows<T>(
+  sql: string,
+  params: SQLite.SQLiteBindValue[],
+  is: (value: unknown) => value is T,
+): Promise<T[]> {
+  const db = await getDb();
+  return parseRows(await db.getAllAsync<{ payload: string }>(sql, params), is);
+}
+
 /** Replaces the competition data atomically. Favorites are never touched. */
 export async function saveSnapshot(
   snapshot: Snapshot,
@@ -225,14 +239,13 @@ export async function getMatchesBetween(
   fromMs: number,
   toMs: number,
 ): Promise<Match[]> {
-  const db = await getDb();
-  const rows = await db.getAllAsync<{ payload: string }>(
+  return queryRows(
     `SELECT payload FROM matches
       WHERE startsAtMs >= ? AND startsAtMs < ?
       ORDER BY startsAtMs ASC`,
     [fromMs, toMs],
+    isMatch,
   );
-  return parseRows(rows, isMatch);
 }
 
 /**
@@ -252,21 +265,14 @@ export async function getNextMatches(
         : [competitions];
   if (list && list.length === 0) return [];
 
-  const db = await getDb();
-  const rows = list
-    ? await db.getAllAsync<{ payload: string }>(
-        `SELECT payload FROM matches
-          WHERE startsAtMs >= ? AND competition IN (${list.map(() => '?').join(', ')})
-          ORDER BY startsAtMs ASC LIMIT ?`,
-        [fromMs, ...list, limit],
-      )
-    : await db.getAllAsync<{ payload: string }>(
-        `SELECT payload FROM matches
-          WHERE startsAtMs >= ?
-          ORDER BY startsAtMs ASC LIMIT ?`,
-        [fromMs, limit],
-      );
-  return parseRows(rows, isMatch);
+  const inList = list ? `AND competition IN (${placeholders(list)})` : '';
+  return queryRows(
+    `SELECT payload FROM matches
+      WHERE startsAtMs >= ? ${inList}
+      ORDER BY startsAtMs ASC LIMIT ?`,
+    [fromMs, ...(list ?? []), limit],
+    isMatch,
+  );
 }
 
 /**
@@ -284,7 +290,6 @@ export async function getUpcomingFavoriteMatches(
   );
   if (entries.length === 0) return [];
 
-  const db = await getDb();
   const teamFilter = entries
     .map(
       () =>
@@ -292,7 +297,7 @@ export async function getUpcomingFavoriteMatches(
           OR json_extract(payload, '$.awayTeamId') = ?))`,
     )
     .join(' OR ');
-  const rows = await db.getAllAsync<{ payload: string }>(
+  return queryRows(
     `SELECT payload FROM matches
       WHERE startsAtMs >= ?
         AND json_extract(payload, '$.status') = 'scheduled'
@@ -307,22 +312,21 @@ export async function getUpcomingFavoriteMatches(
       ]),
       limit,
     ],
+    isMatch,
   );
-  return parseRows(rows, isMatch);
 }
 
 export async function getSessionsBetween(
   fromMs: number,
   toMs: number,
 ): Promise<RaceSession[]> {
-  const db = await getDb();
-  const rows = await db.getAllAsync<{ payload: string }>(
+  return queryRows(
     `SELECT payload FROM sessions
       WHERE startsAtMs >= ? AND startsAtMs < ?
       ORDER BY startsAtMs ASC`,
     [fromMs, toMs],
+    isRaceSession,
   );
-  return parseRows(rows, isRaceSession);
 }
 
 /** The next sessions from `fromMs` on of these competitions, soonest first. */
@@ -332,27 +336,25 @@ export async function getNextSessions(
   competitions: CompetitionSlug[],
 ): Promise<RaceSession[]> {
   if (competitions.length === 0) return [];
-  const db = await getDb();
-  const rows = await db.getAllAsync<{ payload: string }>(
+  return queryRows(
     `SELECT payload FROM sessions
-      WHERE startsAtMs >= ? AND competition IN (${competitions.map(() => '?').join(', ')})
+      WHERE startsAtMs >= ? AND competition IN (${placeholders(competitions)})
       ORDER BY startsAtMs ASC LIMIT ?`,
     [fromMs, ...competitions, limit],
+    isRaceSession,
   );
-  return parseRows(rows, isRaceSession);
 }
 
 /** Every session of one race weekend, in order. */
 export async function getGrandPrix(
   grandPrixId: string,
 ): Promise<RaceSession[]> {
-  const db = await getDb();
-  const rows = await db.getAllAsync<{ payload: string }>(
+  return queryRows(
     `SELECT payload FROM sessions WHERE grandPrixId = ?
       ORDER BY startsAtMs ASC`,
     [grandPrixId],
+    isRaceSession,
   );
-  return parseRows(rows, isRaceSession);
 }
 
 /**
@@ -366,17 +368,16 @@ export async function getUpcomingSessions(
   limit: number,
 ): Promise<RaceSession[]> {
   if (competitions.length === 0 || kinds.length === 0) return [];
-  const db = await getDb();
-  const rows = await db.getAllAsync<{ payload: string }>(
+  return queryRows(
     `SELECT payload FROM sessions
       WHERE startsAtMs >= ?
-        AND competition IN (${competitions.map(() => '?').join(', ')})
+        AND competition IN (${placeholders(competitions)})
         AND json_extract(payload, '$.status') = 'scheduled'
-        AND json_extract(payload, '$.kind') IN (${kinds.map(() => '?').join(', ')})
+        AND json_extract(payload, '$.kind') IN (${placeholders(kinds)})
       ORDER BY startsAtMs ASC LIMIT ?`,
     [fromMs, ...competitions, ...kinds, limit],
+    isRaceSession,
   );
-  return parseRows(rows, isRaceSession);
 }
 
 /**
@@ -390,7 +391,7 @@ export async function getEventStarts(
 ): Promise<number[]> {
   if (competitions.length === 0) return [];
   const db = await getDb();
-  const list = competitions.map(() => '?').join(', ');
+  const list = placeholders(competitions);
   const rows = await db.getAllAsync<{ startsAtMs: number }>(
     `SELECT startsAtMs FROM matches
         WHERE startsAtMs >= ? AND startsAtMs < ? AND competition IN (${list})
@@ -413,38 +414,34 @@ export async function getMatch(id: string): Promise<Match | null> {
 }
 
 export async function getTeams(competition?: CompetitionSlug): Promise<Team[]> {
-  const db = await getDb();
-  const rows = competition
-    ? await db.getAllAsync<{ payload: string }>(
-        'SELECT payload FROM teams WHERE competition = ?',
-        [competition],
-      )
-    : await db.getAllAsync<{ payload: string }>('SELECT payload FROM teams');
-  return parseRows(rows, isTeam).sort((a, b) => a.name.localeCompare(b.name));
+  const teams = await queryRows(
+    `SELECT payload FROM teams ${competition ? 'WHERE competition = ?' : ''}`,
+    competition ? [competition] : [],
+    isTeam,
+  );
+  return teams.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getStandings(
   competition: CompetitionSlug,
 ): Promise<Standing[]> {
-  const db = await getDb();
-  const rows = await db.getAllAsync<{ payload: string }>(
+  return queryRows(
     'SELECT payload FROM standings WHERE competition = ? ORDER BY sortOrder ASC',
     [competition],
+    isStanding,
   );
-  return parseRows(rows, isStanding);
 }
 
 /** Newest first; transfers without a date go last. */
 export async function getTransfers(
   competition: CompetitionSlug,
 ): Promise<Transfer[]> {
-  const db = await getDb();
-  const rows = await db.getAllAsync<{ payload: string }>(
+  return queryRows(
     `SELECT payload FROM transfers WHERE competition = ?
       ORDER BY date IS NULL, date DESC, id ASC`,
     [competition],
+    isTransfer,
   );
-  return parseRows(rows, isTransfer);
 }
 
 export async function countTransfers(

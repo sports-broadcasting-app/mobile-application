@@ -54,6 +54,13 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 - SQLite rows come back through `parseRows(rows, isMatch | isTeam | …)` (`src/data/database.ts`): a row that fails the guard is skipped. AsyncStorage values go through `parseJson`. `isValidSnapshot` became `isSnapshot` in `src/utils/guards.ts` (same checks, shared with the collector).
 - `getSport` throws on an unknown sport (no `SPORTS[0]` fallback); `DEFAULT_COMPETITION` replaces `ALL_COMPETITIONS[0]`; `isCompetitionSlug` checks the list instead of casting. Optional component props filled from maybe-missing values are `prop?: T | undefined`.
 
+## Sheets, icon buttons and queries (PR #54)
+
+- `SheetFrame` holds what every sheet shares (modal, dim backdrop with "Fechar" and `<testID>-backdrop`, surface, handle, Android keyboard lift); `BottomSheet` is its titled form and `WatchSheet` uses it directly with its smaller title. The sheet is `accessibilityViewIsModal`, so tests reach the backdrop with `includeHiddenElements: true`.
+- `IconButton` (`chip` 36 pt outlined with slop to 44, or `full` 44 pt): the chips' back button (`chips-back`) and the onboarding back.
+- `src/data/database.ts`: `queryRows(sql, params, guard)` and `placeholders(list)` for the payload queries.
+- Checked by before/after screenshots of the sheet and the chip row on both emulators: identical below the status bar.
+
 ## Checking your work
 
 ```bash

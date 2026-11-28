@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SportIcon } from '../components/SportIcon';
 import { AppText } from '../components/AppText';
@@ -8,6 +7,7 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Checkbox } from '../components/Checkbox';
 import { CheckRow } from '../components/CheckRow';
+import { IconButton } from '../components/IconButton';
 import { IconTile } from '../components/IconTile';
 import { SectionHeader } from '../components/SectionHeader';
 import { useCompetition } from '../contexts/CompetitionContext';
@@ -18,7 +18,6 @@ import {
   iconSize,
   radius,
   spacing,
-  touchTarget,
   typography,
 } from '../constants/designTokens';
 
@@ -118,19 +117,13 @@ export default function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
       >
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.backRow}>
-            <TouchableOpacity
-              accessibilityRole="button"
+            <IconButton
+              icon="chevron-left"
               accessibilityLabel="Voltar para os esportes"
               testID="onboarding-back"
-              style={[styles.back, { backgroundColor: colors.surfaceAlt }]}
+              style={styles.back}
               onPress={() => setStep(1)}
-            >
-              <MaterialCommunityIcons
-                name="chevron-left"
-                size={iconSize.md}
-                color={colors.textPrimary}
-              />
-            </TouchableOpacity>
+            />
             <View style={styles.stepsBeside}>{steps}</View>
           </View>
           <AppText accessibilityRole="header" style={styles.title}>
@@ -333,12 +326,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   back: {
-    alignItems: 'center',
-    borderRadius: radius.pill,
-    height: touchTarget,
-    justifyContent: 'center',
     marginBottom: spacing.lg,
-    width: touchTarget,
   },
   group: {
     paddingHorizontal: 0,
