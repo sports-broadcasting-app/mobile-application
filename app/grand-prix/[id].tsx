@@ -1,1 +1,1 @@
-export { default } from '../../src/screens/GrandPrixScreen';
+export { default } from '@/pages/grand-prix/ui/GrandPrixScreen';

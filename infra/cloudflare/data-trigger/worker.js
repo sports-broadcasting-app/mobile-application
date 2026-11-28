@@ -24,8 +24,8 @@
 /**
  * Types for `yarn type-check` only; as comments, the paste stays plain
  * JavaScript. They tie the Worker to the snapshot contract of the app.
- * @typedef {import('../../../src/types/snapshot').Sport} Sport
- * @typedef {Pick<import('../../../src/types/snapshot').Match, 'status' | 'startsAt'>} Scheduled
+ * @typedef {import('../../../src/shared/api/snapshot').Sport} Sport
+ * @typedef {Pick<import('../../../src/shared/api/snapshot').Match, 'status' | 'startsAt'>} Scheduled
  * @typedef {Scheduled & { homeScore: number | null }} Game
  * @typedef {{ slug: string, sport: Sport, matches?: Game[], sessions?: Scheduled[] }} Entry
  * @typedef {{ generatedAt: string, competitions: Entry[], series?: Entry[] }} PublishedFile

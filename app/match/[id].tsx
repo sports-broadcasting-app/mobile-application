@@ -1,1 +1,1 @@
-export { default } from '../../src/screens/MatchDetailScreen';
+export { default } from '@/pages/match/ui/MatchDetailScreen';

@@ -6,7 +6,7 @@ import type {
   MatchStatus,
   Standing,
   Team,
-} from '../../src/types/snapshot';
+} from '../../src/shared/api/snapshot';
 import {
   asObject,
   objectsOf,
@@ -15,7 +15,7 @@ import {
   toNumber,
   toText,
   type JsonObject,
-} from '../../src/utils/json.ts';
+} from '../../src/shared/lib/json.ts';
 
 const TIME_ZONE = 'America/Sao_Paulo';
 /** A match that started this long ago is over, even before ge says so. */

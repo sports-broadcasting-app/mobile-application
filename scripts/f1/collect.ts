@@ -1,4 +1,7 @@
-import type { CompetitionData, RaceSession } from '../../src/types/snapshot';
+import type {
+  CompetitionData,
+  RaceSession,
+} from '../../src/shared/api/snapshot';
 import { brasiliaDate } from '../broadcasts.ts';
 import { inLiveWindow } from '../schedule.ts';
 import { parseAgenda } from './parseGe.ts';

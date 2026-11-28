@@ -1,6 +1,6 @@
-import type { CompetitionData, Match, Team } from '../src/types/snapshot';
-import { normalizeForSearch } from '../src/utils/search.ts';
-import { asList, asObject, objectsOf } from '../src/utils/json.ts';
+import type { CompetitionData, Match, Team } from '../src/shared/api/snapshot';
+import { normalizeForSearch } from '../src/shared/lib/search.ts';
+import { asList, asObject, objectsOf } from '../src/shared/lib/json.ts';
 
 /**
  * Broadcasters the sources do not list, curated by hand in broadcasts.json.

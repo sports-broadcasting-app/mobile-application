@@ -1,0 +1,84 @@
+import { Alert, Text } from 'react-native';
+import { fireEvent, render, screen } from '@/test/utils';
+import { SyncGate } from './SyncGate';
+import { useSync } from '@/shared/api/sync/SyncContext';
+
+jest.mock('@/shared/api/sync/SyncContext', () => ({ useSync: jest.fn() }));
+jest.mock('@/shared/api/database', () => ({
+  getFavorites: jest.fn(async () => ({})),
+}));
+
+let mockStoreBuild = false;
+jest.mock('@/shared/config/buildInfo', () => ({
+  get IS_STORE_BUILD() {
+    return mockStoreBuild;
+  },
+}));
+
+const mockedUseSync = useSync as jest.Mock;
+
+function renderGate() {
+  return render(
+    <SyncGate>
+      <Text>Conteudo</Text>
+    </SyncGate>,
+  );
+}
+
+describe('SyncGate', () => {
+  it('shows a loader on the first run', async () => {
+    mockedUseSync.mockReturnValue({ phase: 'loading', refreshing: true });
+    renderGate();
+    expect(await screen.findByText(/Buscando/)).toBeTruthy();
+    expect(screen.queryByText('Conteudo')).toBeNull();
+  });
+
+  it('offers a retry when the first load fails', async () => {
+    const refresh = jest.fn();
+    mockedUseSync.mockReturnValue({
+      phase: 'failed',
+      refreshing: false,
+      lastError: 'Falha ao baixar os dados (404)',
+      refresh,
+    });
+    renderGate();
+    fireEvent.press(await screen.findByText('Tentar novamente'));
+    expect(refresh).toHaveBeenCalled();
+  });
+
+  it('shows the error details on demand', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    mockedUseSync.mockReturnValue({
+      phase: 'failed',
+      refreshing: false,
+      lastError: 'Falha ao baixar os dados (404)',
+    });
+    renderGate();
+    fireEvent.press(await screen.findByText('Ver detalhes'));
+    expect(alert).toHaveBeenCalledWith(
+      'Detalhes do erro',
+      expect.stringMatching(/\(404\)[\s\S]*EXPO_PUBLIC_DATA_URL: /),
+    );
+    alert.mockRestore();
+  });
+
+  it('shows the app when local data exists', async () => {
+    mockedUseSync.mockReturnValue({ phase: 'ready', refreshing: false });
+    renderGate();
+    expect(await screen.findByText('Conteudo')).toBeTruthy();
+  });
+
+  it('hides the debug details in store builds', async () => {
+    mockStoreBuild = true;
+    mockedUseSync.mockReturnValue({
+      phase: 'failed',
+      refreshing: false,
+      lastError: 'Falha',
+      refresh: jest.fn(),
+    });
+    renderGate();
+    expect(await screen.findByText('Tentar novamente')).toBeTruthy();
+    expect(screen.queryByText('Ver detalhes')).toBeNull();
+    mockStoreBuild = false;
+  });
+});

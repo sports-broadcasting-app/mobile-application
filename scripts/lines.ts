@@ -1,4 +1,4 @@
-import type { SetScore } from '../src/types/snapshot';
+import type { SetScore } from '../src/shared/api/snapshot';
 
 export const sum = (lines: number[]) =>
   lines.reduce((total, points) => total + points, 0);

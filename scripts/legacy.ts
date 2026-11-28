@@ -1,4 +1,4 @@
-import type { Match, Snapshot, Standing } from '../src/types/snapshot';
+import type { Match, Snapshot, Standing } from '../src/shared/api/snapshot';
 
 /**
  * The first app release reads `superliga.json` in this shape and rejects

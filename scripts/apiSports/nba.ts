@@ -1,5 +1,5 @@
-import { asObject, objectsOf, parseJson } from '../../src/utils/json.ts';
-import type { CompetitionData } from '../../src/types/snapshot';
+import { asObject, objectsOf, parseJson } from '../../src/shared/lib/json.ts';
+import type { CompetitionData } from '../../src/shared/api/snapshot';
 import {
   addPeriodScores,
   type ExternalGame,

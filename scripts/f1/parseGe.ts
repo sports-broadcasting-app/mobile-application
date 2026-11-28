@@ -3,14 +3,14 @@ import type {
   MatchStatus,
   RaceSession,
   SessionKind,
-} from '../../src/types/snapshot';
+} from '../../src/shared/api/snapshot';
 import {
   asList as rawList,
   asObject,
   parseJson,
   type JsonObject,
-} from '../../src/utils/json.ts';
-import { normalizeForSearch } from '../../src/utils/search.ts';
+} from '../../src/shared/lib/json.ts';
+import { normalizeForSearch } from '../../src/shared/lib/search.ts';
 import { toChannels, toInstant } from '../brasileirao/parseGe.ts';
 
 /**

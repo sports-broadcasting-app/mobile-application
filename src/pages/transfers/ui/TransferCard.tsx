@@ -1,0 +1,181 @@
+import React from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { AppText } from '@/shared/ui/AppText';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { TeamCircle } from '@/entities/team/ui/TeamCircle';
+import { useTheme } from '@/shared/theme/ThemeContext';
+import { Team, Transfer, TransferClub } from '@/shared/api/snapshot';
+import { openLink } from '@/shared/lib/links';
+import {
+  formatTransferDate,
+  getSourceName,
+  TransferDirection,
+} from '../lib/transfers';
+import { getTeamName } from '@/shared/lib/teamName';
+import {
+  iconSize,
+  radius,
+  spacing,
+  typography,
+} from '@/shared/theme/designTokens';
+
+const BADGE_SIZE = 28;
+
+interface TransferCardProps {
+  transfer: Transfer;
+  teamsById: Map<string, Team>;
+  favoriteDirection: TransferDirection | null;
+}
+
+function Club({
+  club,
+  teamsById,
+}: {
+  club: TransferClub;
+  teamsById: Map<string, Team>;
+}) {
+  const { colors } = useTheme();
+  const team = club.teamId ? teamsById.get(club.teamId) : undefined;
+
+  return (
+    <View style={styles.club}>
+      {team ? (
+        <TeamCircle team={team} size={BADGE_SIZE} />
+      ) : (
+        <MaterialCommunityIcons
+          name="shield-outline"
+          size={BADGE_SIZE}
+          color={colors.textTertiary}
+        />
+      )}
+      <AppText
+        variant="captionMedium"
+        numberOfLines={2}
+        style={styles.clubName}
+      >
+        {getTeamName(team?.name ?? club.name)}
+      </AppText>
+    </View>
+  );
+}
+
+export const TransferCard = React.memo(function TransferCard({
+  transfer,
+  teamsById,
+  favoriteDirection,
+}: TransferCardProps) {
+  const { colors } = useTheme();
+  const highlight =
+    favoriteDirection === 'in'
+      ? colors.primary
+      : favoriteDirection === 'out'
+        ? colors.error
+        : null;
+  const details = [
+    transfer.date ? formatTransferDate(transfer.date) : null,
+    transfer.loan ? 'Empréstimo' : null,
+  ].filter(Boolean);
+
+  return (
+    <View
+      testID={`transfer-card-${transfer.id}`}
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.surface,
+          borderColor: highlight ?? colors.surface,
+        },
+      ]}
+    >
+      <AppText variant="label">
+        {transfer.athleteName}
+        {transfer.position ? (
+          <AppText variant="label" tone="secondary">
+            {` · ${transfer.position}`}
+          </AppText>
+        ) : null}
+      </AppText>
+
+      <View style={styles.clubs}>
+        <Club club={transfer.from} teamsById={teamsById} />
+        <MaterialCommunityIcons
+          name="arrow-right"
+          size={iconSize.md}
+          color={colors.textTertiary}
+        />
+        <Club club={transfer.to} teamsById={teamsById} />
+      </View>
+
+      {(details.length > 0 || highlight) && (
+        <View style={styles.footer}>
+          <AppText variant="caption" tone="secondary">
+            {details.join(' · ')}
+          </AppText>
+          {highlight && (
+            <AppText style={[styles.favorite, { color: highlight }]}>
+              {favoriteDirection === 'in'
+                ? 'Chegou ao seu time'
+                : 'Saiu do seu time'}
+            </AppText>
+          )}
+        </View>
+      )}
+
+      <TouchableOpacity
+        accessibilityRole="link"
+        testID={`transfer-source-${transfer.id}`}
+        hitSlop={spacing.md}
+        style={styles.source}
+        onPress={() => openLink(transfer.sourceUrl)}
+      >
+        <MaterialCommunityIcons
+          name="newspaper-variant-outline"
+          size={iconSize.sm}
+          color={colors.primary}
+        />
+        <AppText variant="caption" tone="accent">
+          {`Fonte: ${getSourceName(transfer.sourceUrl)}`}
+        </AppText>
+      </TouchableOpacity>
+    </View>
+  );
+});
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    gap: spacing.md,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    padding: spacing.lg,
+  },
+  clubs: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  club: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  clubName: {
+    flexShrink: 1,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  favorite: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
+  },
+  source: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+});

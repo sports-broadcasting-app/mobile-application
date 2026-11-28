@@ -1,4 +1,4 @@
-import type { CompetitionData, Snapshot } from '../src/types/snapshot';
+import type { CompetitionData, Snapshot } from '../src/shared/api/snapshot';
 
 const MIN_TEAMS = 8;
 

@@ -2,9 +2,9 @@ import { readFile } from 'node:fs/promises';
 import type {
   CompetitionData,
   CompetitionSlug,
-} from '../../src/types/snapshot';
+} from '../../src/shared/api/snapshot';
 import type { SourceIO } from '../source.ts';
-import { parseJson } from '../../src/utils/json.ts';
+import { parseJson } from '../../src/shared/lib/json.ts';
 import { buildCompetition } from './parseCbv.ts';
 import { resolveTransfers, toTransferFile } from './transfers.ts';
 

@@ -3,7 +3,7 @@ import type {
   Match,
   SetScore,
   Team,
-} from '../src/types/snapshot';
+} from '../src/shared/api/snapshot';
 import { pairLines, sum } from './lines.ts';
 
 /**
