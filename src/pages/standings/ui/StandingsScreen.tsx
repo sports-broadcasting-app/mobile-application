@@ -32,9 +32,11 @@ import {
   spacing,
   typography,
 } from '@/shared/theme/designTokens';
+import { useTabBarSpace } from '@/shared/ui/GlassTabBar';
 
 export default function StandingsScreen() {
   const { colors } = useTheme();
+  const tabBarSpace = useTabBarSpace();
   const { refreshing, refresh } = useSync();
   const { isFavorite } = useFavorites();
   const teamsById = useTeamsById();
@@ -67,8 +69,9 @@ export default function StandingsScreen() {
         scrollable
       />
       <ScrollView
-        contentContainerStyle={styles.content}
-        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
+        // The content runs under the floating glass tab bar.
+        scrollIndicatorInsets={{ bottom: tabBarSpace }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -155,6 +158,8 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
   },
   content: {
+    // Lets the ad banner sit right above the tab bar on a short table.
+    flexGrow: 1,
     paddingBottom: spacing.xxxl,
   },
   transfers: {

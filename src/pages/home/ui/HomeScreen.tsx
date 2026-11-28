@@ -46,6 +46,7 @@ import {
   spacing,
   typography,
 } from '@/shared/theme/designTokens';
+import { useTabBarSpace } from '@/shared/ui/GlassTabBar';
 
 /**
  * Jogos: a day of the week strip, filtered by sport or competition. The
@@ -55,6 +56,7 @@ import {
 export default function HomeScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const tabBarSpace = useTabBarSpace();
   const { lastSyncAt, refreshing, refreshFailed, refresh } = useSync();
   const teamsById = useTeamsById();
   const [offset, setOffset] = useState(0);
@@ -197,8 +199,9 @@ export default function HomeScreen() {
       />
 
       <ScrollView
-        contentContainerStyle={styles.content}
-        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
+        // The content runs under the floating glass tab bar.
+        scrollIndicatorInsets={{ bottom: tabBarSpace }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

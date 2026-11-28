@@ -42,6 +42,12 @@ By default review what changed: `git diff main...HEAD -- src/` plus uncommitted 
 - `DayStrip` (week strip, `day-<offset>` test ids, dot = `primary`, selected day `primary`/`onPrimary`), `GrandPrixCard` (a weekend in the day list: no "×", one row per session, `BroadcasterPill`), `SessionRow` (the `MatchRow` of a session), `NewsCard` (a new competition, `primarySoft` with `primary` border, two `Button`s), `SessionRemindersSheet` (`ThemedSwitch` per session kind), `SegmentedChips` options with `sport` draw a `SportIcon` in the chip's text color. The flag icon (`automobilismo`) follows the sport icon rules: 2 pt stroke, filled = solid cloth with knocked-out squares.
 - Tiny circles (under ~8 pt) are drawn with `react-native-svg`, not a `View` with `borderRadius`: Android 17 drew the strip's 6 pt dot as a square even with `radius.pill` (seen on the Pixel 6a emulator, PR #46). A scrollable `SegmentedChips` row scrolls the selected chip into view (it could sit past the edge when picked from the other tab). The Home has one chip row: a sport with 2+ competitions swaps it for them, led by a 36 pt round back chip (`surfaceAlt`, `controlBorder`, `chevron-left`, hitSlop to 44, label "Voltar para todos os esportes"); never a second row (PR #49).
 
+## Glass tab bar (PR #56)
+
+- The tab bar is `GlassTabBar` + `TabBarButton` over `GlassSurface` (`src/shared/ui`), the same on iOS and Android: never `NativeTabs` again, nor a hand-drawn bar. Tokens: `glass` (fill over the blur), `glassBorder` (hairline); active tab `primary` icon + name on `primarySoft`, inactive `controlText` icon only; tabs 52 pt high (≥ 44), each with `accessibilityRole="tab"`, its name as label and `selected` state.
+- The bar is wide (20 pt from each side): the active tab fits its icon and name, inactive tabs share the rest. A screen under the tabs must pad its scroll end with `useTabBarSpace()`, or the last row hides under the bar.
+- A sheet needs a way out besides picking: a "Pronto" footer or `BottomSheet closeButton` (the X). A sheet whose buttons all choose something without either is a finding.
+
 ## Report
 
 Group findings by severity — **Must fix** (broken in dark mode, unreadable contrast, untappable, inaccessible), **Should fix** (token or building block not used), **Nit**. For each: `file:line`, what is wrong, and the token or component to use. End with a one-line verdict. If nothing is wrong, say so plainly.

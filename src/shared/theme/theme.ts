@@ -37,6 +37,10 @@ export interface ThemeColors {
   /** The referee's red card in a match timeline (a fact, not an error). */
   redCard: string;
   overlayBg: string;
+  /** Fill over the blur of a glass surface (the tab bar). */
+  glass: string;
+  /** Hairline around a glass surface. */
+  glassBorder: string;
   statusBar: 'dark' | 'light';
 }
 
@@ -63,6 +67,8 @@ export const lightTheme: ThemeColors = {
   error: '#dc2626',
   redCard: '#dc2626',
   overlayBg: 'rgba(0, 0, 0, 0.5)',
+  glass: 'rgba(255, 255, 255, 0.6)',
+  glassBorder: 'rgba(15, 23, 42, 0.08)',
   statusBar: 'dark',
 };
 
@@ -91,5 +97,7 @@ export const darkTheme: ThemeColors = {
   error: '#ef4444',
   redCard: '#ef4444',
   overlayBg: 'rgba(0, 0, 0, 0.7)',
+  glass: 'rgba(23, 32, 51, 0.55)',
+  glassBorder: 'rgba(255, 255, 255, 0.14)',
   statusBar: 'light',
 };

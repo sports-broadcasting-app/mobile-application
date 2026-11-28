@@ -26,7 +26,7 @@ A React Native (Expo) mobile application that shows where Superliga volleyball m
 │   ├── (tabs)/                 # Jogos, Classificacao, Configuracoes
 │   └── match/[id].tsx, grand-prix/[id].tsx, transferencias.tsx
 ├── src/                        # Feature-Sliced Design, see Architecture
-│   ├── app/                    # start-up: AnimatedSplash, SyncGate, OnboardingGate, ErrorBoundary, NotificationResponder
+│   ├── app/                    # start-up and layouts: AnimatedSplash, SyncGate, OnboardingGate, ErrorBoundary, NotificationResponder, TabsLayout
 │   ├── pages/                  # home, match, grand-prix, standings, transfers, settings, onboarding
 │   ├── features/               # follow-competitions, pick-team, reminders, watch-match, choose-theme, ads
 │   ├── entities/               # competition, team, match, session, broadcast
@@ -50,13 +50,13 @@ Tests sit next to the file they test (`AppText.tsx` + `AppText.test.tsx`), in `s
 
 The app follows [Feature-Sliced Design](https://feature-sliced.design). Layers, from top to bottom:
 
-| Layer          | What goes there                                            | Examples                                                                                                       |
-| -------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `src/app`      | start-up and global wiring, used only by `app/_layout.tsx` | `SyncGate`, `OnboardingGate`, `NotificationResponder`, splash                                                  |
-| `src/pages`    | one slice per screen: the screen and what only it uses     | `pages/home` (`HomeScreen`, `MatchCard`, `DayStrip`, `useHomeDay`, `home.ts`)                                  |
-| `src/features` | a user action that changes something                       | `follow-competitions`, `pick-team`, `reminders`, `watch-match`, `choose-theme`, `ads`                          |
-| `src/entities` | the business things the app shows                          | `competition` (followed list), `team` (favorites, `TeamCircle`), `match`, `session`, `broadcast` (channels)    |
-| `src/shared`   | no business meaning, used everywhere                       | `ui`, `theme`, `api` (snapshot contract, SQLite, React Query reads, sync), `lib`, `config` (competitions list) |
+| Layer          | What goes there                                                | Examples                                                                                                       |
+| -------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `src/app`      | start-up and global wiring, used only by the layouts in `app/` | `SyncGate`, `OnboardingGate`, `NotificationResponder`, splash, `TabsLayout`                                    |
+| `src/pages`    | one slice per screen: the screen and what only it uses         | `pages/home` (`HomeScreen`, `MatchCard`, `DayStrip`, `useHomeDay`, `home.ts`)                                  |
+| `src/features` | a user action that changes something                           | `follow-competitions`, `pick-team`, `reminders`, `watch-match`, `choose-theme`, `ads`                          |
+| `src/entities` | the business things the app shows                              | `competition` (followed list), `team` (favorites, `TeamCircle`), `match`, `session`, `broadcast` (channels)    |
+| `src/shared`   | no business meaning, used everywhere                           | `ui`, `theme`, `api` (snapshot contract, SQLite, React Query reads, sync), `lib`, `config` (competitions list) |
 
 - **Slices and segments**: inside a layer, one folder per slice (`features/reminders`); inside a slice, segments: `ui/` (components), `model/` (contexts, hooks, state), `api/` (I/O), `lib/` (pure helpers), `config/`. `shared` has segments only.
 - **The import rule** (ESLint `no-restricted-imports`, `layerRule` in `eslint.config.mjs`): a layer imports only from layers below it, and never from another slice of its own layer. Inside a slice, imports are relative; another slice or layer is reached by its `@/` path (`@/entities/team/ui/TeamCircle`), and `../../` (leaving the slice) is refused so every crossing goes through a checked `@/` path. Tests and `src/test/` are exempt. Files the collector runs in Node (`shared/lib/json.ts`, `guards.ts`, `search.ts`, `shared/api/snapshot.ts`) keep relative imports with the `.ts` extension: Node does not resolve `@/`.
@@ -67,7 +67,8 @@ The app follows [Feature-Sliced Design](https://feature-sliced.design). Layers, 
 ## Navigation Flow
 
 ```
-Bottom Tabs:
+Bottom Tabs (TabsLayout: headless expo-router/ui tabs + GlassTabBar, a floating glass capsule drawn by the app, the same on
+iOS and Android; icons only, the active tab shows its name):
   Jogos (/)                    → week strip (DayStrip: yesterday to +13 days, dot on days with something), one chip per
                                  followed sport (named after the competition when it is the sport's only one; picking a sport
                                  with 2+ swaps the same row for ‹ · Superliga M · Superliga F, ‹ back to Todos, the picked one
@@ -76,7 +77,7 @@ Bottom Tabs:
                                  a day with fewer than 3 games is filled with the next games and sessions;
                                  NewsCard offers once a new competition of a sport the user does not follow
   Classificacao (/classificacao) → standings per followed competition (columns depend on the sport)
-  Configuracoes (/configuracoes) → reminders switch; Esportes e competições (sport switch, competition checks, team sheet;
+  Configuracoes (/configuracoes) → reminders switch; Esportes e competições (sport switch, competition checks (2+ competitions or `listsCompetitions`: football, motorsport), team sheet;
                                  F1: "Avisos" → SessionRemindersSheet by session kind); theme
 
 Stack over tabs:
@@ -233,6 +234,7 @@ eas update --channel production --message "description"    # Update production b
 - Mock `expo-router` in tests: `jest.mock('expo-router', () => ({ useRouter, useLocalSearchParams, Stack: { Screen: () => null } }))`
 - Mock `@/shared/api/database` for screen tests (mock paths use the same `@/` paths as the imports); for tests of the SQL itself, mock `expo-sqlite` with `createExpoSqliteMock()` from `src/test/sqlite.ts` (real SQLite through `node:sqlite`)
 - Jest runs with `TZ=America/Sao_Paulo` (set in `jest.config.js`)
+- `render` from `@/test/utils` wraps a `SafeAreaProvider` (`TEST_SAFE_AREA`: 390×844, 47 top, 34 bottom). Navigator tests use `renderRouter` from `expo-router/testing-library` (`src/app/TabsLayout.test.tsx`)
 - Mock `expo-linking` in tests that use Linking: `jest.mock('expo-linking', () => ({ openURL: jest.fn() }))`
 - Test behavior, not implementation details
 - Run `yarn test` before committing (husky pre-commit runs lint-staged, which only lints and formats the staged files)
@@ -282,6 +284,8 @@ Named by role, never by component (no `watchBtnBg`): reuse these before adding o
 | `error`             | `#dc2626`          | `#ef4444`             | Error text, "Adiado"                        |
 | `redCard`           | `#dc2626`          | `#ef4444`             | Red card in the match timeline              |
 | `overlayBg`         | black 50%          | black 70%             | Sheet backdrops                             |
+| `glass`             | white 60%          | `#172033` 55%         | Fill over the blur of the tab bar           |
+| `glassBorder`       | slate 8%           | white 14%             | Hairline around a glass surface             |
 | `statusBar`         | `dark`             | `light`               | StatusBar style (`ThemedStatusBar`)         |
 
 ### Tokens and building blocks (`src/shared/theme/designTokens.ts`)
@@ -298,7 +302,8 @@ Named by role, never by component (no `watchBtnBg`): reuse these before adding o
 - **`Card`**: a group of rows on `surface`, `radius.lg`, clipped. **`IconTile`**: an icon on the `surfaceAlt` well (36 sheets, 34 settings, 40 onboarding, `active` = `primary`).
 - **`SwitchRow`** (`label`, `detail`, `leading`, switch) and its sport form **`SportToggleRow`**; **`CheckRow`** (`label`, `detail`, `checked`, `locked` with its hint) over **`Checkbox`** (`square` 24, `round` 22). The sheet, settings and onboarding are built from these.
 - **`ScheduleRow`** (when · title · `BroadcasterPill` or "a definir"): `MatchRow` and `SessionRow` are thin adapters over it. **`BroadcasterPill`** (`sm` in cards, `md` at the end of a row) is the only channel pill.
-- **`SheetFrame`** (modal, backdrop, handle, keyboard lift) under every sheet; **`BottomSheet`** is its titled form. **`IconButton`**: a round icon-only button (back).
+- **`SheetFrame`** (modal, backdrop, handle, keyboard lift) under every sheet; **`BottomSheet`** is its titled form (`closeButton`: a round X beside the title, for a sheet with no "Pronto", such as `TeamSheet`). **`IconButton`**: a round icon-only button (back).
+- **`GlassTabBar`** / **`TabBarButton`** / **`GlassSurface`**: the tab bar. `GlassSurface` picks the material (`glassMaterial()`): Liquid Glass (`expo-glass-effect`) on iOS 26, `expo-blur` + `glass` fill on older iOS and Android 12+ (blurring the `BlurTargetView` around the screens), plain `surface` below Android 12. `GlassTabBar` spans the screen less 20 pt per side; `TabBarButton` is a 52 pt pill with the 24 pt template icon at 26 (`controlText`, sharing the width with the other inactive tabs; active `primary` on `primarySoft` with its name, as wide as it needs). Tab screens pad their scroll end with `useTabBarSpace()` (content scrolls under the glass).
 - **`ChannelButtons`**: "Assistir no X" per channel or "Transmissão a definir"; links open through `openLink` / `openChannel` (`src/shared/lib/links.ts`), never `Linking.openURL` directly.
 
 ## Git Workflow

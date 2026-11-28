@@ -22,7 +22,10 @@ const UNIT_ID = USE_REAL_ADS
   : TestIds.ADAPTIVE_BANNER;
 
 // Anchored adaptive: full width with a short fixed height (a strip). It lives at
-// the end of the scrolling content so the floating native tab bar never covers it.
+// the end of the scrolling content, above the space the tab screens leave for
+// the floating glass tab bar, so the bar never covers it (AdMob forbids that).
+// `marginTop: 'auto'` keeps it there when the content is shorter than the
+// screen, as long as the content container has `flexGrow: 1`.
 export function AdBanner() {
   const { adsReady } = useAds();
   const [failed, setFailed] = useState(false);
@@ -46,6 +49,7 @@ export function AdBanner() {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
+    marginTop: 'auto',
     paddingTop: spacing.lg,
   },
 });

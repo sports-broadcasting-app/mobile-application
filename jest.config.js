@@ -4,7 +4,7 @@ process.env.TZ = 'America/Sao_Paulo';
 module.exports = {
   preset: 'jest-expo',
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|expo-router|@sentry/react-native|native-base|react-native-svg|@tanstack/.*|@react-native-async-storage/.*)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|expo-router|@sentry/react-native|native-base|react-native-svg|@tanstack/.*|@react-native-async-storage/.*|standard-navigation)',
   ],
   setupFilesAfterEnv: ['./src/test/setup.ts'],
   // On the CI runner (no Jest cache) the first test of a screen file pays for

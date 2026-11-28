@@ -390,6 +390,27 @@ describe('TransfersScreen', () => {
 });
 
 describe('SettingsScreen', () => {
+  it('closes the team sheet with the X, keeping the favorite as it was', async () => {
+    render(<SettingsScreen />);
+    fireEvent.press(await screen.findByTestId('pick-team-masculina'));
+    await screen.findByTestId('team-option-1');
+    fireEvent.press(screen.getByLabelText('Fechar'));
+    await waitFor(() => expect(screen.queryByTestId('team-search')).toBeNull());
+    expect(saveFavorite).not.toHaveBeenCalled();
+    expect(deleteFavorite).not.toHaveBeenCalled();
+  });
+
+  it('names the competitions of football and motorsport, not the NBA and NFL', async () => {
+    render(<SettingsScreen />);
+    // Even alone in their sport, the Brasileirão and F1 have their own row.
+    expect(await screen.findByTestId('follow-serie-a')).toBeTruthy();
+    expect(screen.getByTestId('follow-f1')).toBeTruthy();
+    expect(screen.getByTestId('follow-masculina')).toBeTruthy();
+    // Basketball and American football are one league: the sport row says it.
+    expect(screen.queryByTestId('follow-nba')).toBeNull();
+    expect(screen.queryByTestId('follow-nfl')).toBeNull();
+  });
+
   it('picks and removes a favorite from the team sheet', async () => {
     render(<SettingsScreen />);
     fireEvent.press(await screen.findByTestId('pick-team-masculina'));

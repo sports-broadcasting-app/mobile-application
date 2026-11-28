@@ -49,16 +49,32 @@ export const COMPETITIONS: CompetitionInfo[] = [
   },
 ];
 
+export interface SportInfo {
+  sport: Sport;
+  name: string;
+  /**
+   * Configurações names its competitions even when it has only one: football
+   * and motorsport are umbrellas (Brasileirão, Fórmula 1, more to come).
+   * Basketball (NBA) and American football (NFL) are one league each, so the
+   * sport row says it all. With two or more competitions they always show.
+   */
+  listsCompetitions: boolean;
+}
+
 /** Sport names, in the order the pickers group them. Icons: SportIcon. */
-export const SPORTS: { sport: Sport; name: string }[] = [
-  { sport: 'automobilismo', name: 'Automobilismo' },
-  { sport: 'basquete', name: 'Basquete' },
-  { sport: 'futebol', name: 'Futebol' },
-  { sport: 'futebol-americano', name: 'Futebol americano' },
-  { sport: 'volei', name: 'Vôlei' },
+export const SPORTS: SportInfo[] = [
+  { sport: 'automobilismo', name: 'Automobilismo', listsCompetitions: true },
+  { sport: 'basquete', name: 'Basquete', listsCompetitions: false },
+  { sport: 'futebol', name: 'Futebol', listsCompetitions: true },
+  {
+    sport: 'futebol-americano',
+    name: 'Futebol americano',
+    listsCompetitions: false,
+  },
+  { sport: 'volei', name: 'Vôlei', listsCompetitions: true },
 ];
 
-export function getSport(sport: Sport): { sport: Sport; name: string } {
+export function getSport(sport: Sport): SportInfo {
   const info = SPORTS.find((entry) => entry.sport === sport);
   if (!info) throw new Error(`Unknown sport: ${sport}`);
   return info;

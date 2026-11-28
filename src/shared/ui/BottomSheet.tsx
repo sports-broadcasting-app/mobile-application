@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';
+import { IconButton } from './IconButton';
 import { SheetFrame } from './SheetFrame';
 import { spacing, typography } from '@/shared/theme/designTokens';
 
@@ -19,6 +20,11 @@ interface BottomSheetProps {
    * a list filtered by a search field: it would shrink under the keyboard.
    */
   fullHeight?: boolean;
+  /**
+   * A round X beside the title, for a sheet whose footer has no way out
+   * (its buttons all pick something). Sheets with a "Pronto" skip it.
+   */
+  closeButton?: boolean;
   testID?: string;
 }
 
@@ -32,6 +38,7 @@ export function BottomSheet({
   children,
   footer,
   fullHeight = false,
+  closeButton = false,
   testID,
 }: BottomSheetProps) {
   return (
@@ -41,14 +48,31 @@ export function BottomSheet({
       testID={testID}
       style={fullHeight && styles.fullHeight}
     >
-      {eyebrow ? (
-        <AppText variant="captionStrong" tone="accent" style={styles.eyebrow}>
-          {eyebrow}
-        </AppText>
-      ) : null}
-      <AppText accessibilityRole="header" style={styles.title}>
-        {title}
-      </AppText>
+      <View style={styles.header}>
+        <View style={styles.heading}>
+          {eyebrow ? (
+            <AppText
+              variant="captionStrong"
+              tone="accent"
+              style={styles.eyebrow}
+            >
+              {eyebrow}
+            </AppText>
+          ) : null}
+          <AppText accessibilityRole="header" style={styles.title}>
+            {title}
+          </AppText>
+        </View>
+        {closeButton ? (
+          <IconButton
+            icon="close"
+            size="chip"
+            accessibilityLabel="Fechar"
+            testID="sheet-close"
+            onPress={onClose}
+          />
+        ) : null}
+      </View>
       {message ? (
         <AppText variant="body" tone="secondary" style={styles.message}>
           {message}
@@ -63,6 +87,14 @@ export function BottomSheet({
 const styles = StyleSheet.create({
   fullHeight: {
     height: '88%',
+  },
+  header: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  heading: {
+    flex: 1,
   },
   eyebrow: {
     marginBottom: spacing.xs,

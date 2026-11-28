@@ -38,6 +38,7 @@ import {
   spacing,
   touchTarget,
 } from '@/shared/theme/designTokens';
+import { useTabBarSpace } from '@/shared/ui/GlassTabBar';
 
 /** Asked once: the first team is when reminders start to make sense. */
 export const REMINDERS_OFFERED_KEY = '@reminders_offered';
@@ -88,6 +89,7 @@ function LinkRow({
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
+  const tabBarSpace = useTabBarSpace();
   const {
     followed,
     sportOn,
@@ -199,8 +201,9 @@ export default function SettingsScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <ScrollView
-        contentContainerStyle={styles.content}
-        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
+        // The content runs under the floating glass tab bar.
+        scrollIndicatorInsets={{ bottom: tabBarSpace }}
       >
         {/* Screen titles are already large; uncapped they broke mid-word. */}
         <AppText variant="screenTitle" capped style={styles.title}>
@@ -220,7 +223,7 @@ export default function SettingsScreen() {
           title="Esportes e competições"
           style={styles.sectionHeader}
         />
-        {SPORTS.map(({ sport, name }) => {
+        {SPORTS.map(({ sport, name, listsCompetitions }) => {
           const own = competitionsOfSport(sport);
           if (own.length === 0) return null;
           const on = sportOn(sport);
@@ -247,7 +250,7 @@ export default function SettingsScreen() {
                         { borderTopColor: colors.borderLight },
                       ]}
                     >
-                      {own.length > 1 && (
+                      {(own.length > 1 || listsCompetitions) && (
                         <CheckRow
                           label={info.name}
                           checked={checked}

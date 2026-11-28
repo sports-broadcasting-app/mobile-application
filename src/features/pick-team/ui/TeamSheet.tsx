@@ -63,6 +63,7 @@ export function TeamSheet({ competition, onClose, onPicked }: TeamSheetProps) {
     <BottomSheet
       visible={competition !== null}
       onClose={onClose}
+      closeButton
       eyebrow={shown ? getCompetition(shown).name : undefined}
       title="Qual é o seu time?"
       message="Os jogos dele aparecem primeiro e você recebe o aviso antes de começar."
