@@ -6,7 +6,7 @@ import {
   View,
 } from 'react-native';
 import { AppText } from '@/shared/ui/AppText';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from '@/shared/ui/Icon';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AdBanner } from '@/features/ads/ui/AdBanner';
@@ -92,7 +92,7 @@ export default function StandingsScreen() {
               })
             }
           >
-            <MaterialCommunityIcons
+            <Icon
               name="swap-horizontal"
               size={iconSize.md}
               color={colors.primary}
@@ -100,7 +100,7 @@ export default function StandingsScreen() {
             <AppText variant="bodyStrong" style={styles.transfersText}>
               Transferências da temporada
             </AppText>
-            <MaterialCommunityIcons
+            <Icon
               name="chevron-right"
               size={iconSize.md}
               color={colors.textTertiary}

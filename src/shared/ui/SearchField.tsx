@@ -1,5 +1,5 @@
 import { StyleSheet, TextInput, View } from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from './Icon';
 import { useTheme } from '@/shared/theme/ThemeContext';
 import {
   iconSize,
@@ -34,11 +34,7 @@ export function SearchField({
         { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
       ]}
     >
-      <MaterialCommunityIcons
-        name="magnify"
-        size={iconSize.md}
-        color={colors.textTertiary}
-      />
+      <Icon name="magnify" size={iconSize.md} color={colors.textTertiary} />
       <TextInput
         value={value}
         onChangeText={onChangeText}

@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import { AppText } from '@/shared/ui/AppText';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from '@/shared/ui/Icon';
 import screenPlay from '../../../../assets/tabs/screen-play.png';
 import { getCompetition } from '@/shared/config/competitions';
 import { useTheme } from '@/shared/theme/ThemeContext';
@@ -163,7 +163,7 @@ export const MatchCard = React.memo(function MatchCard({
             {meta}
           </AppText>
           {favorite && (
-            <MaterialCommunityIcons
+            <Icon
               name="star"
               size={iconSize.sm}
               color={colors.primary}

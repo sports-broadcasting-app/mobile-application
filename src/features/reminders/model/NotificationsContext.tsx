@@ -86,7 +86,7 @@ const NotificationsContext = createContext<NotificationsContextValue>({
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { favorites: allFavorites } = useFavorites();
   const { followed } = useCompetition();
-  const { lastSyncAt } = useSync();
+  const { dataVersion } = useSync();
   // Only competitions the user follows get reminders.
   const favorites = useMemo(() => {
     const own: Favorites = {};
@@ -197,7 +197,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     favorites,
     series,
     sessionKinds,
-    lastSyncAt,
+    dataVersion,
   ]);
 
   const setEnabled = useCallback(async (next: boolean) => {

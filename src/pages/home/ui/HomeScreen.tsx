@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from '@/shared/ui/Icon';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AdBanner } from '@/features/ads/ui/AdBanner';
@@ -186,7 +186,7 @@ export default function HomeScreen() {
             style={[styles.editChip, { borderColor: colors.primary }]}
             onPress={() => setEditing(true)}
           >
-            <MaterialCommunityIcons
+            <Icon
               name="tune-variant"
               size={iconSize.sm}
               color={colors.primary}
@@ -232,7 +232,7 @@ export default function HomeScreen() {
                 style={styles.sectionHeader}
                 icon={
                   section.favorite ? (
-                    <MaterialCommunityIcons
+                    <Icon
                       name="star"
                       size={iconSize.sm}
                       color={colors.primary}

@@ -81,6 +81,15 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 - Configurações shows a competition's `CheckRow` when its sport has 2+ competitions or `SportInfo.listsCompetitions` (`src/shared/config/competitions.ts`): true for futebol and automobilismo (umbrellas: Brasileirão, F1, more may come), false for basquete and futebol-americano (NBA and NFL are the sport). Unchecking the only competition turns the sport off, like unchecking both Superligas. Test: `screens.test.tsx` "names the competitions of football and motorsport".
 - `BottomSheet closeButton` puts an `IconButton` X ("Fechar", `sheet-close`) beside the title; `TeamSheet` uses it because its footer only had "Sem time nesta competição" (closing used to need a pick, a swipe or the backdrop). Sheets with "Pronto" don't. Tests: `BottomSheet.test.tsx`, `screens.test.tsx` "closes the team sheet with the X".
 
+## Sync and icons performance (PR #57)
+
+- Measured on the emulators (dev build): `saveSnapshot` took ~1,150 ms on Android and ~220 ms on iOS (1,884 rows, one `runAsync` each), on every sync, even with the same file. Now ~75 ms / ~29 ms (`insertRows`: multi-row INSERT, `MAX_BOUND_PARAMS` 999), and most syncs write nothing.
+- `syncSnapshot` (`shared/api/sync/syncService.ts`): sends `If-None-Match` with the saved ETag (a 304 only calls `markSynced`); on a 200, compares `fingerprint(JSON.stringify(snapshot))` (`shared/lib/hash.ts`, cyrb53, ~50 ms on the dev build) with `meta.snapshotKey`. The ETag is stored as `<transformRevision> <etag>`: `transformRevision()` fingerprints what this build adds (known competitions, bundled transfers), so after an update the old ETag is not sent. `SyncResult` = `{ syncedAt, dataVersion }`.
+- `SyncContext.dataVersion` (saved fingerprint; for data saved before this, `String(lastSyncAt)`) keys every query in `queries.ts` and the reminders effect, so a check without new data re-renders nothing but the "Atualizado" line. Don't key queries by `lastSyncAt` again.
+- Checked on the emulators: logs show `download not modified` then `snapshot unchanged {"by":"etag"}` on both platforms (iOS's URL cache does not hide the 304 when the header is set by hand).
+- Icons: `@expo/vector-icons` is gone (its 1.3 MB font was the largest asset). `Icon` draws the 19 glyphs with `react-native-svg`; their paths were taken from the font's own outlines, so they look the same. Adding an icon = adding its MDI path to `ICON_PATHS` (24 pt grid, tested). Icons are hidden from screen readers: query them with `includeHiddenElements: true`.
+- Tests: `syncService.test.ts` ("with data already saved"), `database.test.ts` (600 rows, `markSynced`), `SyncContext.test.tsx` (`dataVersion`), `hash.test.ts`, `Icon.test.tsx`.
+
 ## Checking your work
 
 ```bash

@@ -1,5 +1,16 @@
-import { getLastSyncAt, saveFavorite, getFavorites } from '../database';
-import { fetchSnapshot, withBundledTransfers } from './snapshotService';
+import * as database from '../database';
+import {
+  getLastSyncAt,
+  saveFavorite,
+  getFavorites,
+  markSynced,
+} from '../database';
+import type { Snapshot } from '../snapshot';
+import {
+  fetchSnapshot,
+  transformRevision,
+  withBundledTransfers,
+} from './snapshotService';
 import {
   DEFAULT_MAX_AGE_MS,
   isGameOn,
@@ -23,15 +34,45 @@ jest.mock('expo-sqlite', () =>
 const fetchMock = jest.fn();
 global.fetch = fetchMock;
 
-function respondWith(body: unknown, ok = true, status = 200) {
+function respondWith(
+  body: unknown,
+  ok = true,
+  status = 200,
+  etag: string | null = null,
+) {
   fetchMock.mockResolvedValueOnce({
     ok,
     status,
     url: 'https://example.com/superliga.json',
-    headers: new Headers({ 'content-type': 'application/json' }),
+    headers: new Headers({
+      'content-type': 'application/json',
+      ...(etag ? { etag } : {}),
+    }),
     text: async () => JSON.stringify(body),
   });
 }
+
+function respondNotModified() {
+  fetchMock.mockResolvedValueOnce({
+    ok: false,
+    status: 304,
+    url: 'https://example.com/superliga.json',
+    headers: new Headers(),
+    text: async () => '',
+  });
+}
+
+/** The snapshot of a download that must have returned one. */
+async function fetched(): Promise<Snapshot> {
+  const result = await fetchSnapshot();
+  if (result.kind !== 'snapshot') throw new Error('expected a snapshot');
+  return result.snapshot;
+}
+
+/** The If-None-Match the last request sent, if any. */
+const sentEtag = () =>
+  (fetchMock.mock.lastCall?.[1] as { headers?: Record<string, string> })
+    ?.headers?.['If-None-Match'];
 
 const SUPERLIGA_CODES: Record<string, string> = {
   masculina: 'SDC MCV BVC SEC MTC SES SVG PCU GOI ASM NRD VSJ',
@@ -71,8 +112,12 @@ describe('withBundledTransfers', () => {
 
 describe('fetchSnapshot', () => {
   it('returns a valid snapshot', async () => {
-    respondWith(buildSnapshot([]));
-    await expect(fetchSnapshot()).resolves.toMatchObject({ version: 2 });
+    respondWith(buildSnapshot([]), true, 200, 'W/"abc"');
+    await expect(fetchSnapshot()).resolves.toMatchObject({
+      kind: 'snapshot',
+      snapshot: { version: 2 },
+      etag: 'W/"abc"',
+    });
   });
 
   it('rejects an HTTP error', async () => {
@@ -114,7 +159,7 @@ describe('fetchSnapshot', () => {
       slug: 'cricket' as never,
     });
     respondWith(snapshot);
-    const { competitions } = await fetchSnapshot();
+    const { competitions } = await fetched();
     expect(competitions.map((c) => c.slug)).toEqual(['masculina', 'feminina']);
   });
 
@@ -158,7 +203,7 @@ describe('syncSnapshot', () => {
     await saveFavorite('masculina', '1');
     respondWith(buildSnapshot([scheduledMatch]));
 
-    const syncedAt = await syncSnapshot();
+    const { syncedAt } = await syncSnapshot();
 
     expect(await getLastSyncAt()).toBe(syncedAt);
     expect(await getFavorites()).toMatchObject({ masculina: '1' });
@@ -166,11 +211,69 @@ describe('syncSnapshot', () => {
 
   it('keeps local data when offline', async () => {
     respondWith(buildSnapshot([scheduledMatch]));
-    const syncedAt = await syncSnapshot();
+    const { syncedAt } = await syncSnapshot();
 
     fetchMock.mockRejectedValueOnce(new TypeError('Network request failed'));
     await expect(syncSnapshot()).rejects.toThrow('Network');
     expect(await getLastSyncAt()).toBe(syncedAt);
+  });
+});
+
+describe('syncSnapshot with data already saved', () => {
+  beforeEach(() => {
+    fetchMock.mockReset();
+  });
+
+  it('asks with the saved ETag and writes nothing on a 304', async () => {
+    respondWith(buildSnapshot([scheduledMatch]), true, 200, 'W/"one"');
+    const first = await syncSnapshot();
+    const save = jest.spyOn(database, 'saveSnapshot');
+
+    respondNotModified();
+    const second = await syncSnapshot();
+
+    expect(sentEtag()).toBe('W/"one"');
+    expect(save).not.toHaveBeenCalled();
+    expect(second.dataVersion).toBe(first.dataVersion);
+    expect(await getLastSyncAt()).toBe(second.syncedAt);
+    save.mockRestore();
+  });
+
+  it('writes nothing when a full download brings the same data', async () => {
+    respondWith(buildSnapshot([scheduledMatch]));
+    const first = await syncSnapshot();
+    const save = jest.spyOn(database, 'saveSnapshot');
+
+    respondWith(buildSnapshot([scheduledMatch]));
+    const second = await syncSnapshot();
+
+    expect(save).not.toHaveBeenCalled();
+    expect(second.dataVersion).toBe(first.dataVersion);
+    save.mockRestore();
+  });
+
+  it('saves and moves the data version when the data changed', async () => {
+    respondWith(buildSnapshot([]));
+    const first = await syncSnapshot();
+
+    respondWith(buildSnapshot([scheduledMatch]), true, 200, 'W/"two"');
+    const second = await syncSnapshot();
+
+    expect(second.dataVersion).not.toBe(first.dataVersion);
+    expect(
+      await database.getMatchesBetween(0, Number.MAX_SAFE_INTEGER),
+    ).toHaveLength(1);
+  });
+
+  it('does not trust an ETag saved by a build that shapes data differently', async () => {
+    respondWith(buildSnapshot([scheduledMatch]), true, 200, 'W/"one"');
+    await syncSnapshot();
+    await markSynced(1, 'another-build W/"one"');
+
+    respondWith(buildSnapshot([scheduledMatch]));
+    await syncSnapshot();
+    expect(sentEtag()).toBeUndefined();
+    expect(transformRevision()).not.toBe('another-build');
   });
 });
 

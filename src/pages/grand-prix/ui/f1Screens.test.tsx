@@ -68,6 +68,7 @@ beforeEach(() => {
   (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
   (useSync as jest.Mock).mockReturnValue({
     lastSyncAt: Date.now(),
+    dataVersion: 'v1',
     refreshing: false,
     refreshFailed: false,
     refresh: jest.fn(),

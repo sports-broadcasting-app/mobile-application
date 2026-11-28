@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Card } from '@/shared/ui/Card';
 import { AppText } from '@/shared/ui/AppText';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from '@/shared/ui/Icon';
 import { useTheme } from '@/shared/theme/ThemeContext';
 import type { MatchEvent, Team } from '@/shared/api/snapshot';
 import {
@@ -36,7 +36,7 @@ function EventIcon({ type }: { type: MatchEvent['type'] }) {
     );
   }
   return (
-    <MaterialCommunityIcons
+    <Icon
       name="soccer"
       size={iconSize.sm}
       color={type === 'own-goal' ? colors.textSecondary : colors.textPrimary}

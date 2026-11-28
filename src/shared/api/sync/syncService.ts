@@ -1,12 +1,15 @@
 import {
   getMatchesBetween,
   getSessionsBetween,
+  getSyncState,
+  markSynced,
   saveSnapshot,
 } from '../database';
 import type { Match } from '../snapshot';
 import { getDayBounds } from '@/shared/lib/date';
+import { fingerprint } from '@/shared/lib/hash';
 import { logSync } from './syncLog';
-import { fetchSnapshot } from './snapshotService';
+import { fetchSnapshot, transformRevision } from './snapshotService';
 
 export const DEFAULT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 export const MATCH_DAY_MAX_AGE_MS = 15 * 60 * 1000;
@@ -70,10 +73,57 @@ export async function shouldSync(
   return stale;
 }
 
-export async function syncSnapshot(): Promise<number> {
-  const snapshot = await fetchSnapshot();
+/** When the data was checked, and which data the screens should show. */
+export interface SyncResult {
+  syncedAt: number;
+  /** Changes only when the saved data does: the screens' query key. */
+  dataVersion: string;
+}
+
+/** The ETag is stored with the build's `transformRevision`: `rev etag`. */
+const tagEtag = (etag: string | null) =>
+  etag === null ? null : `${transformRevision()} ${etag}`;
+
+function usableEtag(stored: string | null): string | null {
+  if (stored === null) return null;
+  const space = stored.indexOf(' ');
+  return stored.slice(0, space) === transformRevision()
+    ? stored.slice(space + 1)
+    : null;
+}
+
+/**
+ * Downloads the file and saves it, unless it is the data already saved: a
+ * 304 (same ETag) or the same fingerprint only moves the time of the check,
+ * so nothing is written and the screens keep their rows.
+ */
+export async function syncSnapshot(): Promise<SyncResult> {
+  const saved = await getSyncState();
+  const fetched = await fetchSnapshot(
+    saved.snapshotKey === null ? null : usableEtag(saved.etag),
+  );
   const syncedAt = Date.now();
-  await saveSnapshot(snapshot, syncedAt);
+
+  if (fetched.kind === 'unchanged' && saved.snapshotKey !== null) {
+    await markSynced(syncedAt, saved.etag);
+    logSync('snapshot unchanged', { by: 'etag' });
+    return { syncedAt, dataVersion: saved.snapshotKey };
+  }
+  if (fetched.kind === 'unchanged') {
+    // Only asked with a saved snapshot; a 304 without one is a server error.
+    throw new Error('Falha ao baixar os dados (304)');
+  }
+
+  const { snapshot } = fetched;
+  const etag = tagEtag(fetched.etag);
+  const key = fingerprint(JSON.stringify(snapshot));
+  if (key === saved.snapshotKey) {
+    await markSynced(syncedAt, etag);
+    logSync('snapshot unchanged', { by: 'fingerprint' });
+    return { syncedAt, dataVersion: key };
+  }
+
+  await saveSnapshot(snapshot, { syncedAt, key, etag });
   logSync('snapshot saved', {
     generatedAt: snapshot.generatedAt,
     competitions: snapshot.competitions.map(({ slug, teams, matches }) => ({
@@ -82,5 +132,5 @@ export async function syncSnapshot(): Promise<number> {
       matches: matches.length,
     })),
   });
-  return syncedAt;
+  return { syncedAt, dataVersion: key };
 }

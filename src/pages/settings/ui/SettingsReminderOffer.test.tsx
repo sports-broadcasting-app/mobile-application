@@ -8,7 +8,7 @@ import { awayTeam, homeTeam } from '@/test/fixtures';
 
 jest.mock('expo-linking', () => ({ openSettings: jest.fn() }));
 jest.mock('@/shared/api/sync/SyncContext', () => ({
-  useSync: () => ({ lastSyncAt: 1000 }),
+  useSync: () => ({ lastSyncAt: 1000, dataVersion: 'v1' }),
 }));
 jest.mock('@/features/reminders/model/NotificationsContext', () => ({
   useNotifications: jest.fn(),

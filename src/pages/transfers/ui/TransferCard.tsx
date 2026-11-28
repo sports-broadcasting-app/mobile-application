@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { AppText } from '@/shared/ui/AppText';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from '@/shared/ui/Icon';
 import { TeamCircle } from '@/entities/team/ui/TeamCircle';
 import { useTheme } from '@/shared/theme/ThemeContext';
 import { Team, Transfer, TransferClub } from '@/shared/api/snapshot';
@@ -42,7 +42,7 @@ function Club({
       {team ? (
         <TeamCircle team={team} size={BADGE_SIZE} />
       ) : (
-        <MaterialCommunityIcons
+        <Icon
           name="shield-outline"
           size={BADGE_SIZE}
           color={colors.textTertiary}
@@ -98,7 +98,7 @@ export const TransferCard = React.memo(function TransferCard({
 
       <View style={styles.clubs}>
         <Club club={transfer.from} teamsById={teamsById} />
-        <MaterialCommunityIcons
+        <Icon
           name="arrow-right"
           size={iconSize.md}
           color={colors.textTertiary}
@@ -128,7 +128,7 @@ export const TransferCard = React.memo(function TransferCard({
         style={styles.source}
         onPress={() => openLink(transfer.sourceUrl)}
       >
-        <MaterialCommunityIcons
+        <Icon
           name="newspaper-variant-outline"
           size={iconSize.sm}
           color={colors.primary}

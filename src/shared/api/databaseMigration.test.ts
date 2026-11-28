@@ -38,7 +38,11 @@ describe('database upgrade', () => {
     expect(await database.getFavorites()).toEqual({ masculina: '1' });
     expect(await database.getStandings('masculina')).toEqual([]);
 
-    await database.saveSnapshot(buildSnapshot([scheduledMatch]), 1000);
+    await database.saveSnapshot(buildSnapshot([scheduledMatch]), {
+      syncedAt: 1000,
+      key: 'k1000',
+      etag: null,
+    });
     const standings = await database.getStandings('masculina');
     expect(standings.map((row: { teamId: string }) => row.teamId)).toEqual([
       '2',

@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from './Icon';
 import { useTheme } from '@/shared/theme/ThemeContext';
 import { AppText } from './AppText';
 import { BroadcasterPill } from './BroadcasterPill';
@@ -67,11 +67,7 @@ export function ScheduleRow({
           {title}
         </AppText>
         {favorite && (
-          <MaterialCommunityIcons
-            name="star"
-            size={iconSize.sm}
-            color={colors.primary}
-          />
+          <Icon name="star" size={iconSize.sm} color={colors.primary} />
         )}
       </View>
       {channel ? (

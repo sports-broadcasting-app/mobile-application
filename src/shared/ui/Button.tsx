@@ -1,7 +1,7 @@
-import { ComponentProps } from 'react';
 import { Pressable, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import { AppText } from './AppText';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Icon } from './Icon';
+import type { IconName } from './icons';
 import { useTheme } from '@/shared/theme/ThemeContext';
 import {
   iconSize,
@@ -10,8 +10,6 @@ import {
   touchTarget,
   typography,
 } from '@/shared/theme/designTokens';
-
-type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
 interface ButtonProps {
   label: string;
@@ -67,13 +65,7 @@ export function Button({
         style,
       ]}
     >
-      {icon && (
-        <MaterialCommunityIcons
-          name={icon}
-          size={iconSize.md}
-          color={textColor}
-        />
-      )}
+      {icon && <Icon name={icon} size={iconSize.md} color={textColor} />}
       <AppText
         style={[
           styles.label,

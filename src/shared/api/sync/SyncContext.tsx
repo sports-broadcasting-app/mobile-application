@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from 'react';
 import { AppState } from 'react-native';
-import { getLastSyncAt } from '../database';
+import { getSyncState } from '../database';
 import { shouldSync, syncSnapshot } from './syncService';
 
 /** How often an open app asks shouldSync whether to download again. */
@@ -19,7 +19,13 @@ type SyncPhase = 'loading' | 'ready' | 'failed';
 
 interface SyncContextValue {
   phase: SyncPhase;
+  /** When the data was last checked: "Atualizado há 5 min". */
   lastSyncAt: number | null;
+  /**
+   * Which data is saved: changes only when a sync writes new data, so the
+   * screens' queries (keyed by it) re-read only then, not on every check.
+   */
+  dataVersion: string | null;
   refreshing: boolean;
   refreshFailed: boolean;
   lastError: string | null;
@@ -29,6 +35,7 @@ interface SyncContextValue {
 const SyncContext = createContext<SyncContextValue>({
   phase: 'loading',
   lastSyncAt: null,
+  dataVersion: null,
   refreshing: false,
   refreshFailed: false,
   lastError: null,
@@ -38,6 +45,7 @@ const SyncContext = createContext<SyncContextValue>({
 export function SyncProvider({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<SyncPhase>('loading');
   const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
+  const [dataVersion, setDataVersion] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshFailed, setRefreshFailed] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
@@ -49,9 +57,10 @@ export function SyncProvider({ children }: { children: ReactNode }) {
 
     setRefreshing(true);
     inFlight.current = syncSnapshot()
-      .then((syncedAt) => {
+      .then(({ syncedAt, dataVersion: version }) => {
         lastSyncRef.current = syncedAt;
         setLastSyncAt(syncedAt);
+        setDataVersion(version);
         setRefreshFailed(false);
         setLastError(null);
         setPhase('ready');
@@ -76,9 +85,13 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const stored = await getLastSyncAt();
+        const { lastSyncAt: stored, snapshotKey } = await getSyncState();
         lastSyncRef.current = stored;
         setLastSyncAt(stored);
+        // Data saved before snapshot keys existed: its sync time stands in.
+        setDataVersion(
+          snapshotKey ?? (stored === null ? null : String(stored)),
+        );
         if (stored !== null) setPhase('ready');
         await refreshIfNeeded();
       } catch (error) {
@@ -113,12 +126,21 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     () => ({
       phase,
       lastSyncAt,
+      dataVersion,
       refreshing,
       refreshFailed,
       lastError,
       refresh,
     }),
-    [phase, lastSyncAt, refreshing, refreshFailed, lastError, refresh],
+    [
+      phase,
+      lastSyncAt,
+      dataVersion,
+      refreshing,
+      refreshFailed,
+      lastError,
+      refresh,
+    ],
   );
 
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;
