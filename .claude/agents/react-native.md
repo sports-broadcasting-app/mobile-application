@@ -33,7 +33,7 @@ You build and fix the Onde Passa app code: `app/` (routes) and `src/`. Follow CL
 - Switches are `ThemedSwitch`, never a bare `Switch` (PR #28): it sets the `primary` track and, on Android, the thumb, which otherwise shows the system teal.
 - A style that depends on a condition goes in the style array as `cond && { … }`, not as an object with a ternary and a literal (`backgroundColor: x ? 'transparent' : color`): `react-native/no-inline-styles` warns on the literal, and the CI fails on any warning (fixed in `TeamCircle`, PR #22).
 - Platform files: `.web.tsx` variants exist for ads, notifications and splash. Keep them in sync when you change the native one.
-- Dependencies: `yarn expo install <pkg>` (picks the version for SDK 58; never npm). A package with native code, or a change to `app.json` plugins, needs a new `eas build` — say so; JS-only changes can ship with `eas update` (`runtimeVersion` follows the app version).
+- Dependencies: `yarn expo install <pkg>` (picks the version for SDK 58; never npm). A package with native code, or a change to `app.json` plugins that touches native code (permissions, icons, SDK keys), needs a new `eas build` — say so; JS-only changes can ship with `eas update` (`runtimeVersion` follows the app version). Bundler-only plugin options are not native: the `expo-router` `root` option (PR #55) only needs Metro restarted with `--clear`.
 
 ## Home chip row (PR #49)
 

@@ -81,6 +81,8 @@ Report: last success, real interval between scheduled runs vs the cron, age of `
 
 - Profiles in `eas.json`: development (dev client), preview (internal; APK on Android), production (`autoIncrement`, remote build numbers). Channels match the profile names.
 - `runtimeVersion` policy `appVersion`: an OTA update reaches only builds with the same `app.json` version. A native change needs a build.
+- After the 1.5.0 store release (2026-11-27), PRs #52–#55 (shared components, strict types, score engine/SourceIO, Feature-Sliced Design) are JS and bundler config only: runtime stays 1.5.0, so they can reach 1.5 installs by `eas update --channel production` or ship in the next build. The user releases these by hand; only run `eas update` when asked.
+- `app.json` pins Expo Router's routes with `["expo-router", { "root": "./app" }]` (PR #55): without it, `src/app` (the Feature-Sliced Design app layer) would be taken as the routes folder and the bundle fails on `@testing-library`. It is read when Metro starts: restart `expo start --clear` after pulling it. CI's `expo export` catches a regression.
 - `EXPO_PUBLIC_DATA_URL` on expo.dev (production) overrides `.env.production`; `eas env:list --environment production` to check.
 
 ## Report back
